@@ -1,0 +1,82 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        MinWidth="300"
+        MaxWidth="500"
+        Height="150"
+        x:Class="PubDoomer.Views.Dialogues.InformationalWindow"
+        Title="{Binding WindowTitle}"
+        CanResize="False"
+        x:DataType="InformationalWindowViewModel">
+    
+    <Design.DataContext>
+        <InformationalWindowViewModel />
+    </Design.DataContext>
+
+    <Window.Resources>
+        <EnumMatchConverter x:Key="EnumMatchConverter" />
+        <AlertTypeToIconConverter x:Key="AlertTypeToIconConverter" />
+        <AlertTypeToColorConverter x:Key="AlertTypeToColorConverter" />
+    </Window.Resources>
+
+    <Border Padding="20">
+        <Grid RowDefinitions="*, *">
+            <StackPanel Orientation="Horizontal"
+                        Spacing="20">
+
+                <Border>
+                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                              Classes="ExtraLarge"
+                              Data="{Binding WindowType, Converter={StaticResource AlertTypeToIconConverter}}"
+                              Foreground="{Binding WindowType, Converter={StaticResource AlertTypeToColorConverter}}"
+                              VerticalAlignment="Top" />
+                </Border>
+                <StackPanel>
+                    <TextBlock Classes="H5"
+                               TextWrapping="Wrap"
+                               Theme="{StaticResource TitleTextBlock}"
+                               Text="{Binding Title}" />
+                    <TextBlock Classes="Tertiary"
+                               TextWrapping="Wrap"
+                               Theme="{StaticResource TitleTextBlock}"
+                               Text="{Binding SubTitle}" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Buttons display -->
+            <ItemsControl Grid.Row="1"
+                          ItemsSource="{Binding Buttons}"
+                          HorizontalAlignment="Right">
+                <ItemsControl.ItemsPanel>
+
+                    <!-- Spaced layout -->
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="20" Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.DataTemplates>
+
+                    <!-- General DataTemplate for a button -->
+                    <DataTemplate DataType="{x:Type InformationalWindowButton}">
+
+                        <!-- This could probably be cleaner, but this button has a list of hardcoded styles depending on its alert type -->
+                        <Button
+                            Classes.Tertiary="{Binding Type, Converter={StaticResource EnumMatchConverter}, ConverterParameter=None}"
+                            Classes.Information="{Binding Type, Converter={StaticResource EnumMatchConverter}, ConverterParameter=Information}"
+                            Classes.Success="{Binding Type, Converter={StaticResource EnumMatchConverter}, ConverterParameter=Success}"
+                            Classes.Warning="{Binding Type, Converter={StaticResource EnumMatchConverter}, ConverterParameter=Warning}"
+                            Classes.Danger="{Binding Type, Converter={StaticResource EnumMatchConverter}, ConverterParameter=Error}"
+                            Theme="{DynamicResource SolidButton}"
+                            Content="{Binding Text}"
+                            HorizontalAlignment="Right"
+                            Click="CloseFormButton_OnClick"
+                            CommandParameter="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.DataTemplates>
+            </ItemsControl>
+        </Grid>
+    </Border>
+</Window>

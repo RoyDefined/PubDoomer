@@ -1,0 +1,42 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="PubDoomer.Views.Dialogues.CreateOrEditProjectWindow"
+        Title="{Binding WindowTitle}"
+        Width="400"
+        CanResize="False"
+        SizeToContent="Height"
+        x:DataType="CreateOrEditProjectWindowViewModel">
+
+    <Design.DataContext>
+        <CreateOrEditProjectWindowViewModel />
+    </Design.DataContext>
+
+    <Border Padding="20">
+        <StackPanel Spacing="10">
+            <Grid ColumnDefinitions="Auto, 10, *" HorizontalAlignment="Stretch">
+                <TextBlock Text="Project Name:"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center" />
+                <TextBox Grid.Column="2" Text="{Binding Project.Name, Mode=TwoWay}" />
+            </Grid>
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="10">
+                <Button Content="Cancel"
+                        Classes="Danger"
+                        Theme="{DynamicResource SolidButton}"
+                        Click="CancelFormButton_OnClick" />
+
+                <Button Content="{Binding CreateOrEditButtonText}"
+                        IsEnabled="{Binding FormIsValid}"
+                        Classes="Success"
+                        Theme="{DynamicResource SolidButton}"
+                        Click="FinishFormButton_OnClick" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

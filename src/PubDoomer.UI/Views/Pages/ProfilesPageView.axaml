@@ -1,0 +1,337 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="PubDoomer.Views.Pages.ProfilesPageView"
+             x:DataType="ProfilesPageViewModel">
+    <Design.DataContext>
+        <ProfilesPageViewModel />
+    </Design.DataContext>
+
+    <UserControl.Resources>
+        <NullToBoolConverter x:Key="NullToBoolConverter" />
+        <ProfileRunTaskStatusTemplateSelector x:Key="ProfileRunTaskStatusTemplateSelector" />
+        <CountToBoolConverter x:Key="CountToBoolConverter" />
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" MinHeight="50" MaxHeight="300" />
+        </Grid.RowDefinitions>
+
+        <Border Padding="10">
+            <Grid ColumnDefinitions="Auto, Auto, *">
+                <Button HorizontalAlignment="Left"
+                        IsVisible="{Binding $parent[UserControl].((ProfilesPageViewModel)DataContext).SessionSettings.EnableEditing}"
+                        Command="{Binding CreateProfileCommand}"
+                        Classes="Success"
+                        Theme="{DynamicResource BorderlessButton}"
+                        Padding="5 0">
+                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                              Classes="ExtraLarge"
+                              Data="{StaticResource SemiIconPlusCircle}" />
+                </Button>
+                
+                <!-- Execute button -->
+                <Border Grid.Column="1" HorizontalAlignment="Left" Padding="10 0">
+                    <Button Classes="Success"
+                            Content="Execute"
+                            IsVisible="{Binding SelectedRunProfile, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
+                            Command="{Binding ExecuteProfileCommand}" />
+                </Border>
+                
+                <Label Grid.ColumnSpan="3"
+                       Classes="H3"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Theme="{StaticResource TitleLabel}"
+                       Content="Profiles" />
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1" Padding="20">
+            <ListBox ItemsSource="{Binding CurrentProjectProvider.ProjectContext.Profiles}"
+                     SelectionMode="Single"
+                     SelectedItem="{Binding SelectedProfile}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="*, Auto">
+                            <TextBlock Text="{Binding Name}"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal"
+                                        Spacing="10">
+                                <Button Classes="Warning"
+                                        Content="Edit"
+                                        IsVisible="{Binding $parent[UserControl].((ProfilesPageViewModel)DataContext).SessionSettings.EnableEditing}"
+                                        Command="{Binding $parent[UserControl].((ProfilesPageViewModel)DataContext).EditProfileCommand}"
+                                        CommandParameter="{Binding}" />
+                                <Button Classes="Danger"
+                                        Content="Delete"
+                                        IsVisible="{Binding $parent[UserControl].((ProfilesPageViewModel)DataContext).SessionSettings.EnableEditing}"
+                                        Command="{Binding $parent[UserControl].((ProfilesPageViewModel)DataContext).DeleteProfileCommand}"
+                                        CommandParameter="{Binding}" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+
+        <GridSplitter Grid.Row="2"
+					  Height="20"
+					  Background="{DynamicResource ExecuteProfileGridSplitterBackgroundBrush}"
+					  ShowsPreview="True" />
+
+        <Border Grid.Row="2" Padding="5 0 0 0" Height="15">
+            <Viewbox HorizontalAlignment="Left">
+                <Label Classes="Quaternary"
+                       Theme="{StaticResource TitleLabel}"
+                       Content="Execute profile" />
+            </Viewbox>
+        </Border>
+
+        <Border Grid.Row="3"
+                Padding="15 5"
+                VerticalAlignment="Top"
+                IsVisible="{Binding SelectedRunProfile,
+                Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}">
+
+            <ScrollViewer>
+                <Grid RowDefinitions="Auto, *">
+
+                    <!-- Elapsed time and validation errors. -->
+                    <StackPanel Spacing="5">
+                        
+                        <!-- Top part: elapsed time -->
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="5"
+                                    IsVisible="{Binding SelectedRunProfile.ElapsedTimeMs, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}">
+                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                      Data="{StaticResource SemiIconClock}" />
+                            <TextBlock Text="{Binding SelectedRunProfile.ElapsedTimeMs, StringFormat='{}{0}ms'}"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <!-- Middle part -->
+                        
+                        <!-- Validation errors -->
+                        <Border IsVisible="{Binding Errors.Count, Converter={StaticResource CountToBoolConverter}}"
+                                BorderThickness="1"
+                                BorderBrush="{StaticResource SemiColorDanger}">
+                            
+                            <StackPanel Orientation="Horizontal">
+                                <Border BorderThickness="5"
+                                        BorderBrush="{StaticResource SemiColorDanger}" />
+                                <Border Padding="5">
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="There were one or more validation errors. Execution will likely fail when executed."
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource SemiColorDangerActive}"/>
+                                    
+                                        <ItemsControl ItemsSource="{Binding Errors}">
+                                            <ItemsControl.ItemsPanel>
+
+                                                <!-- Spaced layout -->
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Spacing="10" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+
+                                                    <StackPanel>
+                                                        <!-- Errored task -->
+                                                        <TextBlock Text="{Binding Task.Task.Name}"
+                                                                   FontSize="10"
+                                                                   FontWeight="DemiBold"
+                                                                   Theme="{DynamicResource TextBlockTheme}" />
+                                                        
+                                                        <ItemsControl ItemsSource="{Binding Results}">
+                                                            <ItemsControl.ItemsPanel>
+
+                                                                <!-- Spaced layout -->
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Spacing="2" Margin="5 0 0 0" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+
+                                                                    <StackPanel>
+                                                                        
+                                                                        <!-- Error message -->
+                                                                        <TextBlock Text="{Binding Message}"
+                                                                                   FontSize="10"
+                                                                                   Classes="Secondary"
+                                                                                   Theme="{DynamicResource TextBlockTheme}" />
+                                                                    </StackPanel>
+                                                    
+                                                    
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- Validation warnings -->
+                        <Border IsVisible="{Binding Warnings.Count, Converter={StaticResource CountToBoolConverter}}"
+                                BorderThickness="1"
+                                BorderBrush="{StaticResource SemiColorWarning}">
+                            
+                            <StackPanel Orientation="Horizontal">
+                                <Border BorderThickness="5"
+                                        BorderBrush="{StaticResource SemiColorWarning}" />
+                                <Border Padding="5">
+                                    <StackPanel Spacing="5">
+                                        <TextBlock Text="There were one or more validation warnings. Execution will likely continue."
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource SemiColorWarningActive}"/>
+                                    
+                                        <ItemsControl ItemsSource="{Binding Warnings}">
+                                            <ItemsControl.ItemsPanel>
+
+                                                <!-- Spaced layout -->
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Spacing="10" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+
+                                                    <StackPanel>
+                                                        <!-- Errored task -->
+                                                        <TextBlock Text="{Binding Task.Task.Name}"
+                                                                   FontSize="10"
+                                                                   FontWeight="DemiBold"
+                                                                   Theme="{DynamicResource TextBlockTheme}" />
+                                                        
+                                                        <ItemsControl ItemsSource="{Binding Results}">
+                                                            <ItemsControl.ItemsPanel>
+
+                                                                <!-- Spaced layout -->
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Spacing="2" Margin="5 0 0 0" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+
+                                                                    <StackPanel>
+                                                                        
+                                                                        <!-- Error message -->
+                                                                        <TextBlock Text="{Binding Message}"
+                                                                                   FontSize="10"
+                                                                                   Classes="Secondary"
+                                                                                   Theme="{DynamicResource TextBlockTheme}" />
+                                                                    </StackPanel>
+                                                    
+                                                    
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                    
+                    <!-- Bottom part: Tasks list -->
+                    <Border Grid.Row="1"
+                            Margin="0 5 0 0">
+                        <ItemsControl ItemsSource="{Binding SelectedRunProfile.Tasks}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="5" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <TextBlock Text="{Binding Task.Name}"
+                                                       FontWeight="Bold"
+                                                       VerticalAlignment="Center" />
+
+                                            <!-- Current status -->
+                                            <ContentControl Grid.Column="1"
+                                                            Content="{Binding Status}"
+                                                            ContentTemplate="{StaticResource ProfileRunTaskStatusTemplateSelector}" />
+                                        </Grid>
+
+                                        <!-- The result message -->
+                                        <TextBlock Text="{Binding ResultMessage}"
+                                                   Classes="Secondary"
+                                                   Theme="{StaticResource TextBlockTheme}"
+                                                   FontSize="12"
+                                                   IsVisible="{Binding ResultMessage, Converter={StaticResource NullToBoolConverter}}" />
+
+                                        <!-- Warnings -->
+                                        <ItemsControl ItemsSource="{Binding ResultWarnings}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Spacing="2" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}"
+                                                               Classes="Warning"
+                                                               Theme="{StaticResource TextBlockTheme}"
+                                                               FontSize="10" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <!-- Errors -->
+                                        <ItemsControl ItemsSource="{Binding ResultErrors}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Spacing="2" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}"
+                                                               Classes="Danger"
+                                                               Theme="{StaticResource TextBlockTheme}"
+                                                               FontSize="10" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        
+                                        <!-- Exception message if set -->
+                                        <TextBlock Text="{Binding Exception.Message}"
+                                                   Classes="Danger"
+                                                   Theme="{StaticResource TextBlockTheme}"
+                                                   FontSize="10"
+                                                   IsVisible="{Binding Exception, Converter={StaticResource NullToBoolConverter}}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

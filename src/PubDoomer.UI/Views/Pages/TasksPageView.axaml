@@ -1,0 +1,127 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:tasks="clr-namespace:PubDoomer.Project.Tasks"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="PubDoomer.Views.Pages.TasksPageView"
+             x:DataType="TasksPageViewModel">
+
+    <Design.DataContext>
+        <TasksPageViewModel />
+    </Design.DataContext>
+
+    <Border Padding="10">
+        <Grid RowDefinitions="Auto, *">
+            <Grid>
+                <!-- Create a new task -->
+                <Button HorizontalAlignment="Left"
+                        IsVisible="{Binding $parent[UserControl].((TasksPageViewModel)DataContext).SessionSettings.EnableEditing}"
+                        Command="{Binding CreateTaskCommand}"
+                        Classes="Success"
+                        Theme="{DynamicResource BorderlessButton}"
+                        Padding="5 0">
+                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                              Classes="ExtraLarge"
+                              Data="{StaticResource SemiIconPlusCircle}" />
+                </Button>
+
+                <!-- Title -->
+                <Label Classes="H3"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Theme="{StaticResource TitleLabel}"
+                       Content="Tasks" />
+            </Grid>
+
+            <!-- Task List Display -->
+            <ScrollViewer Grid.Row="1">
+                <ItemsControl ItemsSource="{Binding CurrentProjectProvider.ProjectContext.Tasks}">
+                    <ItemsControl.ItemsPanel>
+
+                        <!-- Spaced layout -->
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="10" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+
+                            <Border BorderBrush="Gray" BorderThickness="1" Padding="10">
+                                <Grid ColumnDefinitions="*, Auto">
+
+                                    <StackPanel Spacing="5">
+
+                                        <StackPanel>
+                                            <!-- Task name -->
+                                            <TextBlock Text="{Binding DisplayName}"
+                                                       FontSize="10"
+                                                       Classes="Secondary"
+                                                       Theme="{DynamicResource TextBlockTheme}" />
+
+                                            <!-- Task Name -->
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                        </StackPanel>
+
+                                        <!-- Display additional data depending on task type. -->
+                                        <ContentControl Content="{Binding}">
+                                            <ContentControl.DataTemplates>
+                                                
+                                                <!-- DataTemplate for CompileTask -->
+                                                <DataTemplate DataType="tasks:AccCompileTask">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding InputFilePath, StringFormat='Input: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                        <TextBlock Text="{Binding OutputFilePath, StringFormat='Output: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                                
+                                                <!-- DataTemplate for CompileTask -->
+                                                <DataTemplate DataType="tasks:BccCompileTask">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding InputFilePath, StringFormat='Input: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                        <TextBlock Text="{Binding OutputFilePath, StringFormat='Output: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                                
+                                                <!-- DataTemplate for CompileTask -->
+                                                <DataTemplate DataType="tasks:GdccAccCompileTask">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding InputFilePath, StringFormat='Input: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                        <TextBlock Text="{Binding OutputFilePath, StringFormat='Output: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ContentControl.DataTemplates>
+                                        </ContentControl>
+                                    </StackPanel>
+
+                                    <!-- Edit and delete button -->
+                                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                                Orientation="Horizontal"
+                                                Spacing="10">
+
+                                        <Button Classes="Warning"
+                                                Content="Edit"
+                                                Command="{Binding $parent[UserControl].((TasksPageViewModel)DataContext).EditTaskCommand}"
+                                                CommandParameter="{Binding}" />
+                                        <Button Classes="Danger"
+                                                Content="Delete"
+                                                Command="{Binding $parent[UserControl].((TasksPageViewModel)DataContext).DeleteTaskCommand}"
+                                                CommandParameter="{Binding}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+        </Grid>
+    </Border>
+</UserControl>

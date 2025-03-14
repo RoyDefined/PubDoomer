@@ -1,0 +1,291 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="PubDoomer.Views.Pages.ProjectPageView"
+             x:DataType="ProjectPageViewModel">
+
+    <Design.DataContext>
+        <ProjectPageViewModel />
+    </Design.DataContext>
+
+    <Border Padding="10">
+        <ScrollViewer>
+            <StackPanel>
+                <Grid ColumnDefinitions="Auto, *">
+                    <!-- Title -->
+                    <TextBlock Grid.ColumnSpan="2"
+                               Classes="H3"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Theme="{StaticResource TitleTextBlock}"
+                               Text="Project" />
+
+                    <!-- Save button (not applicable here unlike in the settings, therefore -->
+                    <TextBlock VerticalAlignment="Center"
+                               Theme="{StaticResource TitleTextBlock}"
+                               Classes="Tertiary"
+                               FontSize="10"
+                               TextWrapping="Wrap"
+                               Text="Project settings are saved when you save the project as a whole." />
+                </Grid>
+                
+                <!-- TODO: Add a max width for the labels so they do not keep taking space when the text is already no longer wrapped -->
+                
+                <!-- Content -->
+                <Border Padding="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" MinWidth="250"/>
+                            <ColumnDefinition Width="2"/>
+                            <ColumnDefinition Width="*" MinWidth="250"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left side -->
+                        <StackPanel Spacing="5">
+
+                            <!-- Project properties -->
+                            <HeaderedContentControl Classes="GroupBox"
+                                                    BorderBrush="Gray"
+                                                    BorderThickness="1"
+                                                    CornerRadius="4"
+                                                    Header="Properties">
+
+                                <Border Padding="5 10">
+
+                                    <!-- Project Name Input -->
+                                    <StatefulTextbox Text="{Binding CurrentProjectProvider.ProjectContext.Name, Mode=TwoWay}" />
+                                </Border>
+                            </HeaderedContentControl>
+                        </StackPanel>
+
+                        <GridSplitter Grid.Column="1" ShowsPreview="True" />
+
+                        <!-- Right side -->
+                        <StackPanel Grid.Column="2" Spacing="5">
+
+                            <!-- Compilers -->
+                            <HeaderedContentControl Classes="GroupBox"
+                                                    BorderBrush="Gray"
+                                                    BorderThickness="1"
+                                                    CornerRadius="4"
+                                                    Header="Compilers">
+
+                                <StackPanel>
+                                    <TextBlock Classes="Tertiary"
+                                               FontSize="10"
+                                               Margin="0 -5 0 0"
+                                               Text="Overrides globally configured compilers."
+                                               TextWrapping="Wrap" />
+
+                                    <Border Padding="5 10">
+
+                                        <StackPanel Spacing="10">
+
+                                            <!-- ACC compiler -->
+                                            <Grid ColumnDefinitions="*, 2*">
+
+                                                <TextBlock VerticalAlignment="Center"
+                                                           FontWeight="Bold"
+                                                           Text="ACC compiler"
+                                                           TextWrapping="Wrap" />
+
+                                                <StatefulTextbox Grid.Column="1"
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.AccCompilerExecutableFilePath}">
+                                                    <StatefulTextbox.AdditionalContent>
+                                                        <Button Grid.Column="2"
+                                                                Command="{Binding PickFileCommand}"
+                                                                CommandParameter="AccCompiler"
+                                                                Classes="Tertiary"
+                                                                Theme="{DynamicResource SolidButton}"
+                                                                Padding="5 0">
+                                                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                      Classes="ExtraLarge"
+                                                                      Data="{StaticResource SemiIconFolderOpen}" />
+                                                        </Button>
+                                                    </StatefulTextbox.AdditionalContent>
+                                                </StatefulTextbox>
+                                            </Grid>
+
+                                            <!-- BCC compiler -->
+                                            <Grid ColumnDefinitions="*, 2*">
+
+                                                <TextBlock VerticalAlignment="Center"
+                                                           FontWeight="Bold"
+                                                           Text="BCC compiler"
+                                                           TextWrapping="Wrap" />
+
+                                                <StatefulTextbox Grid.Column="1"
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.BccCompilerExecutableFilePath}">
+                                                    <StatefulTextbox.AdditionalContent>
+                                                        <Button Grid.Column="2"
+                                                                Command="{Binding PickFileCommand}"
+                                                                CommandParameter="BccCompiler"
+                                                                Classes="Tertiary"
+                                                                Theme="{DynamicResource SolidButton}"
+                                                                Padding="5 0">
+                                                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                      Classes="ExtraLarge"
+                                                                      Data="{StaticResource SemiIconFolderOpen}" />
+                                                        </Button>
+                                                    </StatefulTextbox.AdditionalContent>
+                                                </StatefulTextbox>
+                                            </Grid>
+
+                                            <!-- GDCC compiler -->
+                                            <Grid ColumnDefinitions="*, 2*">
+
+                                                <TextBlock VerticalAlignment="Center"
+                                                           FontWeight="Bold"
+                                                           Text="GDCC compiler"
+                                                           TextWrapping="Wrap" />
+
+                                                <StatefulTextbox Grid.Column="1"
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.GdccCompilerExecutableFilePath}">
+                                                    <StatefulTextbox.AdditionalContent>
+                                                        <Button Grid.Column="2"
+                                                                Command="{Binding PickFileCommand}"
+                                                                CommandParameter="GdccCompiler"
+                                                                Classes="Tertiary"
+                                                                Theme="{DynamicResource SolidButton}"
+                                                                Padding="5 0">
+                                                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                      Classes="ExtraLarge"
+                                                                      Data="{StaticResource SemiIconFolderOpen}" />
+                                                        </Button>
+                                                    </StatefulTextbox.AdditionalContent>
+                                                </StatefulTextbox>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </HeaderedContentControl>
+
+                            <!-- Editors -->
+                            <HeaderedContentControl Classes="GroupBox"
+                                                    BorderBrush="Gray"
+                                                    BorderThickness="1"
+                                                    CornerRadius="4"
+                                                    Header="Editors">
+
+                                <StackPanel>
+                                    <TextBlock Classes="Tertiary"
+                                               FontSize="10"
+                                               Margin="0 -5 0 0"
+                                               Text="Overrides globally configured editors."
+                                               TextWrapping="Wrap" />
+
+                                    <Border Padding="5 10">
+
+                                        <StackPanel Spacing="10">
+
+                                            <!-- Ultimate Doombuilder executable -->
+                                            <Grid ColumnDefinitions="*, 2*">
+
+                                                <TextBlock VerticalAlignment="Center"
+                                                           FontWeight="Bold"
+                                                           Text="Ultimate DoomBuilder"
+                                                           TextWrapping="Wrap" />
+
+
+                                                <StatefulTextbox Grid.Column="1"
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.UdbExecutableFilePath}">
+                                                    <StatefulTextbox.AdditionalContent>
+                                                        <Button Grid.Column="2"
+                                                                Command="{Binding PickFileCommand}"
+                                                                CommandParameter="Udb"
+                                                                Classes="Tertiary"
+                                                                Theme="{DynamicResource SolidButton}"
+                                                                Padding="5 0">
+                                                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                      Classes="ExtraLarge"
+                                                                      Data="{StaticResource SemiIconFolderOpen}" />
+                                                        </Button>
+                                                    </StatefulTextbox.AdditionalContent>
+                                                </StatefulTextbox>
+                                            </Grid>
+
+                                            <!-- Slade executable -->
+                                            <Grid ColumnDefinitions="*, 2*">
+
+                                                <TextBlock VerticalAlignment="Center"
+                                                           FontWeight="Bold"
+                                                           Text="Slade"
+                                                           TextWrapping="Wrap" />
+
+                                                <StatefulTextbox Grid.Column="1"
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.SladeExecutableFilePath}">
+                                                    <StatefulTextbox.AdditionalContent>
+                                                        <Button Grid.Column="2"
+                                                                Command="{Binding PickFileCommand}"
+                                                                CommandParameter="Slade"
+                                                                Classes="Tertiary"
+                                                                Theme="{DynamicResource SolidButton}"
+                                                                Padding="5 0">
+                                                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                      Classes="ExtraLarge"
+                                                                      Data="{StaticResource SemiIconFolderOpen}" />
+                                                        </Button>
+                                                    </StatefulTextbox.AdditionalContent>
+                                                </StatefulTextbox>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </HeaderedContentControl>
+                            
+                            <!-- Other executables -->
+                            <HeaderedContentControl Classes="GroupBox"
+                                                    BorderBrush="Gray"
+                                                    BorderThickness="1"
+                                                    CornerRadius="4"
+                                                    Header="Other executables">
+
+                                <StackPanel>
+                                    <TextBlock Classes="Tertiary"
+                                               FontSize="10"
+                                               Margin="0 -5 0 0"
+                                               Text="Overrides globally configured executables."
+                                               TextWrapping="Wrap" />
+
+                                    <Border Padding="5 10">
+
+                                        <StackPanel Spacing="10">
+
+                                            <!-- ACS VM -->
+                                            <Grid ColumnDefinitions="*, 2*">
+
+                                                <TextBlock VerticalAlignment="Center"
+                                                           FontWeight="Bold"
+                                                           Text="ACS VM"
+                                                           TextWrapping="Wrap" />
+
+
+                                                <StatefulTextbox Grid.Column="1"
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.AcsVmExecutableFilePath}">
+                                                    <StatefulTextbox.AdditionalContent>
+                                                        <Button Grid.Column="2"
+                                                                Command="{Binding PickFileCommand}"
+                                                                CommandParameter="AcsVm"
+                                                                Classes="Tertiary"
+                                                                Theme="{DynamicResource SolidButton}"
+                                                                Padding="5 0">
+                                                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                      Classes="ExtraLarge"
+                                                                      Data="{StaticResource SemiIconFolderOpen}" />
+                                                        </Button>
+                                                    </StatefulTextbox.AdditionalContent>
+                                                </StatefulTextbox>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </HeaderedContentControl>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>
