@@ -1,0 +1,165 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:avaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="PubDoomer.Views.Pages.CodePageView"
+             x:DataType="CodePageViewModel">
+    <Design.DataContext>
+        <CodePageViewModel />
+    </Design.DataContext>
+
+    <UserControl.Resources>
+        <NullToBoolConverter x:Key="NullToBoolConverter" />
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto, *, Auto, *">
+        
+        <!-- Toolbar -->
+        <Border Background="{DynamicResource SemiForegroundBrush}" Padding="10" Margin="5" CornerRadius="6">
+            <Grid ColumnDefinitions="Auto, Auto, Auto">
+                
+                <!-- Compiler Dropdown -->
+                <ComboBox Width="150"
+                          Classes="Input"
+                          Margin="0 0 5 0"
+                          ItemsSource="{Binding AvailableCompilerTasks}"
+                          SelectedItem="{Binding SelectedCompilationTask}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                
+                <!-- Compile Button -->
+                <Button Grid.Column="1"
+                        Content="Compile"
+                        Classes="Success"
+                        Padding="5"
+                        Margin="0 0 5 0"
+                        Command="{Binding CompileCommand}" />
+                
+                <!-- Compile and Run Button -->
+                <Button Grid.Column="2"
+                        Content="Compile and run"
+                        Classes="Success"
+                        Padding="5"
+                        Margin="0 0 5 0"
+                        Command="{Binding CompileAndRunCommand}" />
+            </Grid>
+        </Border>
+
+        <!-- ACS Editor -->
+        <Border Grid.Row="1">
+            <avaloniaEdit:TextEditor SyntaxHighlighting="C#"
+                                     ShowLineNumbers="True"
+                                     Document="{Binding EditorDocument}"
+                                     FontSize="14"
+                                     HorizontalAlignment="Stretch"
+                                     VerticalAlignment="Stretch"
+                                     Background="{DynamicResource SemiBackgroundBrush}"
+                                     Foreground="{DynamicResource SemiPrimaryBrush}" />
+        </Border>
+
+        <!-- Splitter between editor and output -->
+        <GridSplitter Grid.Row="2"
+                      Height="20"
+                      Background="{DynamicResource CodeGridSplitterBackgroundBrush}"
+                      HorizontalAlignment="Stretch"
+                      ResizeDirection="Rows"
+                      ShowsPreview="True" />
+
+        <!-- Output label over the splitter -->
+        <Border Grid.Row="2"
+                Padding="5 0 0 0"
+                Height="15">
+            <Viewbox HorizontalAlignment="Left">
+                <Label Classes="Quaternary"
+                       Theme="{StaticResource TitleLabel}"
+                       Content="Output" />
+            </Viewbox>
+        </Border>
+
+        <!-- Output Window -->
+        <Border Grid.Row="3"
+                Padding="5">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding InvokedTasks}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="5" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <!-- Task name -->
+                                    <TextBlock Text="{Binding Task.Name}"
+                                               FontWeight="Bold"
+                                               VerticalAlignment="Center" />
+
+                                    <!-- Current status -->
+                                    <ContentControl Grid.Column="1"
+                                                    Content="{Binding Status}"
+                                                    ContentTemplate="{StaticResource ProfileRunTaskStatusTemplateSelector}" />
+                                </Grid>
+
+                                <!-- Result message -->
+                                <TextBlock Text="{Binding ResultMessage}"
+                                           Classes="Secondary"
+                                           Theme="{StaticResource TextBlockTheme}"
+                                           FontSize="12"
+                                           IsVisible="{Binding ResultMessage, Converter={StaticResource NullToBoolConverter}}" />
+
+                                <!-- Warnings -->
+                                <ItemsControl ItemsSource="{Binding ResultWarnings}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Spacing="2" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}"
+                                                       Classes="Warning"
+                                                       Theme="{StaticResource TextBlockTheme}"
+                                                       FontSize="10" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!-- Errors -->
+                                <ItemsControl ItemsSource="{Binding ResultErrors}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Spacing="2" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}"
+                                                       Classes="Danger"
+                                                       Theme="{StaticResource TextBlockTheme}"
+                                                       FontSize="10" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                
+                                <!-- Exception message -->
+                                <TextBlock Text="{Binding Exception.Message}"
+                                           Classes="Danger"
+                                           Theme="{StaticResource TextBlockTheme}"
+                                           FontSize="10"
+                                           IsVisible="{Binding Exception, Converter={StaticResource NullToBoolConverter}}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,0 +1,35 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="50"
+             x:Class="PubDoomer.Controls.StatefulTextbox">
+    <Grid ColumnDefinitions="*, 5, Auto">
+        <TextBox Name="PART_TextBox" />
+
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="5">
+            <ContentPresenter Name="PART_AdditionalContent" />
+
+            <Button Name="PART_ResetButton"
+                    Click="OnResetClicked"
+                    Classes="Warning"
+                    Theme="{DynamicResource SolidButton}"
+                    Padding="5 0"
+                    IsEnabled="False">
+                <PathIcon Theme="{StaticResource InnerPathIcon}"
+                          Classes="ExtraLarge"
+                          Data="{StaticResource SemiIconUndo}" />
+            </Button>
+            <Button Name="PART_SaveButton"
+                    Click="OnSaveClicked"
+                    Classes="Success"
+                    Theme="{DynamicResource SolidButton}"
+                    Padding="5 0"
+                    IsEnabled="False">
+                <PathIcon Theme="{StaticResource InnerPathIcon}"
+                          Classes="ExtraLarge"
+                          Data="{StaticResource SemiIconSave}" />
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

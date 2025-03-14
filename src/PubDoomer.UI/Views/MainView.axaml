@@ -1,0 +1,225 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="PubDoomer.Views.MainView"
+             x:DataType="MainViewModel">
+    <Design.DataContext>
+        <MainViewModel />
+    </Design.DataContext>
+
+    <UserControl.Resources>
+        <!-- Converter to convert ShowLogContainer to GridLength -->
+        <BoolToRowHeightConverter x:Key="BoolToRowHeightConverter" />
+
+        <!-- Converter to convert a null value to a boolean -->
+        <NullToBoolConverter x:Key="NullToBoolConverter" />
+
+        <!-- Converter to convert a null value or list with no count to a boolean -->
+        <NullAndCountToBoolMultiValueConverter x:Key="NullAndCountToBoolMultiValueConverter" />
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="3*" />
+            <RowDefinition Height="Auto" />
+
+            <!-- Constrain the log container row -->
+            <RowDefinition
+                Height="{Binding ShowLogContainer, Converter={StaticResource BoolToRowHeightConverter}, ConverterParameter=*}"
+                MinHeight="50"
+                MaxHeight="300" />
+        </Grid.RowDefinitions>
+
+        <SplitView IsPaneOpen="{Binding SideBarOpened}"
+                   DisplayMode="CompactInline"
+                   OpenPaneLength="160">
+
+            <!-- Sidebar -->
+            <SplitView.Pane>
+                <Grid RowDefinitions="Auto, *, Auto">
+
+                    <!-- Toggle button (Top) -->
+                    <Border Padding="4"
+                            Margin="4"
+                            HorizontalAlignment="Right">
+                        <Button Classes="Tertiary"
+                                Theme="{DynamicResource BorderlessButton}"
+                                Command="{Binding ToggleSideBarCommand}">
+                            <Grid>
+                                <PathIcon IsVisible="{Binding !SideBarOpened}"
+                                          Theme="{StaticResource InnerPathIcon}"
+                                          HorizontalAlignment="Center"
+                                          Classes="ExtraLarge"
+                                          Data="{StaticResource SemiIconArrowRight}" />
+                                <PathIcon IsVisible="{Binding SideBarOpened}"
+                                          Theme="{StaticResource InnerPathIcon}"
+                                          HorizontalAlignment="Center"
+                                          Classes="ExtraLarge"
+                                          Data="{StaticResource SemiIconArrowLeft}" />
+                            </Grid>
+                        </Button>
+                    </Border>
+
+                    <!-- Scrollable button list (Middle) -->
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  Margin="5 0 5 0">
+                        <StackPanel Spacing="20">
+
+                            <!-- Profiles. Will be disabled if no project is selected or when there are no tasks. -->
+                            <Button Classes="Success"
+                                    Theme="{DynamicResource SolidButton}"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{Binding OpenPageCommand}"
+                                    CommandParameter="Profiles">
+                                <Button.IsEnabled>
+                                    <MultiBinding Converter="{StaticResource NullAndCountToBoolMultiValueConverter}">
+                                        <Binding Path="CurrentProjectProvider.ProjectContext" />
+                                        <Binding Path="CurrentProjectProvider.ProjectContext.Tasks" />
+                                    </MultiBinding>
+                                </Button.IsEnabled>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                              HorizontalAlignment="Left"
+                                              Classes="ExtraLarge"
+                                              Margin="-5 0 10 0"
+                                              Data="{StaticResource SemiIconBeaker}" />
+                                    <Label Foreground="{DynamicResource ButtonSolidForeground}"
+                                           Content="Profiles"
+                                           VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Tasks. Will be disabled if no project is selected. -->
+                            <Button Classes="Tertiary"
+                                    Theme="{DynamicResource OutlineButton}"
+                                    HorizontalAlignment="Stretch"
+                                    IsVisible="{Binding SessionSettings.EnableEditing}"
+                                    IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
+                                    Command="{Binding OpenPageCommand}"
+                                    CommandParameter="Tasks">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                              HorizontalAlignment="Left"
+                                              Classes="ExtraLarge"
+                                              Margin="-5 0 10 0"
+                                              Data="{StaticResource SemiIconBolt}" />
+                                    <Label Classes="Tertiary"
+                                           Theme="{StaticResource TitleLabel}"
+                                           Content="Tasks"
+                                           VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Project. Will be disabled if no project is selected. -->
+                            <Button Classes="Tertiary"
+                                    Theme="{DynamicResource OutlineButton}"
+                                    HorizontalAlignment="Stretch"
+                                    IsVisible="{Binding SessionSettings.EnableEditing}"
+                                    IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
+                                    Command="{Binding OpenPageCommand}"
+                                    CommandParameter="Project">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                              HorizontalAlignment="Left"
+                                              Classes="ExtraLarge"
+                                              Margin="-5 0 10 0"
+                                              Data="{StaticResource SemiIconBox}" />
+                                    <Label Classes="Tertiary"
+                                           Theme="{StaticResource TitleLabel}"
+                                           Content="Project"
+                                           VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- Code editor -->
+                            <Button Classes="Tertiary"
+                                    Theme="{DynamicResource OutlineButton}"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{Binding OpenPageCommand}"
+                                    CommandParameter="Code">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                              HorizontalAlignment="Left"
+                                              Classes="ExtraLarge"
+                                              Margin="-5 0 10 0"
+                                              Data="{StaticResource SemiIconCode}" />
+                                    <Label Classes="Tertiary"
+                                           Theme="{StaticResource TitleLabel}"
+                                           Content="Code editor"
+                                           VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Bottom part -->
+                    <WrapPanel Grid.Row="2"
+                               HorizontalAlignment="Center">
+
+                        <!-- Edit mode toggle -->
+                        <ToggleSwitch
+                            IsChecked="{Binding SessionSettings.EnableEditing}"
+                            OffContent="Edit"
+                            OnContent="Edit"
+                            Margin="4 4 4 4" />
+
+                        <!-- Settings cog -->
+                        <Button Classes="Tertiary"
+                                Theme="{DynamicResource BorderlessButton}"
+                                Command="{Binding OpenPageCommand}"
+                                CommandParameter="Settings"
+                                Padding="4"
+                                Margin="8 0 0 0">
+                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                      Classes="ExtraLarge"
+                                      Data="{StaticResource SemiIconSetting}" />
+                        </Button>
+                    </WrapPanel>
+                </Grid>
+            </SplitView.Pane>
+
+
+            <!-- Main content -->
+            <ContentControl Content="{Binding CurrentPage}"
+                            ContentTemplate="{DynamicResource PageViewLocator}" />
+        </SplitView>
+
+        <GridSplitter Grid.Row="1"
+                      IsVisible="{Binding ShowLogContainer}"
+                      Height="20"
+                      Background="{DynamicResource LogGridSplitterBackgroundBrush}"
+					  ShowsPreview="True" />
+
+        <Border Grid.Row="1"
+                IsVisible="{Binding ShowLogContainer}"
+                Padding="5 0 0 0"
+                Height="15">
+            <Viewbox HorizontalAlignment="Left">
+                <Label Classes="Quaternary"
+                       Theme="{StaticResource TitleLabel}"
+                       Content="Logs" />
+            </Viewbox>
+        </Border>
+
+        <!-- Log, which will be shown in development environments -->
+        <Border Grid.Row="2"
+                IsVisible="{Binding ShowLogContainer}"
+                Padding="5"
+                VerticalAlignment="Top">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding Logs}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Label FontSize="8" Content="{Binding}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+
+    </Grid>
+</UserControl>

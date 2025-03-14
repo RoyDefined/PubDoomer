@@ -1,0 +1,19 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:semi="https://irihi.tech/semi"
+             x:Class="PubDoomer.App"
+             RequestedThemeVariant="Default">
+
+    <Application.Resources>
+        <PageViewLocator x:Key="PageViewLocator" />
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <DefaultTheme />
+        <semi:SemiTheme />
+        
+        <!-- AvaloniaEdit -->
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+    </Application.Styles>
+</Application>

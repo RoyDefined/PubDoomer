@@ -1,0 +1,135 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:profile="clr-namespace:PubDoomer.Project.Profile"
+        mc:Ignorable="d"
+        x:Class="PubDoomer.Views.Dialogues.CreateOrEditProfileWindow"
+        Title="{Binding WindowTitle}"
+        Width="800"
+        CanResize="False"
+        SizeToContent="Height"
+        x:DataType="CreateOrEditProfileWindowViewModel"
+        x:Name="RootWindow">
+
+    <Design.DataContext>
+        <CreateOrEditProfileWindowViewModel />
+    </Design.DataContext>
+
+    <Window.Resources>
+        <!-- Converter to convert an enum value to its description -->
+        <EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+    </Window.Resources>
+
+    <Border Padding="20">
+        <StackPanel Spacing="10">
+
+            <!-- Profile name -->
+            <Grid ColumnDefinitions="120, *" HorizontalAlignment="Stretch">
+                <TextBlock Text="Profile Name:"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center" />
+                <TextBox Grid.Column="1" Text="{Binding CurrentProfileContext.Name, Mode=TwoWay}" />
+            </Grid>
+
+            <!-- Profile tasks -->
+            <StackPanel Spacing="10">
+
+                <!-- Header, tasks and add button -->
+                <Grid ColumnDefinitions="120, *, Auto" HorizontalAlignment="Stretch">
+                    <TextBlock Text="Tasks"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center" />
+
+                    <!-- Task dropdown -->
+                    <ComboBox Grid.Column="1"
+                              Margin="0 0 10 0"
+                              HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding ProjectContext.Tasks}"
+                              SelectedItem="{Binding CurrentTask, Mode=TwoWay}">
+
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <Button Grid.Column="2"
+                            Command="{Binding AddTaskCommand}"
+                            Classes="Success"
+                            Theme="{DynamicResource BorderlessButton}"
+                            Padding="5 0">
+                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                  Classes="ExtraLarge"
+                                  Data="{StaticResource SemiIconPlusCircle}" />
+                    </Button>
+                </Grid>
+
+                <!-- Task list -->
+                <ItemsControl ItemsSource="{Binding CurrentProfileContext.Tasks}">
+                    <ItemsControl.DataTemplates>
+
+                        <!-- General DataTemplate for ProfileTask -->
+                        <DataTemplate DataType="{x:Type profile:ProfileTask}">
+                            <Border Margin="0 0 0 5"
+                                    Padding="5"
+                                    Background="{DynamicResource SemiGrey0}">
+                                <Grid ColumnDefinitions="*, *, Auto" VerticalAlignment="Center">
+
+                                    <!-- Task Key -->
+                                    <TextBlock Text="{Binding Task.Name}"
+                                               FontWeight="Bold"
+                                               VerticalAlignment="Center"
+                                               Margin="0 0 10 0"/>
+
+                                    <!-- Error Behavior Dropdown -->
+                                    <ComboBox Grid.Column="1"
+                                              Margin="0 0 5 0"
+                                              HorizontalAlignment="Stretch"
+                                              ItemsSource="{x:Static profile:ProfileTaskErrorBehaviourCollectionProvider.Result}"
+                                              SelectedItem="{Binding Behaviour, Mode=TwoWay}">
+
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock
+                                                    Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+
+                                    <!-- Delete Button -->
+                                    <Button Grid.Column="2"
+                                            Theme="{DynamicResource BorderlessButton}"
+                                            Classes="Danger"
+                                            Padding="5 0"
+                                            Command="{Binding #RootWindow.((CreateOrEditProfileWindowViewModel)DataContext).RemoveTaskCommand}"
+                                            CommandParameter="{Binding}">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconDelete}" />
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.DataTemplates>
+                </ItemsControl>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="10">
+                <Button Content="Cancel"
+                        Classes="Danger"
+                        Theme="{DynamicResource SolidButton}"
+                        Click="CancelFormButton_OnClick" />
+
+                <Button Content="{Binding CreateOrEditButtonText}"
+                        IsEnabled="{Binding FormIsValid}"
+                        Classes="Success"
+                        Theme="{DynamicResource SolidButton}"
+                        Click="FinishFormButton_OnClick" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

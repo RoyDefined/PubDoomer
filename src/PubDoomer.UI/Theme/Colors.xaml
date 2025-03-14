@@ -1,0 +1,38 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <BoxShadows x:Key="WindowChromeShadow">0 0 5 0 #A7ABB0</BoxShadows>
+            <LinearGradientBrush x:Key="LogGridSplitterBackgroundBrush" StartPoint="0%, 0%" EndPoint="100%, 0%">
+                <GradientStop Offset="0" Color="#F9F9F9" />
+                <GradientStop Offset="1" Color="#E6E8EA" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="CodeGridSplitterBackgroundBrush" StartPoint="0%, 0%" EndPoint="100%, 0%">
+                <GradientStop Offset="0" Color="#F9F9F9" />
+                <GradientStop Offset="1" Color="#E6E8EA" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="ExecuteProfileGridSplitterBackgroundBrush" StartPoint="0%, 0%"
+                                 EndPoint="100%, 0%">
+                <GradientStop Offset="0" Color="#F9F9F9" />
+                <GradientStop Offset="1" Color="#E6E8EA" />
+            </LinearGradientBrush>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+            <BoxShadows x:Key="WindowChromeShadow">0 0 5 0 #2E3238</BoxShadows>
+            <LinearGradientBrush x:Key="LogGridSplitterBackgroundBrush" StartPoint="0%, 0%" EndPoint="100%, 0%">
+                <GradientStop Offset="0" Color="#2E3238" />
+                <GradientStop Offset="1" Color="#1C1F23" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="CodeGridSplitterBackgroundBrush" StartPoint="0%, 0%" EndPoint="100%, 0%">
+                <GradientStop Offset="0" Color="#2E3238" />
+                <GradientStop Offset="1" Color="#1C1F23" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="ExecuteProfileGridSplitterBackgroundBrush" StartPoint="0%, 0%"
+                                 EndPoint="100%, 0%">
+                <GradientStop Offset="0" Color="#2E3238" />
+                <GradientStop Offset="1" Color="#1C1F23" />
+            </LinearGradientBrush>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+</ResourceDictionary>

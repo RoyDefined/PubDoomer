@@ -1,0 +1,12 @@
+<Project>
+	<PropertyGroup>
+		<Authors>RoyDefined</Authors>
+		<RepositoryUrl>https://github.com/RoyDefined/PubDoomer</RepositoryUrl>
+		<PackageProjectUrl>https://roydefined.com/</PackageProjectUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+		<Copyright>Copyright (c) RoyDefinedProjects 2025</Copyright>
+		<PackageTags>doom,acs,decorate,parser,parsing,lexer,tokenizer,code,reader,editor,ui,gui,avalonia</PackageTags>
+		<NeutralLanguage>en</NeutralLanguage>
+	</PropertyGroup>
+</Project>

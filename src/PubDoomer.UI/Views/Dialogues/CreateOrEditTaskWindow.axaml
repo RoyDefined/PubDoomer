@@ -1,0 +1,311 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:tasks="clr-namespace:PubDoomer.Project.Tasks"
+        mc:Ignorable="d"
+        x:Class="PubDoomer.Views.Dialogues.CreateOrEditTaskWindow"
+        Title="{Binding WindowTitle}"
+        Width="400"
+        CanResize="False"
+        SizeToContent="Height"
+        x:DataType="CreateOrEditTaskWindowViewModel"
+        x:Name="RootWindow">
+
+    <Design.DataContext>
+        <CreateOrEditTaskWindowViewModel />
+    </Design.DataContext>
+
+    <Window.Resources>
+        <!-- Converter to convert a null value to a boolean -->
+        <NullToBoolConverter x:Key="NullToBoolConverter" />
+    </Window.Resources>
+
+    <Border Padding="20">
+        <StackPanel Spacing="10">
+
+            <!-- Task Type Selection -->
+            <Grid ColumnDefinitions="*, 3.5*">
+                <TextBlock FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Text="Task Type" />
+                <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableTaskTypes}"
+                          SelectedItem="{Binding CurrentTask}"
+                          HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Grid>
+            
+            <!-- Task description -->
+            <TextBlock Classes="Tertiary"
+                       FontSize="10"
+                       Margin="0 -5 0 0"
+                       HorizontalAlignment="Stretch"
+                       IsVisible="{Binding CurrentTask, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
+                       Text="{Binding CurrentTask.Description}" />
+
+            <!-- The name of the task -->
+            <Grid ColumnDefinitions="*, 2.5*"
+                  HorizontalAlignment="Stretch"
+                  IsVisible="{Binding CurrentTask, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}">
+                <TextBlock FontWeight="Bold"
+                           VerticalAlignment="Center"
+                           Text="Name" />
+                <TextBox Grid.Column="1"
+                         HorizontalAlignment="Stretch"
+                         Text="{Binding CurrentTask.Name}" />
+            </Grid>
+
+            <!-- Dynamically added body depending on the task type. -->
+            <ContentControl Content="{Binding CurrentTask}"
+                            IsVisible="{Binding CurrentTask, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}">
+
+                <ContentControl.DataTemplates>
+
+                    <!-- DataTemplate for AccCompileTask -->
+                    <DataTemplate DataType="{x:Type tasks:AccCompileTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Input path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Input Path:"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding InputFilePath}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <Button.CommandParameter>
+                                            <TaskCreateDialogueFilePickerType CompilerType="acc" FileType="input" />
+                                        </Button.CommandParameter>
+                                        
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Output path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Output Path:"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding OutputFilePath}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <Button.CommandParameter>
+                                            <TaskCreateDialogueFilePickerType CompilerType="acc" FileType="output" />
+                                        </Button.CommandParameter>
+                                        
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <StackPanel Spacing="2">
+                                
+                                <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
+                                <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
+                                          IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
+                                
+                                <StackPanel>
+                                    <!-- If `true`, keep the 'acs.err' file if finished but with a compile error that generated it. -->
+                                    <CheckBox Content="Keep 'acs.err' if finished with a compile error."
+                                              IsChecked="{Binding KeepAccErrFile}" />
+                                
+                                    <!-- Additional clarification regarding the 'acs.err' file. -->
+                                    <TextBlock Classes="Tertiary"
+                                               FontSize="10"
+                                               Margin="25 0 0 0"
+                                               HorizontalAlignment="Stretch"
+                                               TextWrapping="Wrap"
+                                               Text="NOTE: Concurrent ACC compilation tasks always remove the 'acs.err' file by design. The tool will rename this file when running concurrent compilation to avoid this." />
+                                </StackPanel>
+                                
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for BccCompileTask -->
+                    <DataTemplate DataType="{x:Type tasks:BccCompileTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Input path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Input Path:"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding InputFilePath}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <Button.CommandParameter>
+                                            <TaskCreateDialogueFilePickerType CompilerType="bcc" FileType="input" />
+                                        </Button.CommandParameter>
+                                        
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Output path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Output Path:"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding OutputFilePath}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <Button.CommandParameter>
+                                            <TaskCreateDialogueFilePickerType CompilerType="bcc" FileType="output" />
+                                        </Button.CommandParameter>
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            
+                            <StackPanel Spacing="2">
+                                
+                                <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
+                                <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
+                                          IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for GdccCompileTask -->
+                    <DataTemplate DataType="{x:Type tasks:GdccAccCompileTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Input path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Input Path:"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding InputFilePath}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <Button.CommandParameter>
+                                            <TaskCreateDialogueFilePickerType CompilerType="gdccacc" FileType="input" />
+                                        </Button.CommandParameter>
+                                        
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Output path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Output Path:"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding OutputFilePath}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <Button.CommandParameter>
+                                            <TaskCreateDialogueFilePickerType CompilerType="gdccacc" FileType="output" />
+                                        </Button.CommandParameter>
+                                        
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            
+                            <StackPanel Spacing="2">
+                                
+                                <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
+                                <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
+                                          IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
+                                
+                                <!-- If `true`, don't warn about forward references. -->
+                                <CheckBox Content="Don't warn about forward references."
+                                          IsChecked="{Binding DontWarnForwardReferences}" />
+
+                                
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ContentControl.DataTemplates>
+            </ContentControl>
+
+            <!-- Submit buttons -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="10">
+                <Button Content="Cancel"
+                        Classes="Danger"
+                        Theme="{DynamicResource SolidButton}"
+                        Click="FormButtonCanceled_OnClick" />
+
+                <Button Content="{Binding CreateOrEditButtonText}"
+                        IsEnabled="{Binding FormIsValid}"
+                        Classes="Success"
+                        Theme="{DynamicResource SolidButton}"
+                        Click="FormButtonSuccess_OnClick" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>
