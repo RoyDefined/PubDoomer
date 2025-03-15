@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Project.Archive;
 using PubDoomer.Project.Profile;
 using PubDoomer.Project.Tasks;
 
@@ -25,15 +26,18 @@ public partial class ProjectContext : ObservableObject
     [ObservableProperty] [property: JsonIgnore]
     private Uri? _filePath;
 
-
     [ObservableProperty] private string? _name;
     [ObservableProperty] private ObservableCollection<ProfileContext> _profiles;
     [ObservableProperty] private ObservableCollection<ProjectTaskBase> _tasks;
+    
+    // Configurable locations of archives.
+    [ObservableProperty] private ObservableCollection<ArchiveContext> _archives;
 
     public ProjectContext()
     {
         Tasks = [];
         Profiles = [];
+        Archives = [];
     }
 
     public void AddTask(ProjectTaskBase task)

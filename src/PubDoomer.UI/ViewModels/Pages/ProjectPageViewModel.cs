@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using PubDoomer.Project;
+using PubDoomer.Project.Archive;
 using PubDoomer.Services;
 
 namespace PubDoomer.ViewModels.Pages;
@@ -50,6 +51,13 @@ public partial class ProjectPageViewModel : PageViewModel
     }
     
     public CurrentProjectProvider CurrentProjectProvider { get; }
+
+    [RelayCommand]
+    private void AddArchive()
+    {
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        CurrentProjectProvider.ProjectContext.Archives.Add(new ArchiveContext());
+    }
 
     [RelayCommand]
     private async Task PickFileAsync(string type)

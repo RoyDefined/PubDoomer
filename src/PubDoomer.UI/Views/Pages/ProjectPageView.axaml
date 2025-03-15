@@ -58,6 +58,71 @@
                                     <StatefulTextbox Text="{Binding CurrentProjectProvider.ProjectContext.Name, Mode=TwoWay}" />
                                 </Border>
                             </HeaderedContentControl>
+                            
+                            <!-- Archives -->
+                            <HeaderedContentControl Classes="GroupBox"
+                                                    BorderBrush="Gray"
+                                                    BorderThickness="1"
+                                                    CornerRadius="4"
+                                                    Header="Archives">
+
+                                <StackPanel>
+                                    <Button HorizontalAlignment="Left"
+                                            Command="{Binding AddArchiveCommand}"
+                                            Classes="Success"
+                                            Theme="{DynamicResource BorderlessButton}"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconPlusCircle}" />
+                                    </Button>
+                                    
+                                    <Border Padding="5 10">
+                                    
+                                        <ItemsControl ItemsSource="{Binding CurrentProjectProvider.ProjectContext.Archives}">
+                                            <ItemsControl.ItemsPanel>
+
+                                                <!-- Spaced layout -->
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Spacing="15" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Spacing="5">
+                                                        <!-- Archive name -->
+                                                        <Grid ColumnDefinitions="*, 3*">
+
+                                                            <TextBlock VerticalAlignment="Center"
+                                                                       FontWeight="Bold"
+                                                                       Text="Name"
+                                                                       TextWrapping="Wrap" />
+
+                                                            <StatefulTextbox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" />
+                                                        </Grid>
+                                                        
+                                                        <!-- Archive path -->
+                                                        <Grid ColumnDefinitions="*, 3*">
+
+                                                            <TextBlock VerticalAlignment="Center"
+                                                                       FontWeight="Bold"
+                                                                       Text="Path"
+                                                                       TextWrapping="Wrap" />
+
+                                                            <StatefulTextbox Grid.Column="1" Text="{Binding Path, Mode=TwoWay}" />
+                                                        </Grid>
+                                                        
+                                                        <!-- Exclude from testin parameters and testing in general -->
+                                                        <CheckBox IsChecked="{Binding ExcludeFromTesting, Mode=TwoWay}"
+                                                                  Content="Exclude this archive from testing parameters."/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Border>
+                                </StackPanel>
+                            </HeaderedContentControl>
                         </StackPanel>
 
                         <GridSplitter Grid.Column="1" ShowsPreview="True" />
