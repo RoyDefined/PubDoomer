@@ -107,35 +107,35 @@
                                                         </Border>
                                                         
                                                         <!-- Right part -->
-                                                    <StackPanel Grid.Column="1"
-                                                                Spacing="5">
-                                                        
-                                                        <!-- Archive name -->
-                                                        <Grid ColumnDefinitions="60, *">
+                                                        <StackPanel Grid.Column="1"
+                                                                    Spacing="5">
+                                                            
+                                                            <!-- Archive name -->
+                                                            <Grid ColumnDefinitions="60, *">
 
-                                                            <TextBlock VerticalAlignment="Center"
-                                                                       FontWeight="Bold"
-                                                                       Text="Name"
-                                                                       TextWrapping="Wrap" />
+                                                                <TextBlock VerticalAlignment="Center"
+                                                                           FontWeight="Bold"
+                                                                           Text="Name"
+                                                                           TextWrapping="Wrap" />
 
-                                                            <StatefulTextbox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" />
-                                                        </Grid>
-                                                        
-                                                        <!-- Archive path -->
-                                                        <Grid ColumnDefinitions="60, *">
+                                                                <StatefulTextbox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" />
+                                                            </Grid>
+                                                            
+                                                            <!-- Archive path -->
+                                                            <Grid ColumnDefinitions="60, *">
 
-                                                            <TextBlock VerticalAlignment="Center"
-                                                                       FontWeight="Bold"
-                                                                       Text="Path"
-                                                                       TextWrapping="Wrap" />
+                                                                <TextBlock VerticalAlignment="Center"
+                                                                           FontWeight="Bold"
+                                                                           Text="Path"
+                                                                           TextWrapping="Wrap" />
 
-                                                            <StatefulTextbox Grid.Column="1" Text="{Binding Path, Mode=TwoWay}" />
-                                                        </Grid>
-                                                        
-                                                        <!-- Exclude from testin parameters and testing in general -->
-                                                        <CheckBox IsChecked="{Binding ExcludeFromTesting, Mode=TwoWay}"
-                                                                  Content="Exclude this archive from testing parameters."/>
-                                                    </StackPanel>
+                                                                <StatefulTextbox Grid.Column="1" Text="{Binding Path, Mode=TwoWay}" />
+                                                            </Grid>
+                                                            
+                                                            <!-- Exclude from testin parameters and testing in general -->
+                                                            <CheckBox IsChecked="{Binding ExcludeFromTesting, Mode=TwoWay}"
+                                                                      Content="Exclude this archive from testing parameters."/>
+                                                        </StackPanel>
                                                     </Grid>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
