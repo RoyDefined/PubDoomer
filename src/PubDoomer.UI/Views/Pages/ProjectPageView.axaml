@@ -27,8 +27,11 @@
                                Theme="{StaticResource TitleTextBlock}"
                                Classes="Tertiary"
                                FontSize="10"
-                               TextWrapping="Wrap"
-                               Text="Project settings are saved when you save the project as a whole." />
+                               TextWrapping="Wrap">
+                        Project settings are saved when you save the project as a whole.
+                        <LineBreak />
+                        Setting on this tab override similar configured settings in the settings tab.
+                    </TextBlock>
                 </Grid>
                 
                 <!-- TODO: Add a max width for the labels so they do not keep taking space when the text is already no longer wrapped -->
@@ -164,12 +167,6 @@
                                                     Header="Compilers">
 
                                 <StackPanel>
-                                    <TextBlock Classes="Tertiary"
-                                               FontSize="10"
-                                               Margin="0 -5 0 0"
-                                               Text="Overrides globally configured compilers."
-                                               TextWrapping="Wrap" />
-
                                     <Border Padding="5 10">
 
                                         <StackPanel Spacing="10">
@@ -261,12 +258,6 @@
                                                     Header="Editors">
 
                                 <StackPanel>
-                                    <TextBlock Classes="Tertiary"
-                                               FontSize="10"
-                                               Margin="0 -5 0 0"
-                                               Text="Overrides globally configured editors."
-                                               TextWrapping="Wrap" />
-
                                     <Border Padding="5 10">
 
                                         <StackPanel Spacing="10">
@@ -334,12 +325,6 @@
                                                     Header="Other executables">
 
                                 <StackPanel>
-                                    <TextBlock Classes="Tertiary"
-                                               FontSize="10"
-                                               Margin="0 -5 0 0"
-                                               Text="Overrides globally configured executables."
-                                               TextWrapping="Wrap" />
-
                                     <Border Padding="5 10">
 
                                         <StackPanel Spacing="10">
