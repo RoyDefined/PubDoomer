@@ -221,8 +221,14 @@ public partial class ProfilesPageViewModel : PageViewModel
     [RelayCommand]
     private async Task DeleteProfileAsync(ProfileContext profileContext)
     {
-        if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        
+        // In design mode we delete without a prompt.
+        if (AssertInDesignMode())
+        {
+            CurrentProjectProvider.ProjectContext.Profiles.Remove(profileContext);
+            return;
+        }
 
         var result = await _dialogueProvider.PromptAsync(
             AlertType.Warning,
