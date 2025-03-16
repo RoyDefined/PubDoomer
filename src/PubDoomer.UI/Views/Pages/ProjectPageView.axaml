@@ -67,6 +67,12 @@
                                                     Header="Archives">
 
                                 <StackPanel>
+                                    <TextBlock Classes="Tertiary"
+                                               FontSize="10"
+                                               Margin="0 -5 0 0"
+                                               Text="Defined archives are used during testing and when editing maps."
+                                               TextWrapping="Wrap" />
+                                    
                                     <Button HorizontalAlignment="Left"
                                             Command="{Binding AddArchiveCommand}"
                                             Classes="Success"
