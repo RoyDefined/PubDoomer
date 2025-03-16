@@ -86,69 +86,71 @@
                                                   Data="{StaticResource SemiIconPlusCircle}" />
                                     </Button>
                                     
-                                    <Border Padding="5 10">
+                                    <Border Padding="5 10" MaxHeight="400">
                                     
-                                        <ItemsControl ItemsSource="{Binding CurrentProjectProvider.ProjectContext.Archives}">
-                                            <ItemsControl.ItemsPanel>
+                                        <ScrollViewer>
+                                            <ItemsControl ItemsSource="{Binding CurrentProjectProvider.ProjectContext.Archives}">
+                                                <ItemsControl.ItemsPanel>
 
-                                                <!-- Spaced layout -->
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Spacing="15" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
+                                                    <!-- Spaced layout -->
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Spacing="15" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
 
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    
-                                                    <Grid ColumnDefinitions="Auto, *">
-                                                        <!-- Left part -->
-                                                        <Border Margin="0 0 5 0">
-                                                            <Button  Command="{Binding $parent[UserControl].((ProjectPageViewModel)DataContext).DeleteArchiveCommand}"
-                                                                     CommandParameter="{Binding}"
-                                                                     Theme="{DynamicResource BorderlessButton}"
-                                                                     Classes="Danger"
-                                                                     Padding="5 0"
-                                                                     VerticalAlignment="Top">
-                                                                <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                                                          Classes="ExtraLarge"
-                                                                          Data="{StaticResource SemiIconDelete}" />
-                                                            </Button>
-                                                        </Border>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
                                                         
-                                                        <!-- Right part -->
-                                                        <StackPanel Grid.Column="1"
-                                                                    Spacing="5">
+                                                        <Grid ColumnDefinitions="Auto, *">
+                                                            <!-- Left part -->
+                                                            <Border Margin="0 0 5 0">
+                                                                <Button  Command="{Binding $parent[UserControl].((ProjectPageViewModel)DataContext).DeleteArchiveCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         Theme="{DynamicResource BorderlessButton}"
+                                                                         Classes="Danger"
+                                                                         Padding="5 0"
+                                                                         VerticalAlignment="Top">
+                                                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                              Classes="ExtraLarge"
+                                                                              Data="{StaticResource SemiIconDelete}" />
+                                                                </Button>
+                                                            </Border>
                                                             
-                                                            <!-- Archive name -->
-                                                            <Grid ColumnDefinitions="60, *">
+                                                            <!-- Right part -->
+                                                            <StackPanel Grid.Column="1"
+                                                                        Spacing="5">
+                                                                
+                                                                <!-- Archive name -->
+                                                                <Grid ColumnDefinitions="60, *">
 
-                                                                <TextBlock VerticalAlignment="Center"
-                                                                           FontWeight="Bold"
-                                                                           Text="Name"
-                                                                           TextWrapping="Wrap" />
+                                                                    <TextBlock VerticalAlignment="Center"
+                                                                               FontWeight="Bold"
+                                                                               Text="Name"
+                                                                               TextWrapping="Wrap" />
 
-                                                                <StatefulTextbox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" />
-                                                            </Grid>
-                                                            
-                                                            <!-- Archive path -->
-                                                            <Grid ColumnDefinitions="60, *">
+                                                                    <StatefulTextbox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" />
+                                                                </Grid>
+                                                                
+                                                                <!-- Archive path -->
+                                                                <Grid ColumnDefinitions="60, *">
 
-                                                                <TextBlock VerticalAlignment="Center"
-                                                                           FontWeight="Bold"
-                                                                           Text="Path"
-                                                                           TextWrapping="Wrap" />
+                                                                    <TextBlock VerticalAlignment="Center"
+                                                                               FontWeight="Bold"
+                                                                               Text="Path"
+                                                                               TextWrapping="Wrap" />
 
-                                                                <StatefulTextbox Grid.Column="1" Text="{Binding Path, Mode=TwoWay}" />
-                                                            </Grid>
-                                                            
-                                                            <!-- Exclude from testin parameters and testing in general -->
-                                                            <CheckBox IsChecked="{Binding ExcludeFromTesting, Mode=TwoWay}"
-                                                                      Content="Exclude this archive from testing parameters."/>
-                                                        </StackPanel>
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
+                                                                    <StatefulTextbox Grid.Column="1" Text="{Binding Path, Mode=TwoWay}" />
+                                                                </Grid>
+                                                                
+                                                                <!-- Exclude from testin parameters and testing in general -->
+                                                                <CheckBox IsChecked="{Binding ExcludeFromTesting, Mode=TwoWay}"
+                                                                          Content="Exclude this archive from testing parameters."/>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
                                     </Border>
                                 </StackPanel>
                             </HeaderedContentControl>
