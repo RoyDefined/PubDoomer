@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Notifications;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using PubDoomer.Project;
 using PubDoomer.Project.Archive;
 using PubDoomer.Services;
+using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
 
@@ -29,6 +31,8 @@ public partial class ProjectPageViewModel : PageViewModel
 
     private readonly ILogger _logger;
     private readonly WindowProvider? _windowProvider;
+    private readonly WindowNotificationManager? _notificationManager;
+    private readonly DialogueProvider? _dialogueProvider;
 
     public ProjectPageViewModel()
     {
@@ -41,11 +45,15 @@ public partial class ProjectPageViewModel : PageViewModel
     public ProjectPageViewModel(
         ILogger<ProjectPageViewModel> logger,
         CurrentProjectProvider currentProjectProvider,
-        WindowProvider windowProvider)
+        WindowProvider windowProvider,
+        WindowNotificationManager notificationManager,
+        DialogueProvider dialogueProvider)
     {
         _logger = logger;
         CurrentProjectProvider = currentProjectProvider;
         _windowProvider = windowProvider;
+        _notificationManager = notificationManager;
+        _dialogueProvider = dialogueProvider;
 
         _logger.LogDebug("Created.");
     }
@@ -57,6 +65,33 @@ public partial class ProjectPageViewModel : PageViewModel
     {
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         CurrentProjectProvider.ProjectContext.Archives.Add(new ArchiveContext());
+    }
+
+    [RelayCommand]
+    private async Task DeleteArchiveAsync(ArchiveContext context)
+    {
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+
+        // In design mode we delete without a prompt.
+        if (AssertInDesignMode())
+        {
+            CurrentProjectProvider.ProjectContext.Archives.Remove(context);
+            return;
+        }
+        
+        var result = await _dialogueProvider.PromptAsync(
+            AlertType.Warning,
+            "Delete profile",
+            "Are you sure you want to delete this archive?",
+            "The archive will be deleted and you will have to readd it.",
+            new InformationalWindowButton(AlertType.None, "Cancel"),
+            new InformationalWindowButton(AlertType.Error, "Delete"));
+
+        if (!result) return;
+
+        CurrentProjectProvider.ProjectContext.Archives.Remove(context);
+        _notificationManager?.Show(new Notification("Archive deleted", "The archive has been deleted.",
+            NotificationType.Success));
     }
 
     [RelayCommand]
@@ -102,7 +137,7 @@ public partial class ProjectPageViewModel : PageViewModel
         }
     }
 
-    [MemberNotNullWhen(false, nameof(_windowProvider))]
+    [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_dialogueProvider), nameof(_notificationManager))]
     private bool AssertInDesignMode()
     {
         return Design.IsDesignMode;

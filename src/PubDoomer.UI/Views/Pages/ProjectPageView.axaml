@@ -90,7 +90,26 @@
 
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <StackPanel Spacing="5">
+                                                    
+                                                    <Grid ColumnDefinitions="Auto, *">
+                                                        <!-- Left part -->
+                                                        <Border Margin="0 0 5 0">
+                                                            <Button  Command="{Binding $parent[UserControl].((ProjectPageViewModel)DataContext).DeleteArchiveCommand}"
+                                                                     CommandParameter="{Binding}"
+                                                                     Theme="{DynamicResource BorderlessButton}"
+                                                                     Classes="Danger"
+                                                                     Padding="5 0"
+                                                                     VerticalAlignment="Top">
+                                                                <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                          Classes="ExtraLarge"
+                                                                          Data="{StaticResource SemiIconDelete}" />
+                                                            </Button>
+                                                        </Border>
+                                                        
+                                                        <!-- Right part -->
+                                                    <StackPanel Grid.Column="1"
+                                                                Spacing="5">
+                                                        
                                                         <!-- Archive name -->
                                                         <Grid ColumnDefinitions="*, 3*">
 
@@ -117,6 +136,7 @@
                                                         <CheckBox IsChecked="{Binding ExcludeFromTesting, Mode=TwoWay}"
                                                                   Content="Exclude this archive from testing parameters."/>
                                                     </StackPanel>
+                                                    </Grid>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
