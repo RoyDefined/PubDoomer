@@ -111,7 +111,7 @@
                                                                 Spacing="5">
                                                         
                                                         <!-- Archive name -->
-                                                        <Grid ColumnDefinitions="*, 3*">
+                                                        <Grid ColumnDefinitions="60, *">
 
                                                             <TextBlock VerticalAlignment="Center"
                                                                        FontWeight="Bold"
@@ -122,7 +122,7 @@
                                                         </Grid>
                                                         
                                                         <!-- Archive path -->
-                                                        <Grid ColumnDefinitions="*, 3*">
+                                                        <Grid ColumnDefinitions="60, *">
 
                                                             <TextBlock VerticalAlignment="Center"
                                                                        FontWeight="Bold"
@@ -169,7 +169,7 @@
                                         <StackPanel Spacing="10">
 
                                             <!-- ACC compiler -->
-                                            <Grid ColumnDefinitions="*, 2*">
+                                            <Grid ColumnDefinitions="115, *">
 
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"
@@ -194,7 +194,7 @@
                                             </Grid>
 
                                             <!-- BCC compiler -->
-                                            <Grid ColumnDefinitions="*, 2*">
+                                            <Grid ColumnDefinitions="115, *">
 
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"
@@ -219,7 +219,7 @@
                                             </Grid>
 
                                             <!-- GDCC compiler -->
-                                            <Grid ColumnDefinitions="*, 2*">
+                                            <Grid ColumnDefinitions="115, *">
 
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"
@@ -266,7 +266,7 @@
                                         <StackPanel Spacing="10">
 
                                             <!-- Ultimate Doombuilder executable -->
-                                            <Grid ColumnDefinitions="*, 2*">
+                                            <Grid ColumnDefinitions="115, *">
 
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"
@@ -292,7 +292,7 @@
                                             </Grid>
 
                                             <!-- Slade executable -->
-                                            <Grid ColumnDefinitions="*, 2*">
+                                            <Grid ColumnDefinitions="115, *">
 
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"
@@ -339,7 +339,7 @@
                                         <StackPanel Spacing="10">
 
                                             <!-- ACS VM -->
-                                            <Grid ColumnDefinitions="*, 2*">
+                                            <Grid ColumnDefinitions="115, *">
 
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"
