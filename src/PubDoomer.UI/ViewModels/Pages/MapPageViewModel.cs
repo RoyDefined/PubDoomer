@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using PubDoomer.Project;
+using PubDoomer.Project.Maps;
 
 namespace PubDoomer.ViewModels.Pages;
 
-public class MapPageViewModel : PageViewModel
+public partial class MapPageViewModel : PageViewModel
 {
     private readonly ILogger _logger;
 
@@ -28,5 +31,11 @@ public class MapPageViewModel : PageViewModel
         CurrentProjectProvider = currentProjectProvider;
         
         _logger.LogDebug("Created.");
+    }
+
+    [RelayCommand]
+    public async Task EditMapAsync(MapContext map)
+    {
+        // TODO
     }
 }

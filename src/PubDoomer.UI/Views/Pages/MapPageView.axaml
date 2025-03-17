@@ -89,7 +89,9 @@
                                         </Button>
                                         
                                         <Button Theme="{DynamicResource SolidButton}"
-                                                Classes="Secondary">
+                                                Classes="Secondary"
+                                                Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).EditMapCommand}"
+                                                CommandParameter="{Binding}">
                                             <StackPanel Orientation="Horizontal" Spacing="10">
                                                 <Image Source="/Assets/editor-udb.png"
                                                        Width="16"
