@@ -11,7 +11,7 @@
 
     <Border Padding="10">
         <Grid RowDefinitions="Auto, *">
-            <Grid>
+            <Grid Margin="0 0 0 15">
                 
                 <!-- Add map(s) -->
                 <Button HorizontalAlignment="Left"
