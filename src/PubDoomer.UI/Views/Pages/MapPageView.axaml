@@ -9,17 +9,90 @@
         <MapPageViewModel />
     </Design.DataContext>
 
-    <StackPanel>
+    <Border Padding="10">
+        <Grid RowDefinitions="Auto, *">
+            <Grid>
+                
+                <!-- Add map(s) -->
+                <Button HorizontalAlignment="Left"
+                        IsVisible="{Binding $parent[UserControl].((TasksPageViewModel)DataContext).SessionSettings.EnableEditing}"
+                        Classes="Success"
+                        Theme="{DynamicResource BorderlessButton}"
+                        Padding="5 0">
+                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                              Classes="ExtraLarge"
+                              Data="{StaticResource SemiIconPlusCircle}" />
+                </Button>
 
-        <!-- Header -->
-        <Border HorizontalAlignment="Center" Padding="15">
+                <!-- Title -->
+                <Label Classes="H3"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Theme="{StaticResource TitleLabel}"
+                       Content="Maps" />
+            </Grid>
 
-            <Label Classes="H3"
-                   VerticalAlignment="Center"
-                   Theme="{StaticResource TitleLabel}"
-                   Content="Maps" />
-        </Border>
+            <!-- Map List Display -->
+            <ScrollViewer Grid.Row="1">
+                <ItemsControl ItemsSource="{Binding CurrentProjectProvider.ProjectContext.Maps}">
+                    <ItemsControl.ItemsPanel>
 
-        <!-- Content -->
-    </StackPanel>
+                        <!-- Spaced layout -->
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="10" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+
+                            <Border BorderBrush="Gray" BorderThickness="1" Padding="10">
+                                <Grid ColumnDefinitions="*, Auto">
+
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="10">
+                                            
+                                            <!-- Map lump name -->
+                                            <TextBlock Text="{Binding MapLumpName}"
+                                                       FontSize="8"
+                                                       Classes="Secondary"
+                                                       VerticalAlignment="Center"
+                                                       Theme="{DynamicResource TextBlockTheme}" />
+
+                                            <!-- Map Name -->
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                        </StackPanel>
+                                        
+                                        <!-- Map path -->
+                                        <TextBlock Text="{Binding Path}"
+                                                   FontSize="12" Foreground="Gray" />
+                                    </StackPanel>
+
+                                    <!-- Run/Edit/Edit/Delete map button -->
+                                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                                Orientation="Horizontal"
+                                                Spacing="10">
+
+                                        <Button Classes="Secondary"
+                                                Content="Run map" />
+                                        
+                                        <Button Classes="Secondary"
+                                                Content="Edit map" />
+                                        
+                                        <Button Classes="Warning"
+                                                Content="Edit" />
+                                        
+                                        <Button Classes="Danger"
+                                                Content="Delete" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+        </Grid>
+    </Border>
 </UserControl>
