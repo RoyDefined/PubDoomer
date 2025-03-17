@@ -11,6 +11,7 @@ using PubDoomer.Project;
 using PubDoomer.Project.Maps;
 using PubDoomer.Saving;
 using PubDoomer.Services;
+using PubDoomer.Utils;
 using PubDoomer.Utils.MergedSettings;
 using PubDoomer.ViewModels.Dialogues;
 using PubDoomer.Views.Dialogues;
@@ -82,6 +83,7 @@ public partial class MapPageViewModel : PageViewModel
     private async Task EditMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         
         // Get the current settings context so we can determine the location of Ultimate Doombuilder.
         var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, _settings);
@@ -96,7 +98,19 @@ public partial class MapPageViewModel : PageViewModel
             return;
         }
         
-        // TODO: Launch UDB with the map.
+        // TODO: Provide an iwad
+        // Launch UDB with the map.
+        // Any exceptions are displayed in a window.
+        try
+        {
+            MapEditUtil.StartUltimateDoomBuilder(settings.UdbExecutableFilePath, map, CurrentProjectProvider.ProjectContext.Archives);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to open Ultimate Doombuilder");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Ultimate Doombuilder",
+                $"An error occurred while opening Ultimate Doombuilder. Please check your configuration. Error: {ex.Message}");
+        }
     }
 
     [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_windowProvider), nameof(_notificationManager))]
