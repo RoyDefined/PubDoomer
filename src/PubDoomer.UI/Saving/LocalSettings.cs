@@ -2,6 +2,7 @@
 
 namespace PubDoomer.Saving;
 
+// TODO: Add design-time context with fake paths.
 public partial class LocalSettings : ObservableObject
 {
     // Configurable executions
