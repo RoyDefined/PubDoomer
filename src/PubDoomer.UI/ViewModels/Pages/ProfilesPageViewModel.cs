@@ -18,6 +18,7 @@ using PubDoomer.Saving;
 using PubDoomer.Services;
 using PubDoomer.ViewModels.Dialogues;
 using PubDoomer.Engine.Orchestration;
+using PubDoomer.Utils.MergedSettings;
 
 namespace PubDoomer.ViewModels.Pages;
 
@@ -96,7 +97,7 @@ public partial class ProfilesPageViewModel : PageViewModel
         _logger.LogDebug("Executing profile {ProfileName}", SelectedRunProfile.Name);
 
         // Create the context to pass.
-        var context = CreatePublishingContext();
+        var context = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
 
         // TODO: Make use of the status.
         var stopwatch = Stopwatch.GetTimestamp();
@@ -160,29 +161,6 @@ public partial class ProfilesPageViewModel : PageViewModel
             
             yield return new TaskValidationCollection(validation.Task, resultCollection);
         }
-    }
-
-    // TODO: Somewhat duplicate code also in the code editor.
-    private PublishingContext CreatePublishingContext()
-    {
-        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
-
-        // The context determines the data to use based on the settings. Project specific settings take priority over local settings.
-        static string? GetExecutable(string? projectContextPath, string? localSettingsPath)
-        {
-            return !string.IsNullOrWhiteSpace(projectContextPath)
-                ? projectContextPath.Trim()
-                : localSettingsPath?.Trim();
-        }
-
-        var context = CurrentProjectProvider.ProjectContext;
-        return new PublishingContext(
-            GetExecutable(context.AccCompilerExecutableFilePath, Settings.AccCompilerExecutableFilePath),
-            GetExecutable(context.BccCompilerExecutableFilePath, Settings.BccCompilerExecutableFilePath),
-            GetExecutable(context.GdccCompilerExecutableFilePath, Settings.GdccCompilerExecutableFilePath),
-            GetExecutable(context.SladeExecutableFilePath, Settings.SladeExecutableFilePath),
-            GetExecutable(context.UdbExecutableFilePath, Settings.UdbExecutableFilePath),
-            GetExecutable(context.AcsVmExecutableFilePath, Settings.AcsVmExecutableFilePath));
     }
 
     [RelayCommand]

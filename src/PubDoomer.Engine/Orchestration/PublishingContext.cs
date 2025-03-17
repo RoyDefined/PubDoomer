@@ -6,28 +6,13 @@ using System.Threading.Tasks;
 
 namespace PubDoomer.Engine.Orchestration;
 
-public sealed class PublishingContext
+/// <summary>
+/// Represents the context which contains configuration used for tasks.
+/// </summary>
+public abstract class PublishingContext
 {
-    public readonly string? AccCompilerExecutableFilePath;
-    public readonly string? BccCompilerExecutableFilePath;
-    public readonly string? GdccAccCompilerExecutableFilePath;
-    public readonly string? SladeExecutableFilePath;
-    public readonly string? UdbExecutableFilePath;
-    public readonly string? AcsVmExecutableFilePath;
-
-    public PublishingContext(
-        string? accCompilerExecutableFilePath,
-        string? bccCompilerExecutableFilePath,
-        string? gdccAccCompilerExecutableFilePath,
-        string? sladeExecutableFilePath,
-        string? udbExecutableFilePath,
-        string? acsVmExecutableFilePath)
-    {
-        AccCompilerExecutableFilePath = accCompilerExecutableFilePath;
-        BccCompilerExecutableFilePath = bccCompilerExecutableFilePath;
-        GdccAccCompilerExecutableFilePath = gdccAccCompilerExecutableFilePath;
-        SladeExecutableFilePath = sladeExecutableFilePath;
-        UdbExecutableFilePath = udbExecutableFilePath;
-        AcsVmExecutableFilePath = acsVmExecutableFilePath;
-    }
+    public required string? AccCompilerExecutableFilePath { get; init; }
+    public required string? BccCompilerExecutableFilePath { get; init; }
+    public required string? GdccAccCompilerExecutableFilePath { get; init; }
+    public required string? AcsVmExecutableFilePath { get; init; }
 }
