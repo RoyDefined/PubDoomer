@@ -135,6 +135,74 @@
                                 </StackPanel>
                             </Button>
                             
+                            <!-- Edit map -->
+                            <Button Classes="Tertiary"
+                                    Theme="{DynamicResource OutlineButton}"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{Binding OpenPageCommand}"
+                                    CommandParameter="EditMap">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    
+                                    <!-- Two icons on top of eachother, differentiating editing from running a map -->
+                                    <Grid Width="24" Height="24">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  Width="20"
+                                                  Height="20"
+                                                  Margin="-14 0 0 0"
+                                                  Data="{StaticResource SemiIconFile}" />
+
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  HorizontalAlignment="Right"
+                                                  VerticalAlignment="Top"
+                                                  Width="10"
+                                                  Height="10"
+                                                  Margin="0 0 4 0"
+                                                  Data="{StaticResource SemiIconWrench}" />
+                                    </Grid>
+                                    
+                                    <Label Classes="Tertiary"
+                                           Theme="{StaticResource TitleLabel}"
+                                           Content="Edit Map"
+                                           VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- Run map -->
+                            <Button Classes="Tertiary"
+                                    Theme="{DynamicResource OutlineButton}"
+                                    HorizontalAlignment="Stretch"
+                                    Command="{Binding OpenPageCommand}"
+                                    CommandParameter="RunMap">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    
+                                    <!-- Two icons on top of eachother, differentiating running from editing a map -->
+                                    <Grid Width="24" Height="24">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  Width="20"
+                                                  Height="20"
+                                                  Margin="-14 0 0 0"
+                                                  Data="{StaticResource SemiIconFile}" />
+
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  HorizontalAlignment="Right"
+                                                  VerticalAlignment="Top"
+                                                  Width="10"
+                                                  Height="10"
+                                                  Margin="0 0 4 0"
+                                                  Data="{StaticResource SemiIconPlay}" />
+                                    </Grid>
+                                    
+                                    <Label Classes="Tertiary"
+                                           Theme="{StaticResource TitleLabel}"
+                                           Content="Run Map"
+                                           VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            
                             <!-- Code editor -->
                             <Button Classes="Tertiary"
                                     Theme="{DynamicResource OutlineButton}"
