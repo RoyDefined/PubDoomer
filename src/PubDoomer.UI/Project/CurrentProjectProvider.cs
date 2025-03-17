@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using PubDoomer.Project.Maps;
 using PubDoomer.Project.Profile;
 using PubDoomer.Project.Tasks;
 using PubDoomer.UI.Editor.Tasks;
@@ -61,6 +62,21 @@ public partial class CurrentProjectProvider : ObservableObject
                 {
                     Name = "Run tasks that will warn and also error",
                     Tasks = [warningProfileTask, errorProfileTask]
+                }
+            ],
+            Maps =
+            [
+                new MapContext()
+                {
+                    Path = "Path/To/Map01.wad",
+                    Name = "Map 1",
+                    MapLumpName = "Map01",
+                },
+                new MapContext()
+                {
+                    Path = "Path/To/AmazingTestMap.wad",
+                    Name = "Amazing test map",
+                    MapLumpName = "Amtema",
                 }
             ]
         };

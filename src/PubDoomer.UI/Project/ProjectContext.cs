@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Project.Archive;
+using PubDoomer.Project.Maps;
 using PubDoomer.Project.Profile;
 using PubDoomer.Project.Tasks;
 
@@ -33,12 +34,16 @@ public partial class ProjectContext : ObservableObject
     
     // Configurable locations of archives.
     [ObservableProperty] private ObservableCollection<ArchiveContext> _archives;
+    
+    // Configurable locations of maps.
+    [ObservableProperty] private ObservableCollection<MapContext> _maps;
 
     public ProjectContext()
     {
         Tasks = [];
         Profiles = [];
         Archives = [];
+        Maps = [];
     }
 
     public void AddTask(ProjectTaskBase task)
