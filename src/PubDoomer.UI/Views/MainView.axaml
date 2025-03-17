@@ -135,10 +135,11 @@
                                 </StackPanel>
                             </Button>
                             
-                            <!-- Maps -->
+                            <!-- Maps. Will be disabled if no project is selected -->
                             <Button Classes="Tertiary"
                                     Theme="{DynamicResource OutlineButton}"
                                     HorizontalAlignment="Stretch"
+                                    IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
                                     Command="{Binding OpenPageCommand}"
                                     CommandParameter="Maps">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
