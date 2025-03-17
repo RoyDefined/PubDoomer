@@ -34,8 +34,6 @@
                     </TextBlock>
                 </Grid>
                 
-                <!-- TODO: Add a max width for the labels so they do not keep taking space when the text is already no longer wrapped -->
-                
                 <!-- Content -->
                 <Border Padding="10">
                     <Grid>
