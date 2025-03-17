@@ -124,6 +124,43 @@
                                     </Grid>
                                 </Border>
                             </HeaderedContentControl>
+                            
+                            <!-- Game engines -->
+                            <HeaderedContentControl Classes="GroupBox"
+                                                    BorderBrush="Gray"
+                                                    BorderThickness="1"
+                                                    CornerRadius="4"
+                                                    Header="Game engines">
+
+                                <Border Padding="5 10">
+
+                                    <!-- Zandronum -->
+                                    <Grid ColumnDefinitions="40, *">
+
+                                        <Image Source="/Assets/engine-zandronum.png"
+                                               Width="32"
+                                               Height="32"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Left"/>
+
+                                        <StatefulTextbox Grid.Column="1"
+                                                         Text="{Binding Settings.ZandronumExecutableFilePath}">
+                                            <StatefulTextbox.AdditionalContent>
+                                                <Button Grid.Column="2"
+                                                        Command="{Binding PickFileCommand}"
+                                                        CommandParameter="Zandronum"
+                                                        Classes="Tertiary"
+                                                        Theme="{DynamicResource SolidButton}"
+                                                        Padding="5 0">
+                                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                              Classes="ExtraLarge"
+                                                              Data="{StaticResource SemiIconFolderOpen}" />
+                                                </Button>
+                                            </StatefulTextbox.AdditionalContent>
+                                        </StatefulTextbox>
+                                    </Grid>
+                                </Border>
+                            </HeaderedContentControl>
                         </StackPanel>
 
                         <GridSplitter Grid.Column="1" ShowsPreview="True" />

@@ -11,4 +11,5 @@ public partial class LocalSettings : ObservableObject
     [ObservableProperty] private string? _sladeExecutableFilePath;
     [ObservableProperty] private string? _udbExecutableFilePath;
     [ObservableProperty] private string? _acsVmExecutableFilePath;
+    [ObservableProperty] private string? _zandronumExecutableFilePath;
 }
