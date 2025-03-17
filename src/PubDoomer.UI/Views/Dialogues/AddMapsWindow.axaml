@@ -6,6 +6,7 @@
         x:Class="PubDoomer.Views.Dialogues.AddMapsWindow"
         Title="Add maps"
         Width="800"
+        MaxHeight="600"
         CanResize="False"
         SizeToContent="Height"
         x:DataType="AddMapsWindowViewModel">
