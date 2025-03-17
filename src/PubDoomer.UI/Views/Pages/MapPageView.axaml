@@ -16,6 +16,7 @@
                 <!-- Add map(s) -->
                 <Button HorizontalAlignment="Left"
                         IsVisible="{Binding SessionSettings.EnableEditing}"
+                        Command="{Binding AddMapsCommand}"
                         Classes="Success"
                         Theme="{DynamicResource BorderlessButton}"
                         Padding="5 0">

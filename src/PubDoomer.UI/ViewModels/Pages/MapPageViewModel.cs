@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -11,6 +13,7 @@ using PubDoomer.Saving;
 using PubDoomer.Services;
 using PubDoomer.Utils.MergedSettings;
 using PubDoomer.ViewModels.Dialogues;
+using PubDoomer.Views.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
 
@@ -19,6 +22,8 @@ public partial class MapPageViewModel : PageViewModel
     private readonly ILogger _logger;
     private readonly LocalSettings _settings;
     private readonly DialogueProvider? _dialogueProvider;
+    private readonly WindowProvider? _windowProvider;
+    private readonly WindowNotificationManager? _notificationManager;
 
     public MapPageViewModel()
     {
@@ -35,19 +40,43 @@ public partial class MapPageViewModel : PageViewModel
         CurrentProjectProvider currentProjectProvider,
         SessionSettings sessionSettings,
         LocalSettings localSettings,
-        DialogueProvider dialogueProvider)
+        DialogueProvider dialogueProvider,
+        WindowProvider windowProvider,
+        WindowNotificationManager notificationManager)
     {
         _logger = logger;
         CurrentProjectProvider = currentProjectProvider;
         SessionSettings = sessionSettings;
         _settings = localSettings;
         _dialogueProvider = dialogueProvider;
+        _windowProvider = windowProvider;
+        _notificationManager = notificationManager;
 
         _logger.LogDebug("Created.");
     }
     
     public CurrentProjectProvider CurrentProjectProvider { get; }
     public SessionSettings SessionSettings { get; }
+
+    [RelayCommand]
+    private async Task AddMapsAsync()
+    {
+        if (AssertInDesignMode()) return;
+
+        var vm = new AddMapsWindowViewModel(_windowProvider);
+        var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
+        if (!result) return;
+
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+
+        foreach (var map in vm.MapsToAdd)
+        {
+            CurrentProjectProvider.ProjectContext.Maps.Add(map);
+        }
+        
+        _notificationManager?.Show(new Notification("Profile created", "The profile has been created succesfully.",
+            NotificationType.Success));
+    }
 
     [RelayCommand]
     private async Task EditMapAsync(MapContext map)
@@ -70,7 +99,7 @@ public partial class MapPageViewModel : PageViewModel
         // TODO: Launch UDB with the map.
     }
 
-    [MemberNotNullWhen(false, nameof(_dialogueProvider))]
+    [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_windowProvider), nameof(_notificationManager))]
     private bool AssertInDesignMode()
     {
         return Design.IsDesignMode;

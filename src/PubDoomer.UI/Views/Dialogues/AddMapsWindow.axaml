@@ -13,4 +13,87 @@
     <Design.DataContext>
         <AddMapsWindowViewModel />
     </Design.DataContext>
+    
+    <Border Padding="20">
+        
+        <StackPanel Spacing="10">
+            <Button HorizontalAlignment="Left"
+                    Command="{Binding AddMapsWithFileSelectCommand}"
+                    Classes="Success"
+                    Theme="{DynamicResource BorderlessButton}"
+                    Padding="5 0">
+                <PathIcon Theme="{StaticResource InnerPathIcon}"
+                          Classes="ExtraLarge"
+                          Data="{StaticResource SemiIconPlusCircle}" />
+            </Button>
+            
+            <!-- List of pending maps to add. -->
+            <ScrollViewer>
+                <ItemsControl ItemsSource="{Binding MapsToAdd}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="10" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="Gray" BorderThickness="1" Padding="10">
+                                <Grid ColumnDefinitions="*, Auto">
+
+                                    <StackPanel Spacing="5">
+                                        <!-- Editable Map Lump Name -->
+                                        <Grid ColumnDefinitions="140, *">
+                                            <TextBlock Text="Map Lump Name"
+                                                       FontWeight="Bold"
+                                                       VerticalAlignment="Center" />
+                                            <TextBox Grid.Column="1"
+                                                     Text="{Binding MapLumpName, Mode=TwoWay}"
+                                                     FontSize="12"
+                                                     Margin="0,0,5,0" />
+                                        </Grid>
+
+                                        <!-- Editable Map Name -->
+                                        <Grid ColumnDefinitions="140, *">
+                                            <TextBlock Text="Map Name"
+                                                       FontWeight="Bold"
+                                                       VerticalAlignment="Center" />
+                                            <TextBox Grid.Column="1"
+                                                     Text="{Binding Name, Mode=TwoWay}"
+                                                     FontSize="12"
+                                                     Margin="0,0,5,0" />
+                                        </Grid>
+
+                                        <!-- Editable Map Path -->
+                                        <Grid ColumnDefinitions="140, *">
+                                            <TextBlock Text="Path"
+                                                       FontWeight="Bold"
+                                                       VerticalAlignment="Center" />
+                                            <TextBox Grid.Column="1"
+                                                     Text="{Binding Path, Mode=TwoWay}"
+                                                     FontSize="12"
+                                                     Margin="0,0,5,0" />
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <!-- Delete map -->
+                                    <Button Grid.Column="1"
+                                            Classes="Danger"
+                                            Theme="{DynamicResource BorderlessButton}"
+                                            Padding="5 0"
+                                            VerticalAlignment="Top"
+                                            Command="{Binding $parent[Window].((AddMapsWindowViewModel)DataContext).RemoveMapCommand}"
+                                            CommandParameter="{Binding}">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconDelete}" />
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </StackPanel>
+    </Border>
 </Window>

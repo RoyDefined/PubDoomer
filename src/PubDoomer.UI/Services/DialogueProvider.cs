@@ -14,7 +14,8 @@ public sealed class DialogueProvider(
     {
         [typeof(CreateOrEditTaskWindowViewModel)] = typeof(CreateOrEditTaskWindow),
         [typeof(CreateOrEditProfileWindowViewModel)] = typeof(CreateOrEditProfileWindow),
-        [typeof(CreateOrEditProjectWindowViewModel)] = typeof(CreateOrEditProjectWindow)
+        [typeof(CreateOrEditProjectWindowViewModel)] = typeof(CreateOrEditProjectWindow),
+        [typeof(AddMapsWindowViewModel)] = typeof(AddMapsWindow)
     };
 
     public async Task<int> ShowWindowAsync(Action<InformationalWindowViewModel> configureWindow)
