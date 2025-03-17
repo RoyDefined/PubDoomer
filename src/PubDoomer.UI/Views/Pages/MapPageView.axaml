@@ -15,7 +15,7 @@
                 
                 <!-- Add map(s) -->
                 <Button HorizontalAlignment="Left"
-                        IsVisible="{Binding $parent[UserControl].((TasksPageViewModel)DataContext).SessionSettings.EnableEditing}"
+                        IsVisible="{Binding SessionSettings.EnableEditing}"
                         Classes="Success"
                         Theme="{DynamicResource BorderlessButton}"
                         Padding="5 0">
@@ -106,7 +106,7 @@
                                         <Button Theme="{DynamicResource SolidButton}"
                                                 Classes="Warning"
                                                 Padding="5 0"
-                                                IsVisible="{Binding $parent[UserControl].((ProfilesPageViewModel)DataContext).SessionSettings.EnableEditing}">
+                                                IsVisible="{Binding $parent[UserControl].((MapPageViewModel)DataContext).SessionSettings.EnableEditing}">
                                             <PathIcon Theme="{StaticResource InnerPathIcon}"
                                                       Classes="ExtraLarge"
                                                       Data="{StaticResource SemiIconEdit}" />
@@ -115,7 +115,7 @@
                                         <Button Theme="{DynamicResource SolidButton}"
                                                 Classes="Danger"
                                                 Padding="5 0"
-                                                IsVisible="{Binding $parent[UserControl].((ProfilesPageViewModel)DataContext).SessionSettings.EnableEditing}">
+                                                IsVisible="{Binding $parent[UserControl].((MapPageViewModel)DataContext).SessionSettings.EnableEditing}">
                                             <PathIcon Theme="{StaticResource InnerPathIcon}"
                                                       Classes="ExtraLarge"
                                                       Data="{StaticResource SemiIconDelete}" />

@@ -26,17 +26,20 @@ public partial class MapPageViewModel : PageViewModel
 
         _logger = NullLogger.Instance;
         CurrentProjectProvider = new CurrentProjectProvider();
+        SessionSettings = new SessionSettings();
         _settings = new LocalSettings();
     }
 
     public MapPageViewModel(
         ILogger<MapPageViewModel> logger,
         CurrentProjectProvider currentProjectProvider,
+        SessionSettings sessionSettings,
         LocalSettings localSettings,
         DialogueProvider dialogueProvider)
     {
         _logger = logger;
         CurrentProjectProvider = currentProjectProvider;
+        SessionSettings = sessionSettings;
         _settings = localSettings;
         _dialogueProvider = dialogueProvider;
 
@@ -44,6 +47,7 @@ public partial class MapPageViewModel : PageViewModel
     }
     
     public CurrentProjectProvider CurrentProjectProvider { get; }
+    public SessionSettings SessionSettings { get; }
 
     [RelayCommand]
     private async Task EditMapAsync(MapContext map)
