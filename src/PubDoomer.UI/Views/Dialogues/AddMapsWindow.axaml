@@ -17,19 +17,20 @@
     
     <Border Padding="20">
         
-        <StackPanel Spacing="10">
+        <Grid RowDefinitions="Auto, *">
             <Button HorizontalAlignment="Left"
                     Command="{Binding AddMapsWithFileSelectCommand}"
                     Classes="Success"
                     Theme="{DynamicResource BorderlessButton}"
-                    Padding="5 0">
+                    Padding="5 0"
+                    Margin="0 0 0 10">
                 <PathIcon Theme="{StaticResource InnerPathIcon}"
                           Classes="ExtraLarge"
                           Data="{StaticResource SemiIconPlusCircle}" />
             </Button>
             
             <!-- List of pending maps to add. -->
-            <ScrollViewer>
+            <ScrollViewer Grid.Row="1">
                 <ItemsControl ItemsSource="{Binding MapsToAdd}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -95,6 +96,6 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
-        </StackPanel>
+        </Grid>
     </Border>
 </Window>
