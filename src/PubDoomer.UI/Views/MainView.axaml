@@ -92,48 +92,6 @@
                                            VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-
-                            <!-- Tasks. Will be disabled if no project is selected. -->
-                            <Button Classes="Tertiary"
-                                    Theme="{DynamicResource OutlineButton}"
-                                    HorizontalAlignment="Stretch"
-                                    IsVisible="{Binding SessionSettings.EnableEditing}"
-                                    IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
-                                    Command="{Binding OpenPageCommand}"
-                                    CommandParameter="Tasks">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                              HorizontalAlignment="Left"
-                                              Classes="ExtraLarge"
-                                              Margin="-5 0 10 0"
-                                              Data="{StaticResource SemiIconBolt}" />
-                                    <Label Classes="Tertiary"
-                                           Theme="{StaticResource TitleLabel}"
-                                           Content="Tasks"
-                                           VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Button>
-
-                            <!-- Project. Will be disabled if no project is selected. -->
-                            <Button Classes="Tertiary"
-                                    Theme="{DynamicResource OutlineButton}"
-                                    HorizontalAlignment="Stretch"
-                                    IsVisible="{Binding SessionSettings.EnableEditing}"
-                                    IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
-                                    Command="{Binding OpenPageCommand}"
-                                    CommandParameter="Project">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                              HorizontalAlignment="Left"
-                                              Classes="ExtraLarge"
-                                              Margin="-5 0 10 0"
-                                              Data="{StaticResource SemiIconBox}" />
-                                    <Label Classes="Tertiary"
-                                           Theme="{StaticResource TitleLabel}"
-                                           Content="Project"
-                                           VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Button>
                             
                             <!-- Maps. Will be disabled if no project is selected -->
                             <Button Classes="Tertiary"
@@ -174,6 +132,48 @@
                                     <Label Classes="Tertiary"
                                            Theme="{StaticResource TitleLabel}"
                                            Content="Maps"
+                                           VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Tasks. Will be disabled if no project is selected. -->
+                            <Button Classes="Tertiary"
+                                    Theme="{DynamicResource OutlineButton}"
+                                    HorizontalAlignment="Stretch"
+                                    IsVisible="{Binding SessionSettings.EnableEditing}"
+                                    IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
+                                    Command="{Binding OpenPageCommand}"
+                                    CommandParameter="Tasks">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                              HorizontalAlignment="Left"
+                                              Classes="ExtraLarge"
+                                              Margin="-5 0 10 0"
+                                              Data="{StaticResource SemiIconBolt}" />
+                                    <Label Classes="Tertiary"
+                                           Theme="{StaticResource TitleLabel}"
+                                           Content="Tasks"
+                                           VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Project. Will be disabled if no project is selected. -->
+                            <Button Classes="Tertiary"
+                                    Theme="{DynamicResource OutlineButton}"
+                                    HorizontalAlignment="Stretch"
+                                    IsVisible="{Binding SessionSettings.EnableEditing}"
+                                    IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
+                                    Command="{Binding OpenPageCommand}"
+                                    CommandParameter="Project">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                              HorizontalAlignment="Left"
+                                              Classes="ExtraLarge"
+                                              Margin="-5 0 10 0"
+                                              Data="{StaticResource SemiIconBox}" />
+                                    <Label Classes="Tertiary"
+                                           Theme="{StaticResource TitleLabel}"
+                                           Content="Project"
                                            VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
