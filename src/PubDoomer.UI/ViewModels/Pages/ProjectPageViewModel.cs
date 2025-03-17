@@ -26,7 +26,8 @@ public partial class ProjectPageViewModel : PageViewModel
         ["GdccCompiler"] = "Select GDCC compiler executable",
         ["Udb"] = "Select Ultimate Doombuilder executable",
         ["Slade"] = "Select Slade executable",
-        ["AcsVm"] = "Select ACS VM executable"
+        ["AcsVm"] = "Select ACS VM executable",
+        ["Zandronum"] = "Select Zandronum executable"
     };
 
     private readonly ILogger _logger;
@@ -130,6 +131,9 @@ public partial class ProjectPageViewModel : PageViewModel
                 break;
             case "AcsVm":
                 CurrentProjectProvider.ProjectContext.AcsVmExecutableFilePath = filePath;
+                break;
+            case "Zandronum":
+                CurrentProjectProvider.ProjectContext.ZandronumExecutableFilePath = filePath;
                 break;
 
             default:
