@@ -12,7 +12,11 @@ using PubDoomer.UI.Editor.Tasks;
 
 namespace PubDoomer.Project;
 
-// Injected wrapper for the current project.
+/// <summary>
+/// A provider that provides the current loaded project context in the application.
+/// <br /> The current project can be set to indicate a loaded project.
+/// <br /> In design mode this provider provides a design-time project.
+/// </summary>
 public partial class CurrentProjectProvider : ObservableObject
 {
     public CurrentProjectProvider()
@@ -82,5 +86,9 @@ public partial class CurrentProjectProvider : ObservableObject
         };
     }
     
+    /// <summary>
+    /// The project context to be provided.
+    /// <br /> If the project context is <c>null</c>, no project is loaded.
+    /// </summary>
     [ObservableProperty] private ProjectContext? _projectContext;
 }

@@ -2,6 +2,9 @@
 
 namespace PubDoomer.Project.Archive;
 
+/// <summary>
+/// Represents an archive in a project that is to be used for editing and testing.
+/// </summary>
 public partial class ArchiveContext : ObservableObject
 {
     /// <summary>

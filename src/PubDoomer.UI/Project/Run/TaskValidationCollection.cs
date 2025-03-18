@@ -5,6 +5,9 @@ using PubDoomer.Engine.Orchestration;
 
 namespace PubDoomer.Project.Run;
 
+/// <summary>
+/// A collection that contains validation results of a given task.
+/// </summary>
 public sealed class TaskValidationCollection
 {
     public TaskValidationCollection(

@@ -7,7 +7,10 @@ using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.Project.Run;
 
-// Represents the main context of a task to run.
+/// <summary>
+/// Represents the main context of a task to run.
+/// <br /> Contains additional fields and properties to indicate result.
+/// </summary>
 public partial class ProfileRunTask : ObservableObject
 {
     [ObservableProperty] private EngineTaskBase _task;

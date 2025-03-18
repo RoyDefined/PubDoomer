@@ -2,6 +2,9 @@
 
 namespace PubDoomer.Project.Maps;
 
+/// <summary>
+/// Represents the configured context of a map entry in a project.
+/// </summary>
 public partial class MapContext : ObservableObject
 {
     /// <summary>

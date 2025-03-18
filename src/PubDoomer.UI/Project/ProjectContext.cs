@@ -10,6 +10,9 @@ using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.Project;
 
+/// <summary>
+/// Represents the project context that contains the full state of a project.
+/// </summary>
 public partial class ProjectContext : ObservableObject
 {
     // Configurable executions
@@ -28,14 +31,29 @@ public partial class ProjectContext : ObservableObject
     [ObservableProperty] [property: JsonIgnore]
     private Uri? _filePath;
 
+    /// <summary>
+    /// A name to give to this project to show in the UI.
+    /// </summary>
     [ObservableProperty] private string? _name;
+    
+    /// <summary>
+    /// Configurable profiles that contain tasks to be invoked in order.
+    /// </summary>
     [ObservableProperty] private ObservableCollection<ProfileContext> _profiles;
+    
+    /// <summary>
+    /// Configurable tasks that can be invoked.
+    /// </summary>
     [ObservableProperty] private ObservableCollection<ProjectTaskBase> _tasks;
     
-    // Configurable locations of archives.
+    /// <summary>
+    /// Configurable locations of archives.
+    /// </summary>
     [ObservableProperty] private ObservableCollection<ArchiveContext> _archives;
     
-    // Configurable locations of maps.
+    /// <summary>
+    /// Configurable locations of maps.
+    /// </summary>
     [ObservableProperty] private ObservableCollection<MapContext> _maps;
 
     public ProjectContext()

@@ -5,9 +5,19 @@ using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.Project.Profile;
 
+/// <summary>
+/// Represents a configured task on a profile.
+/// </summary>
 public partial class ProfileTask : ObservableObject
 {
+    /// <summary>
+    /// The behaviour of the task in the event of an error.
+    /// </summary>
     [ObservableProperty] private ProfileTaskErrorBehaviour? _behaviour;
+    
+    /// <summary>
+    /// The base task definition.
+    /// </summary>
     [ObservableProperty] private ProjectTaskBase? _task;
 
     public ProfileRunTask ToRunnableTask()
