@@ -40,35 +40,27 @@ public partial class ProjectContext : ObservableObject
     /// <summary>
     /// Configurable profiles that contain tasks to be invoked in order.
     /// </summary>
-    [ObservableProperty] private ObservableCollection<ProfileContext> _profiles;
+    [ObservableProperty] private ObservableCollection<ProfileContext> _profiles = [];
     
     /// <summary>
     /// Configurable tasks that can be invoked.
     /// </summary>
-    [ObservableProperty] private ObservableCollection<ProjectTaskBase> _tasks;
+    [ObservableProperty] private ObservableCollection<ProjectTaskBase> _tasks = [];
     
     /// <summary>
     /// Configurable locations of IWAD files.
     /// </summary>
-    [ObservableProperty] private ObservableCollection<IWadContext> _iWads;
+    [ObservableProperty] private ObservableCollection<IWadContext> _iWads = [];
     
     /// <summary>
     /// Configurable locations of archives.
     /// </summary>
-    [ObservableProperty] private ObservableCollection<ArchiveContext> _archives;
+    [ObservableProperty] private ObservableCollection<ArchiveContext> _archives = [];
     
     /// <summary>
     /// Configurable locations of maps.
     /// </summary>
-    [ObservableProperty] private ObservableCollection<MapContext> _maps;
-
-    public ProjectContext()
-    {
-        Tasks = [];
-        Profiles = [];
-        Archives = [];
-        Maps = [];
-    }
+    [ObservableProperty] private ObservableCollection<MapContext> _maps = [];
 
     public void AddTask(ProjectTaskBase task)
     {
