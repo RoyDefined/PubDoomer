@@ -15,9 +15,9 @@ public partial class LocalSettings : ObservableObject
     [ObservableProperty] private string? _udbExecutableFilePath;
     [ObservableProperty] private string? _acsVmExecutableFilePath;
     [ObservableProperty] private string? _zandronumExecutableFilePath;
-    
+
     /// <summary>
     /// Configurable locations of IWad files.
     /// </summary>
-    [ObservableProperty] private ObservableCollection<IWadContext> _iWads;
+    [ObservableProperty] private ObservableCollection<IWadContext> _iWads = [];
 }
