@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Project.Archive;
+using PubDoomer.Project.IWad;
 using PubDoomer.Project.Maps;
 using PubDoomer.Project.Profile;
 using PubDoomer.Project.Tasks;
@@ -45,6 +46,11 @@ public partial class ProjectContext : ObservableObject
     /// Configurable tasks that can be invoked.
     /// </summary>
     [ObservableProperty] private ObservableCollection<ProjectTaskBase> _tasks;
+    
+    /// <summary>
+    /// Configurable locations of IWAD files.
+    /// </summary>
+    [ObservableProperty] private ObservableCollection<IWadContext> _iWads;
     
     /// <summary>
     /// Configurable locations of archives.

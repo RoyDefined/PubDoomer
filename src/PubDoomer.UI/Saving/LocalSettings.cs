@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Project.IWad;
 
 namespace PubDoomer.Saving;
 
@@ -13,4 +15,9 @@ public partial class LocalSettings : ObservableObject
     [ObservableProperty] private string? _udbExecutableFilePath;
     [ObservableProperty] private string? _acsVmExecutableFilePath;
     [ObservableProperty] private string? _zandronumExecutableFilePath;
+    
+    /// <summary>
+    /// Configurable locations of IWad files.
+    /// </summary>
+    [ObservableProperty] private ObservableCollection<IWadContext> _iWads;
 }
