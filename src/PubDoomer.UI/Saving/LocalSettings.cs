@@ -1,10 +1,10 @@
 ﻿using System.Collections.ObjectModel;
+using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Project.IWad;
 
 namespace PubDoomer.Saving;
 
-// TODO: Add design-time context with fake paths.
 public partial class LocalSettings : ObservableObject
 {
     // Configurable executions
@@ -20,4 +20,18 @@ public partial class LocalSettings : ObservableObject
     /// Configurable locations of IWad files.
     /// </summary>
     [ObservableProperty] private ObservableCollection<IWadContext> _iWads = [];
+
+    public LocalSettings()
+    {
+        if (!Design.IsDesignMode) return;
+        
+        // Add design-time data.
+        AccCompilerExecutableFilePath = "Path/To/ACC.exe";
+        BccCompilerExecutableFilePath = "Path/To/BCC.exe";
+        GdccCompilerExecutableFilePath = "Path/To/GDCC-ACC.exe";
+        SladeExecutableFilePath = "Path/To/Slade.exe";
+        UdbExecutableFilePath = "Path/To/UtimateDoombuilder.exe";
+        AcsVmExecutableFilePath = "Path/To/ACS-VM.exe";
+        ZandronumExecutableFilePath = "Path/To/Zandronum.exe";
+    }
 }

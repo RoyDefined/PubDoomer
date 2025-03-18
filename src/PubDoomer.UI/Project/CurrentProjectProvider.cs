@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using PubDoomer.Project.Archive;
 using PubDoomer.Project.Maps;
 using PubDoomer.Project.Profile;
 using PubDoomer.Project.Tasks;
@@ -49,6 +50,28 @@ public partial class CurrentProjectProvider : ObservableObject
         ProjectContext = new ProjectContext
         {
             Name = "Project Foo",
+            AccCompilerExecutableFilePath = "Path/To/ACC.exe",
+            BccCompilerExecutableFilePath = "Path/To/BCC.exe",
+            GdccCompilerExecutableFilePath = "Path/To/GDCC-ACC.exe",
+            SladeExecutableFilePath = "Path/To/Slade.exe",
+            UdbExecutableFilePath = "Path/To/UtimateDoombuilder.exe",
+            AcsVmExecutableFilePath = "Path/To/ACS-VM.exe",
+            ZandronumExecutableFilePath = "Path/To/Zandronum.exe",
+            Archives =
+            [
+                new ArchiveContext()
+                {
+                    Name = "Doom project Foo",
+                    Path = "Path/To/ProjectFoo",
+                    ExcludeFromTesting = false,
+                },
+                new ArchiveContext()
+                {
+                    Name = "Doom testing project",
+                    Path = "Path/To/TestingProject",
+                    ExcludeFromTesting = true,
+                }
+            ],
             Tasks = [successTask, warningTask, errorTask],
             Profiles =
             [
