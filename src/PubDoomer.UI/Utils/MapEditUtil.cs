@@ -20,6 +20,10 @@ internal static class MapEditUtil
         // Add the main WAD file (the map file) and map lump name
         argumentBuilder.AppendFormat("\"{0}\" -map {1}", map.Path, map.MapLumpName);
         
+        // Add configuration
+        // TODO: Make configurable
+        argumentBuilder.Append($" -cfg \"zandronum_DoomUDMF.cfg\"");
+        
         // Add IWad
         argumentBuilder.AppendFormat(" -resource wad \"{0}\"", selectedIWad.Path);
             
