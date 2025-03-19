@@ -4,10 +4,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using PubDoomer.Project;
+using PubDoomer.Project.IWad;
 using PubDoomer.Project.Maps;
 using PubDoomer.Saving;
 using PubDoomer.Services;
@@ -18,13 +20,15 @@ using PubDoomer.Views.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
 
+// TODO: IWad selection should also give the option for project IWads
 public partial class MapPageViewModel : PageViewModel
 {
     private readonly ILogger _logger;
-    private readonly LocalSettings _settings;
     private readonly DialogueProvider? _dialogueProvider;
     private readonly WindowProvider? _windowProvider;
     private readonly WindowNotificationManager? _notificationManager;
+
+    [ObservableProperty] private IWadContext? _selectedIWad;
 
     public MapPageViewModel()
     {
@@ -33,7 +37,7 @@ public partial class MapPageViewModel : PageViewModel
         _logger = NullLogger.Instance;
         CurrentProjectProvider = new CurrentProjectProvider();
         SessionSettings = new SessionSettings();
-        _settings = new LocalSettings();
+        Settings = new LocalSettings();
     }
 
     public MapPageViewModel(
@@ -48,7 +52,7 @@ public partial class MapPageViewModel : PageViewModel
         _logger = logger;
         CurrentProjectProvider = currentProjectProvider;
         SessionSettings = sessionSettings;
-        _settings = localSettings;
+        Settings = localSettings;
         _dialogueProvider = dialogueProvider;
         _windowProvider = windowProvider;
         _notificationManager = notificationManager;
@@ -57,6 +61,7 @@ public partial class MapPageViewModel : PageViewModel
     }
     
     public CurrentProjectProvider CurrentProjectProvider { get; }
+    public LocalSettings Settings { get; }
     public SessionSettings SessionSettings { get; }
 
     [RelayCommand]
@@ -86,7 +91,7 @@ public partial class MapPageViewModel : PageViewModel
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         
         // Get the current settings context so we can determine the location of Ultimate Doombuilder.
-        var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, _settings);
+        var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
         
         _logger.LogDebug("Opening map '{MapName}' using Ultimate Doombuilder configured at path '{UdbPath}'.", map.Name, settings.UdbExecutableFilePath ?? "N/A");
         
@@ -98,12 +103,18 @@ public partial class MapPageViewModel : PageViewModel
             return;
         }
         
-        // TODO: Provide an iwad
+        // Verify an IWad is selected.
+        if (SelectedIWad == null)
+        {
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Select an IWad.");
+            return;
+        }
+        
         // Launch UDB with the map.
         // Any exceptions are displayed in a window.
         try
         {
-            MapEditUtil.StartUltimateDoomBuilder(settings.UdbExecutableFilePath, map, CurrentProjectProvider.ProjectContext.Archives);
+            MapEditUtil.StartUltimateDoomBuilder(settings.UdbExecutableFilePath, map, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
         }
         catch (Exception ex)
         {

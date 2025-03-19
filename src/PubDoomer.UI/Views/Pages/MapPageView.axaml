@@ -31,6 +31,28 @@
                        VerticalAlignment="Center"
                        Theme="{StaticResource TitleLabel}"
                        Content="Maps" />
+                
+                <!-- IWad -->
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            Spacing="10">
+
+                    <TextBlock VerticalAlignment="Center"
+                               FontWeight="Bold"
+                               Text="IWad"
+                               TextWrapping="Wrap" />
+
+                    <ComboBox SelectedIndex="0" 
+                              Width="200"
+                              SelectedItem="{Binding SelectedIWad}"
+                              ItemsSource="{Binding Settings.IWads}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
             </Grid>
 
             <!-- Map List Display -->

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 using PubDoomer.Project.Archive;
+using PubDoomer.Project.IWad;
 using PubDoomer.Project.Maps;
 
 namespace PubDoomer.Utils;
@@ -12,12 +13,15 @@ internal static class MapEditUtil
     /// Starts Ultimate Doombuilder using the provided filepath, opening the given map and optionally loading one or more archives.
     /// <br /> The method will ensure the process is started in the background and doesn't get awaited.
     /// </summary>
-    internal static void StartUltimateDoomBuilder(string filePath, MapContext map, IEnumerable<ArchiveContext> archives)
+    internal static void StartUltimateDoomBuilder(string filePath, MapContext map, IWadContext selectedIWad, IEnumerable<ArchiveContext> archives)
     {
         var argumentBuilder = new StringBuilder();
             
         // Add the main WAD file (the map file) and map lump name
         argumentBuilder.AppendFormat("\"{0}\" -map {1}", map.Path, map.MapLumpName);
+        
+        // Add IWad
+        argumentBuilder.AppendFormat(" -resource wad \"{0}\"", selectedIWad.Path);
             
         // Add each archive as a resource
         foreach (var archive in archives)
