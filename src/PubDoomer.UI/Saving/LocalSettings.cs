@@ -33,5 +33,19 @@ public partial class LocalSettings : ObservableObject
         UdbExecutableFilePath = "Path/To/UtimateDoombuilder.exe";
         AcsVmExecutableFilePath = "Path/To/ACS-VM.exe";
         ZandronumExecutableFilePath = "Path/To/Zandronum.exe";
+
+        IWads =
+        [
+            new IWadContext()
+            {
+                Name = "Doom 2",
+                Path = "Path/To/Doom2.wad",
+            },
+            new IWadContext()
+            {
+                Name = "Doom (shareware)",
+                Path = "Path/To/Doom.wad",
+            }
+        ];
     }
 }

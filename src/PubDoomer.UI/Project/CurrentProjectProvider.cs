@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using PubDoomer.Project.Archive;
+using PubDoomer.Project.IWad;
 using PubDoomer.Project.Maps;
 using PubDoomer.Project.Profile;
 using PubDoomer.Project.Tasks;
@@ -70,6 +71,19 @@ public partial class CurrentProjectProvider : ObservableObject
                     Name = "Doom testing project",
                     Path = "Path/To/TestingProject",
                     ExcludeFromTesting = true,
+                }
+            ],
+            IWads = 
+            [
+                new IWadContext()
+                {
+                    Name = "Doom 2",
+                    Path = "Path/To/Doom2.wad",
+                },
+                new IWadContext()
+                {
+                    Name = "Doom (shareware)",
+                    Path = "Path/To/Doom.wad",
                 }
             ],
             Tasks = [successTask, warningTask, errorTask],
