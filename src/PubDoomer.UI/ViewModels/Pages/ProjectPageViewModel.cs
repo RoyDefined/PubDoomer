@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using PubDoomer.Project;
 using PubDoomer.Project.Archive;
+using PubDoomer.Project.IWad;
 using PubDoomer.Services;
 using PubDoomer.ViewModels.Dialogues;
 
@@ -92,6 +93,40 @@ public partial class ProjectPageViewModel : PageViewModel
 
         CurrentProjectProvider.ProjectContext.Archives.Remove(context);
         _notificationManager?.Show(new Notification("Archive deleted", "The archive has been deleted.",
+            NotificationType.Success));
+    }
+    
+    [RelayCommand]
+    private void AddIWad()
+    {
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        CurrentProjectProvider.ProjectContext.IWads.Add(new IWadContext());
+    }
+
+    [RelayCommand]
+    private async Task DeleteIWadAsync(IWadContext context)
+    {
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+
+        // In design mode we delete without a prompt.
+        if (AssertInDesignMode())
+        {
+            CurrentProjectProvider.ProjectContext.IWads.Remove(context);
+            return;
+        }
+        
+        var result = await _dialogueProvider.PromptAsync(
+            AlertType.Warning,
+            "Delete IWad",
+            "Are you sure you want to delete this IWad?",
+            "The IWad will be deleted and you will have to readd it.",
+            new InformationalWindowButton(AlertType.None, "Cancel"),
+            new InformationalWindowButton(AlertType.Error, "Delete"));
+
+        if (!result) return;
+
+        CurrentProjectProvider.ProjectContext.IWads.Remove(context);
+        _notificationManager?.Show(new Notification("IWad deleted", "The IWad has been deleted.",
             NotificationType.Success));
     }
 

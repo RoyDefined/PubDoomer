@@ -159,6 +159,98 @@
                                     </Grid>
                                 </Border>
                             </HeaderedContentControl>
+                            
+                            <!-- IWads -->
+                            <HeaderedContentControl Classes="GroupBox"
+                                                    BorderBrush="Gray"
+                                                    BorderThickness="1"
+                                                    CornerRadius="4"
+                                                    Header="IWads">
+
+                                <StackPanel>
+                                    <TextBlock Classes="Tertiary"
+                                               FontSize="10"
+                                               Margin="0 -5 0 0"
+                                               TextWrapping="Wrap">
+                                        IWads are used as a base when editing or testing maps.
+                                        <LineBreak />
+                                        IWads configured here will be replaced by IWads in project settings that share the same path.
+                                    </TextBlock>
+                                    
+                                    <Button HorizontalAlignment="Left"
+                                            Command="{Binding AddIWadCommand}"
+                                            Classes="Success"
+                                            Theme="{DynamicResource BorderlessButton}"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconPlusCircle}" />
+                                    </Button>
+                                    
+                                    <Border Padding="5 10" MaxHeight="400">
+                                    
+                                        <ScrollViewer>
+                                            <ItemsControl ItemsSource="{Binding Settings.IWads}">
+                                                <ItemsControl.ItemsPanel>
+
+                                                    <!-- Spaced layout -->
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Spacing="15" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        
+                                                        <Grid ColumnDefinitions="Auto, *">
+                                                            <!-- Left part -->
+                                                            <Border Margin="0 0 5 0">
+                                                                <Button  Command="{Binding $parent[UserControl].((SettingsPageViewModel)DataContext).DeleteIWadCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         Theme="{DynamicResource BorderlessButton}"
+                                                                         Classes="Danger"
+                                                                         Padding="5 0"
+                                                                         VerticalAlignment="Top">
+                                                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                              Classes="ExtraLarge"
+                                                                              Data="{StaticResource SemiIconDelete}" />
+                                                                </Button>
+                                                            </Border>
+                                                            
+                                                            <!-- Right part -->
+                                                            <StackPanel Grid.Column="1"
+                                                                        Spacing="5">
+                                                                
+                                                                <!-- IWad name -->
+                                                                <Grid ColumnDefinitions="60, *">
+
+                                                                    <TextBlock VerticalAlignment="Center"
+                                                                               FontWeight="Bold"
+                                                                               Text="Name"
+                                                                               TextWrapping="Wrap" />
+
+                                                                    <StatefulTextbox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" />
+                                                                </Grid>
+                                                                
+                                                                <!-- IWad path -->
+                                                                <Grid ColumnDefinitions="60, *">
+
+                                                                    <TextBlock VerticalAlignment="Center"
+                                                                               FontWeight="Bold"
+                                                                               Text="Path"
+                                                                               TextWrapping="Wrap" />
+
+                                                                    <StatefulTextbox Grid.Column="1" Text="{Binding Path, Mode=TwoWay}" />
+                                                                </Grid>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Border>
+                                </StackPanel>
+                            </HeaderedContentControl>
                         </StackPanel>
 
                         <GridSplitter Grid.Column="1" ShowsPreview="True" />
