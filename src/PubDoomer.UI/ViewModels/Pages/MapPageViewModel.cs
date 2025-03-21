@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using PubDoomer.Project;
+using PubDoomer.Project.Archive;
 using PubDoomer.Project.IWad;
 using PubDoomer.Project.Maps;
 using PubDoomer.Saving;
@@ -27,6 +29,7 @@ public partial class MapPageViewModel : PageViewModel
     private readonly DialogueProvider? _dialogueProvider;
     private readonly WindowProvider? _windowProvider;
     private readonly WindowNotificationManager? _notificationManager;
+    private readonly MergedSettings? _mergedSettings;
 
     [ObservableProperty] private IWadContext? _selectedIWad;
 
@@ -37,7 +40,6 @@ public partial class MapPageViewModel : PageViewModel
         _logger = NullLogger.Instance;
         CurrentProjectProvider = new CurrentProjectProvider();
         SessionSettings = new SessionSettings();
-        Settings = new LocalSettings();
     }
 
     public MapPageViewModel(
@@ -52,16 +54,17 @@ public partial class MapPageViewModel : PageViewModel
         _logger = logger;
         CurrentProjectProvider = currentProjectProvider;
         SessionSettings = sessionSettings;
-        Settings = localSettings;
         _dialogueProvider = dialogueProvider;
         _windowProvider = windowProvider;
         _notificationManager = notificationManager;
+        
+        // Get the current settings context so we can determine the location of Ultimate Doombuilder and the IWads.
+        _mergedSettings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, localSettings);
 
         _logger.LogDebug("Created.");
     }
     
     public CurrentProjectProvider CurrentProjectProvider { get; }
-    public LocalSettings Settings { get; }
     public SessionSettings SessionSettings { get; }
 
     [RelayCommand]
@@ -90,13 +93,10 @@ public partial class MapPageViewModel : PageViewModel
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         
-        // Get the current settings context so we can determine the location of Ultimate Doombuilder.
-        var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
-        
-        _logger.LogDebug("Opening map '{MapName}' using Ultimate Doombuilder configured at path '{UdbPath}'.", map.Name, settings.UdbExecutableFilePath ?? "N/A");
+        _logger.LogDebug("Opening map '{MapName}' using Ultimate Doombuilder configured at path '{UdbPath}'.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
         
         // Path to UDB must exist.
-        if (settings.UdbExecutableFilePath == null)
+        if (_mergedSettings.UdbExecutableFilePath == null)
         {
             await _dialogueProvider.AlertAsync(AlertType.Warning, "Missing configuration",
                 "The path to Ultimate Doombuilder is not configured. You must either configure the path in the project settings, or your local settings.");
@@ -104,17 +104,28 @@ public partial class MapPageViewModel : PageViewModel
         }
         
         // Verify an IWad is selected.
+        // If not, we open the dialogue to configure it and end this method.
         if (SelectedIWad == null)
         {
             await _dialogueProvider.AlertAsync(AlertType.Warning, "Select an IWad.");
+            await ConfigureEditMapAsync(map);
             return;
         }
+        
+        await OpenMapAsync(_mergedSettings.UdbExecutableFilePath, map, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
+    }
+
+    private async Task OpenMapAsync(string udbExecutableFilePath, MapContext map, IWadContext selectedIWad,
+        ObservableCollection<ArchiveContext> archives)
+    {
+        Debug.Assert(SelectedIWad != null);
+        Debug.Assert(_dialogueProvider != null);
         
         // Launch UDB with the map.
         // Any exceptions are displayed in a window.
         try
         {
-            MapEditUtil.StartUltimateDoomBuilder(settings.UdbExecutableFilePath, map, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
+            MapEditUtil.StartUltimateDoomBuilder(udbExecutableFilePath, map, SelectedIWad, archives);
         }
         catch (Exception ex)
         {
@@ -124,7 +135,32 @@ public partial class MapPageViewModel : PageViewModel
         }
     }
 
-    [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_windowProvider), nameof(_notificationManager))]
+    [RelayCommand]
+    private async Task ConfigureEditMapAsync(MapContext map)
+    {
+        if (AssertInDesignMode()) return;
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        
+        _logger.LogDebug("Configuring to map '{MapName}' using Ultimate Doombuilder configured at path '{UdbPath}'.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
+        
+        // Path to UDB must exist.
+        if (_mergedSettings.UdbExecutableFilePath == null)
+        {
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Missing configuration",
+                "The path to Ultimate Doombuilder is not configured. You must either configure the path in the project settings, or your local settings.");
+            return;
+        }
+        
+        // TODO: Provide IWads
+        var vm = new ConfigureEditMapViewModel(_mergedSettings.UdbExecutableFilePath, []);
+        var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
+        if (!result || vm.SelectedIWad == null) return;
+        
+        SelectedIWad = vm.SelectedIWad;
+        await OpenMapAsync(_mergedSettings.UdbExecutableFilePath, map, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
+    }
+
+    [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_windowProvider), nameof(_notificationManager), nameof(_mergedSettings))]
     private bool AssertInDesignMode()
     {
         return Design.IsDesignMode;

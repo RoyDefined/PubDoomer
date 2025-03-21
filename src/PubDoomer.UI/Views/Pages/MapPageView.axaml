@@ -31,28 +31,6 @@
                        VerticalAlignment="Center"
                        Theme="{StaticResource TitleLabel}"
                        Content="Maps" />
-                
-                <!-- IWad -->
-                <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Right"
-                            Spacing="10">
-
-                    <TextBlock VerticalAlignment="Center"
-                               FontWeight="Bold"
-                               Text="IWad"
-                               TextWrapping="Wrap" />
-
-                    <ComboBox SelectedIndex="0" 
-                              Width="200"
-                              SelectedItem="{Binding SelectedIWad}"
-                              ItemsSource="{Binding Settings.IWads}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Name}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
             </Grid>
 
             <!-- Map List Display -->
@@ -98,6 +76,7 @@
                                                 Orientation="Horizontal"
                                                 Spacing="10">
                                         
+                                        <!-- Run map in an engine -->
                                         <Button Theme="{DynamicResource SolidButton}"
                                                 Classes="Secondary">
                                             <StackPanel Orientation="Horizontal" Spacing="10">
@@ -111,20 +90,41 @@
                                             </StackPanel>
                                         </Button>
                                         
-                                        <Button Theme="{DynamicResource SolidButton}"
-                                                Classes="Secondary"
-                                                Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).EditMapCommand}"
-                                                CommandParameter="{Binding}">
-                                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                                <Image Source="/Assets/editor-udb.png"
-                                                       Width="16"
-                                                       Height="16"
-                                                       VerticalAlignment="Center"
-                                                       HorizontalAlignment="Left"/>
-                                                <TextBlock Text="Edit"
-                                                           VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </Button>
+                                        <!--
+                                            Open the map in Ultimate Doombuilder.
+                                            This split button has a dropdown allowing for editing the parameters before opening the application.
+                                        -->
+                                        <SplitButton Theme="{DynamicResource SolidSplitButton}"
+                                                     Classes="Secondary"
+                                                     Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).EditMapCommand}"
+                                                     CommandParameter="{Binding}">
+                                            <SplitButton.Content>
+                                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                                    <Image Source="/Assets/editor-udb.png"
+                                                           Width="16"
+                                                           Height="16"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Left"/>
+                                                    <TextBlock Text="Edit"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </SplitButton.Content>
+                                            
+                                            <SplitButton.Flyout>
+                                                <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                                    
+                                                    <!-- Configure and edit opens a separate dialogue. -->
+                                                    <MenuItem Header="Configure and edit..."
+                                                              Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).ConfigureEditMapCommand}"
+                                                              CommandParameter="{Binding}">
+                                                        <MenuItem.Icon>
+                                                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                      Data="{StaticResource SemiIconEdit}" />
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                </MenuFlyout>
+                                            </SplitButton.Flyout>
+                                        </SplitButton>
                                         
                                         <Button Theme="{DynamicResource SolidButton}"
                                                 Classes="Warning"

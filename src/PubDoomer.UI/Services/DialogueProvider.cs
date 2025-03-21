@@ -10,12 +10,14 @@ namespace PubDoomer.Services;
 public sealed class DialogueProvider(
     WindowProvider windowProvider)
 {
+    // TODO: Get rid of this
     private static readonly Dictionary<Type, Type> ViewModelToWindowMap = new()
     {
         [typeof(CreateOrEditTaskWindowViewModel)] = typeof(CreateOrEditTaskWindow),
         [typeof(CreateOrEditProfileWindowViewModel)] = typeof(CreateOrEditProfileWindow),
         [typeof(CreateOrEditProjectWindowViewModel)] = typeof(CreateOrEditProjectWindow),
-        [typeof(AddMapsWindowViewModel)] = typeof(AddMapsWindow)
+        [typeof(AddMapsWindowViewModel)] = typeof(AddMapsWindow),
+        [typeof(ConfigureEditMapViewModel)] = typeof(ConfigureEditMapWindow)
     };
 
     public async Task<int> ShowWindowAsync(Action<InformationalWindowViewModel> configureWindow)

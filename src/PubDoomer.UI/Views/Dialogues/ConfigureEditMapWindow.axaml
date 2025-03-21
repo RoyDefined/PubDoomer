@@ -1,0 +1,84 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="PubDoomer.Views.Dialogues.ConfigureEditMapWindow"
+        Title="Configure and edit map"
+        Width="800"
+        CanResize="False"
+        SizeToContent="Height"
+        x:DataType="ConfigureEditMapViewModel"
+        x:Name="RootWindow">
+
+    <Design.DataContext>
+        <ConfigureEditMapViewModel />
+    </Design.DataContext>
+    
+    <Border Padding="20">
+        <StackPanel Spacing="20">
+
+            <!-- Title -->
+            <TextBlock Classes="H3"
+                       VerticalAlignment="Center"
+                       Theme="{StaticResource TitleTextBlock}"
+                       Text="Configure and edit map" />
+            
+            <StackPanel Spacing="5">
+                
+                <!-- IWad selection -->
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10">
+
+                    <TextBlock VerticalAlignment="Center"
+                               FontWeight="Bold"
+                               Text="IWad"
+                               TextWrapping="Wrap" />
+
+                    <ComboBox SelectedIndex="0" 
+                              Width="200"
+                              SelectedItem="{Binding SelectedIWad}"
+                              ItemsSource="{Binding SelectableIWads}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+                
+                <!-- Extra information for the IWad -->
+                <TextBlock Theme="{StaticResource TitleTextBlock}"
+                           Classes="Tertiary"
+                           FontSize="10"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"
+                           Text="The IWad you select will be used as a base for the editor."/>
+                
+                <!-- Ultimate Doombuilder path -->
+                <TextBlock Theme="{StaticResource TitleTextBlock}"
+                           Classes="Tertiary"
+                           FontSize="10"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"
+                           Text="{Binding UdbExecutableFilePath, StringFormat='The editor that will be opened is located at \'{0}\'.'}"/>
+            </StackPanel>
+            
+            <!-- Cancel and submit button -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="10">
+                <Button Content="Cancel"
+                        Classes="Danger"
+                        Theme="{DynamicResource SolidButton}"
+                        Click="CancelFormButton_OnClick" />
+
+                <Button Content="Open map"
+                        IsEnabled="{Binding FormIsValid}"
+                        Classes="Success"
+                        Theme="{DynamicResource SolidButton}"
+                        Click="FinishFormButton_OnClick" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

@@ -106,5 +106,9 @@
           <DependentUpon>AddMapsWindow.axaml</DependentUpon>
           <SubType>Code</SubType>
         </Compile>
+        <Compile Update="Views\Dialogues\ConfigureEditMapWindow.axaml.cs">
+          <DependentUpon>ConfigureEditMapWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
     </ItemGroup>
 </Project>
