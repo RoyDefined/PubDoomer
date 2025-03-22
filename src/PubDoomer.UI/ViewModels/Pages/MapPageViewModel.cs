@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
@@ -31,6 +33,9 @@ public partial class MapPageViewModel : PageViewModel
     private readonly MergedSettings? _mergedSettings;
 
     [ObservableProperty] private IWadContext? _selectedIWad;
+    [ObservableProperty] private string? _selectedConfiguration;
+
+    private string[]? _selectableConfigurations;
 
     public MapPageViewModel()
     {
@@ -102,19 +107,23 @@ public partial class MapPageViewModel : PageViewModel
             return;
         }
         
-        // Verify an IWad is selected.
+        // Verify an IWad and configuration is selected.
         // If not, we open the dialogue to configure it and end this method.
-        if (SelectedIWad == null)
+        if (SelectedIWad == null || SelectedConfiguration == null)
         {
-            await _dialogueProvider.AlertAsync(AlertType.Warning, "Select an IWad.");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Select an IWad and configuration to edit the map with.");
             await ConfigureEditMapAsync(map);
             return;
         }
         
-        await OpenMapAsync(_mergedSettings.UdbExecutableFilePath, map, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
+        await OpenMapAsync(_mergedSettings.UdbExecutableFilePath, map, SelectedIWad, SelectedConfiguration, CurrentProjectProvider.ProjectContext.Archives);
     }
 
-    private async Task OpenMapAsync(string udbExecutableFilePath, MapContext map, IWadContext selectedIWad,
+    private async Task OpenMapAsync(
+        string udbExecutableFilePath,
+        MapContext map,
+        IWadContext selectedIWad,
+        string selectedConfiguration,
         ObservableCollection<ArchiveContext> archives)
     {
         Debug.Assert(_dialogueProvider != null);
@@ -123,7 +132,7 @@ public partial class MapPageViewModel : PageViewModel
         // Any exceptions are displayed in a window.
         try
         {
-            MapEditUtil.StartUltimateDoomBuilder(udbExecutableFilePath, map, selectedIWad, archives);
+            MapEditUtil.StartUltimateDoomBuilder(udbExecutableFilePath, map, selectedIWad, selectedConfiguration, archives);
         }
         catch (Exception ex)
         {
@@ -149,12 +158,26 @@ public partial class MapPageViewModel : PageViewModel
             return;
         }
         
-        var vm = new ConfigureEditMapViewModel(_mergedSettings.UdbExecutableFilePath, _mergedSettings.IWads, SelectedIWad);
+        // Check for selectable configurations.
+        // If not set, initialize them.
+        try
+        {
+            _selectableConfigurations ??= MapEditUtil.GetConfigurations(_mergedSettings.UdbExecutableFilePath).ToArray();
+        }
+        catch (Exception)
+        {
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to retrieve configurations",
+                "Failed to retrieve eligible configurations for Ultimate DoomBuilder. Make sure the configured path is valid and contains a '/Configurations' folder with configurations.");
+            return;
+        }
+        
+        var vm = new ConfigureEditMapViewModel(_mergedSettings.UdbExecutableFilePath, _mergedSettings.IWads, _selectableConfigurations, SelectedIWad, SelectedConfiguration);
         var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
-        if (!result || vm.SelectedIWad == null) return;
+        if (!result || vm.SelectedIWad == null || vm.SelectedConfiguration == null) return;
         
         SelectedIWad = vm.SelectedIWad;
-        await OpenMapAsync(_mergedSettings.UdbExecutableFilePath, map, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
+        SelectedConfiguration = vm.SelectedConfiguration;
+        await OpenMapAsync(_mergedSettings.UdbExecutableFilePath, map, SelectedIWad, SelectedConfiguration, CurrentProjectProvider.ProjectContext.Archives);
     }
 
     [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_windowProvider), nameof(_notificationManager), nameof(_mergedSettings))]

@@ -47,6 +47,22 @@
                     </ComboBox>
                 </StackPanel>
                 
+                <!-- Configuration selection -->
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10">
+
+                    <TextBlock VerticalAlignment="Center"
+                               FontWeight="Bold"
+                               Text="Configuration"
+                               TextWrapping="Wrap" />
+
+                    <ComboBox SelectedIndex="0" 
+                              Width="200"
+                              SelectedItem="{Binding SelectedConfiguration}"
+                              ItemsSource="{Binding SelectableConfigurations}">
+                    </ComboBox>
+                </StackPanel>
+                
                 <!-- Extra information for the IWad -->
                 <TextBlock Theme="{StaticResource TitleTextBlock}"
                            Classes="Tertiary"
