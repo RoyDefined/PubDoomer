@@ -118,14 +118,13 @@ public partial class MapPageViewModel : PageViewModel
     private async Task OpenMapAsync(string udbExecutableFilePath, MapContext map, IWadContext selectedIWad,
         ObservableCollection<ArchiveContext> archives)
     {
-        Debug.Assert(SelectedIWad != null);
         Debug.Assert(_dialogueProvider != null);
         
         // Launch UDB with the map.
         // Any exceptions are displayed in a window.
         try
         {
-            MapEditUtil.StartUltimateDoomBuilder(udbExecutableFilePath, map, SelectedIWad, archives);
+            MapEditUtil.StartUltimateDoomBuilder(udbExecutableFilePath, map, selectedIWad, archives);
         }
         catch (Exception ex)
         {
