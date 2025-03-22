@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using PubDoomer.Project;
+using PubDoomer.Project.IWad;
 using PubDoomer.Saving;
 using PubDoomer.ViewModels.Dialogues;
 using PubDoomer.Views.Dialogues;
@@ -28,6 +30,13 @@ public static class SettingsMerger
                 : localSettingsPath?.Trim();
         }
 
+        static IEnumerable<IWadContext> MergeIWads(IEnumerable<IWadContext>? projectIWads, IEnumerable<IWadContext>? localIWads)
+        {
+            return (localIWads ?? [])
+                .Concat(projectIWads ?? [])
+                .DistinctBy(x => x.Path, StringComparer.OrdinalIgnoreCase);
+        }
+
         return new MergedSettings
         {
             AccCompilerExecutableFilePath = GetSetting(projectContext?.AccCompilerExecutableFilePath, localSettings?.AccCompilerExecutableFilePath),
@@ -36,6 +45,7 @@ public static class SettingsMerger
             UdbExecutableFilePath = GetSetting(projectContext?.UdbExecutableFilePath, localSettings?.UdbExecutableFilePath),
             SladeExecutableFilePath = GetSetting(projectContext?.SladeExecutableFilePath, localSettings?.SladeExecutableFilePath),
             AcsVmExecutableFilePath = GetSetting(projectContext?.AcsVmExecutableFilePath, localSettings?.AcsVmExecutableFilePath),
+            IWads = MergeIWads(projectContext?.IWads, localSettings?.IWads).ToArray(),
         };
     }
 }

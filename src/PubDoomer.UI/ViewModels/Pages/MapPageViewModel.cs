@@ -22,7 +22,6 @@ using PubDoomer.Views.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
 
-// TODO: IWad selection should also give the option for project IWads
 public partial class MapPageViewModel : PageViewModel
 {
     private readonly ILogger _logger;
