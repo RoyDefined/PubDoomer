@@ -49,6 +49,13 @@ public partial class ConfigureEditMapViewModel : PageViewModel
         // Design-time data.
         _udbExecutableFilePath = new LocalSettings().UdbExecutableFilePath!;
         SelectableIWads = new CurrentProjectProvider().ProjectContext!.IWads;
+        SelectableConfigurations =
+        [
+            "Boom_Doom2Doom",
+            "Boom_DoomDoom",
+            "Doom_Doom2Doom",
+            "Doom_DoomDoom",
+        ];
     }
     
     public ConfigureEditMapViewModel(
