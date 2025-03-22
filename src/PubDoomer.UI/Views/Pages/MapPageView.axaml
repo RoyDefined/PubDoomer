@@ -76,19 +76,41 @@
                                                 Orientation="Horizontal"
                                                 Spacing="10">
                                         
-                                        <!-- Run map in an engine -->
-                                        <Button Theme="{DynamicResource SolidButton}"
-                                                Classes="Secondary">
-                                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                                <Image Source="/Assets/engine-zandronum.png"
-                                                       Width="16"
-                                                       Height="16"
-                                                       VerticalAlignment="Center"
-                                                       HorizontalAlignment="Left"/>
-                                                <TextBlock Text="Run"
-                                                           VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </Button>
+                                        <!--
+                                            Run map in an engine.
+                                            This split button has a dropdown allowing for editing the parameters before running the map.
+                                        -->
+                                        <SplitButton Theme="{DynamicResource SolidSplitButton}"
+                                                     Classes="Secondary"
+                                                     Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).RunMapCommand}"
+                                                     CommandParameter="{Binding}">
+                                            <SplitButton.Content>
+                                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                                    <Image Source="/Assets/engine-zandronum.png"
+                                                           Width="16"
+                                                           Height="16"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Left"/>
+                                                    <TextBlock Text="Run"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </SplitButton.Content>
+                                            
+                                            <SplitButton.Flyout>
+                                                <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                                    
+                                                    <!-- Configure and edit opens a separate dialogue. -->
+                                                    <MenuItem Header="Configure and run..."
+                                                              Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).ConfigureRunMapCommand}"
+                                                              CommandParameter="{Binding}">
+                                                        <MenuItem.Icon>
+                                                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                      Data="{StaticResource SemiIconEdit}" />
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                </MenuFlyout>
+                                            </SplitButton.Flyout>
+                                        </SplitButton>
                                         
                                         <!--
                                             Open the map in Ultimate Doombuilder.

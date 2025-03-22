@@ -90,6 +90,60 @@ public partial class MapPageViewModel : PageViewModel
         _notificationManager?.Show(new Notification("Profile created", "The profile has been created successfully.",
             NotificationType.Success));
     }
+    
+    [RelayCommand]
+    private async Task RunMapAsync(MapContext map)
+    {
+        if (AssertInDesignMode()) return;
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        
+        _logger.LogDebug("Run map '{MapName}'.", map.Name);
+        
+        // TODO: Get selected engine when supporting multiple engines.
+        var engineFilePath = _mergedSettings.ZandronumExecutableFilePath;
+        
+        // Verify an engine and IWad is selected.
+        // If not, we open the dialogue to configure it and end this method.
+        if (engineFilePath == null || SelectedIWad == null)
+        {
+            // Verify that we have engines configured for running a map.
+            // TODO: When multiple engines can be selected, open the configure form if any are defined, or alert of missing configuration.
+            if (false)
+            {
+                return;
+            }
+
+            await ConfigureRunMapAsync(map);
+            return;
+        }
+        
+        await StartMapAsync(engineFilePath, map, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
+    }
+
+    [RelayCommand]
+    private async Task ConfigureRunMapAsync(MapContext map)
+    {
+        // TODO
+    }
+
+    private async Task StartMapAsync(string engineFilePath, MapContext map, IWadContext selectedIWad,
+        ObservableCollection<ArchiveContext> archives)
+    {
+        Debug.Assert(_dialogueProvider != null);
+        
+        // Launch the engine with the map.
+        // Any exceptions are displayed in a window.
+        try
+        {
+            MapRunUtil.RunMap(engineFilePath, map, selectedIWad, archives);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to open Ultimate DoomBuilder");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Ultimate DoomBuilder",
+                $"An error occurred while opening Ultimate DoomBuilder. Please check your configuration. Error: {ex.Message}");
+        }
+    }
 
     [RelayCommand]
     private async Task EditMapAsync(MapContext map)
@@ -116,29 +170,6 @@ public partial class MapPageViewModel : PageViewModel
         }
         
         await OpenMapAsync(_mergedSettings.UdbExecutableFilePath, map, SelectedIWad, SelectedConfiguration, CurrentProjectProvider.ProjectContext.Archives);
-    }
-
-    private async Task OpenMapAsync(
-        string udbExecutableFilePath,
-        MapContext map,
-        IWadContext selectedIWad,
-        string selectedConfiguration,
-        ObservableCollection<ArchiveContext> archives)
-    {
-        Debug.Assert(_dialogueProvider != null);
-        
-        // Launch UDB with the map.
-        // Any exceptions are displayed in a window.
-        try
-        {
-            MapEditUtil.StartUltimateDoomBuilder(udbExecutableFilePath, map, selectedIWad, selectedConfiguration, archives);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to open Ultimate DoomBuilder");
-            await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Ultimate DoomBuilder",
-                $"An error occurred while opening Ultimate DoomBuilder. Please check your configuration. Error: {ex.Message}");
-        }
     }
 
     [RelayCommand]
@@ -177,6 +208,29 @@ public partial class MapPageViewModel : PageViewModel
         SelectedIWad = vm.SelectedIWad;
         SelectedConfiguration = vm.SelectedConfiguration;
         await OpenMapAsync(_mergedSettings.UdbExecutableFilePath, map, SelectedIWad, SelectedConfiguration, CurrentProjectProvider.ProjectContext.Archives);
+    }
+
+    private async Task OpenMapAsync(
+        string udbExecutableFilePath,
+        MapContext map,
+        IWadContext selectedIWad,
+        string selectedConfiguration,
+        ObservableCollection<ArchiveContext> archives)
+    {
+        Debug.Assert(_dialogueProvider != null);
+        
+        // Launch UDB with the map.
+        // Any exceptions are displayed in a window.
+        try
+        {
+            MapEditUtil.StartUltimateDoomBuilder(udbExecutableFilePath, map, selectedIWad, selectedConfiguration, archives);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to open Ultimate DoomBuilder");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Ultimate DoomBuilder",
+                $"An error occurred while opening Ultimate DoomBuilder. Please check your configuration. Error: {ex.Message}");
+        }
     }
 
     [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_windowProvider), nameof(_notificationManager), nameof(_mergedSettings))]

@@ -44,6 +44,7 @@ public static class SettingsMerger
             GdccAccCompilerExecutableFilePath = GetSetting(projectContext?.GdccCompilerExecutableFilePath, localSettings?.GdccCompilerExecutableFilePath),
             UdbExecutableFilePath = GetSetting(projectContext?.UdbExecutableFilePath, localSettings?.UdbExecutableFilePath),
             SladeExecutableFilePath = GetSetting(projectContext?.SladeExecutableFilePath, localSettings?.SladeExecutableFilePath),
+            ZandronumExecutableFilePath = GetSetting(projectContext?.ZandronumExecutableFilePath, localSettings?.ZandronumExecutableFilePath),
             AcsVmExecutableFilePath = GetSetting(projectContext?.AcsVmExecutableFilePath, localSettings?.AcsVmExecutableFilePath),
             IWads = MergeIWads(projectContext?.IWads, localSettings?.IWads).ToArray(),
         };

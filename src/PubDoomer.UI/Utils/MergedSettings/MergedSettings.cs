@@ -15,5 +15,6 @@ public class MergedSettings : PublishingContext
 {
     public required string? UdbExecutableFilePath { get; init; }
     public required string? SladeExecutableFilePath { get; init; }
+    public required string? ZandronumExecutableFilePath { get; init; }
     public required IWadContext[] IWads { get; init; }
 }
