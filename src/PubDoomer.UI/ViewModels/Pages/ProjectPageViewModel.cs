@@ -74,6 +74,27 @@ public partial class ProjectPageViewModel : PageViewModel
     private async Task DeleteEngineAsync(EngineContext context)
     {
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+
+        // In design mode we delete without a prompt.
+        if (AssertInDesignMode())
+        {
+            CurrentProjectProvider.ProjectContext.Engines.Remove(context);
+            return;
+        }
+        
+        var result = await _dialogueProvider.PromptAsync(
+            AlertType.Warning,
+            "Delete engine",
+            "Are you sure you want to delete this engine?",
+            "The engine will be deleted and you will have to readd it.",
+            new InformationalWindowButton(AlertType.None, "Cancel"),
+            new InformationalWindowButton(AlertType.Error, "Delete"));
+
+        if (!result) return;
+
+        CurrentProjectProvider.ProjectContext.Engines.Remove(context);
+        _notificationManager?.Show(new Notification("Engine deleted", "The engine has been deleted.",
+            NotificationType.Success));
     }
 
     [RelayCommand]
