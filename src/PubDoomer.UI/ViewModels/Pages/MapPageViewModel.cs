@@ -111,7 +111,6 @@ public partial class MapPageViewModel : PageViewModel
         // If not, we open the dialogue to configure it and end this method.
         if (SelectedIWad == null || SelectedConfiguration == null)
         {
-            await _dialogueProvider.AlertAsync(AlertType.Warning, "Select an IWad and configuration to edit the map with.");
             await ConfigureEditMapAsync(map);
             return;
         }
