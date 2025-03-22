@@ -106,13 +106,6 @@ public partial class MapPageViewModel : PageViewModel
         // If not, we open the dialogue to configure it and end this method.
         if (engineFilePath == null || SelectedIWad == null)
         {
-            // Verify that we have engines configured for running a map.
-            // TODO: When multiple engines can be selected, open the configure form if any are defined, or alert of missing configuration.
-            if (false)
-            {
-                return;
-            }
-
             await ConfigureRunMapAsync(map);
             return;
         }
@@ -123,7 +116,26 @@ public partial class MapPageViewModel : PageViewModel
     [RelayCommand]
     private async Task ConfigureRunMapAsync(MapContext map)
     {
-        // TODO
+        if (AssertInDesignMode()) return;
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        
+        // Verify that we have engines configured for running a map.
+        // TODO: When multiple engines can be selected, open the configure form if any are defined, or alert of missing configuration.
+        if (false)
+        {
+            return;
+        }
+        
+        // TODO: Get selected engine when supporting multiple engines.
+        var engineFilePath = _mergedSettings.ZandronumExecutableFilePath;
+        Debug.Assert(engineFilePath != null);
+        
+        var vm = new ConfigureRunMapViewModel(engineFilePath, _mergedSettings.IWads, SelectedIWad);
+        var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
+        if (!result || vm.SelectedIWad == null) return;
+        
+        SelectedIWad = vm.SelectedIWad;
+        await StartMapAsync(engineFilePath, map, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
     }
 
     private async Task StartMapAsync(string engineFilePath, MapContext map, IWadContext selectedIWad,

@@ -110,5 +110,9 @@
           <DependentUpon>ConfigureEditMapWindow.axaml</DependentUpon>
           <SubType>Code</SubType>
         </Compile>
+        <Compile Update="Views\Dialogues\ConfigureRunMapWindow.axaml.cs">
+          <DependentUpon>ConfigureRunMapWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
     </ItemGroup>
 </Project>
