@@ -149,7 +149,7 @@ public partial class MapPageViewModel : PageViewModel
             return;
         }
         
-        var vm = new ConfigureEditMapViewModel(_mergedSettings.UdbExecutableFilePath, _mergedSettings.IWads);
+        var vm = new ConfigureEditMapViewModel(_mergedSettings.UdbExecutableFilePath, _mergedSettings.IWads, SelectedIWad);
         var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
         if (!result || vm.SelectedIWad == null) return;
         

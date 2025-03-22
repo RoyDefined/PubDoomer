@@ -40,10 +40,12 @@ public partial class ConfigureEditMapViewModel : PageViewModel
     
     public ConfigureEditMapViewModel(
         string udbExecutableFilePath,
-        IEnumerable<IWadContext> iWadContexts)
+        IEnumerable<IWadContext> iWadContexts,
+        IWadContext? selectedIWad)
     {
         UdbExecutableFilePath = udbExecutableFilePath;
         SelectableIWads = new ObservableCollection<IWadContext>(iWadContexts);
+        SelectedIWad = selectedIWad;
     }
 
     public bool FormIsValid => SelectedIWad != null;
