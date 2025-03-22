@@ -27,15 +27,15 @@
             <StackPanel Spacing="5">
                 
                 <!-- IWad selection -->
-                <StackPanel Orientation="Horizontal"
-                            Spacing="10">
+                <Grid ColumnDefinitions="120, Auto">
 
                     <TextBlock VerticalAlignment="Center"
                                FontWeight="Bold"
                                Text="IWad"
                                TextWrapping="Wrap" />
 
-                    <ComboBox SelectedIndex="0" 
+                    <ComboBox Grid.Column="1"
+                              SelectedIndex="0" 
                               Width="200"
                               SelectedItem="{Binding SelectedIWad}"
                               ItemsSource="{Binding SelectableIWads}">
@@ -45,23 +45,23 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                </StackPanel>
+                </Grid>
                 
                 <!-- Configuration selection -->
-                <StackPanel Orientation="Horizontal"
-                            Spacing="10">
+                <Grid ColumnDefinitions="120, Auto">
 
                     <TextBlock VerticalAlignment="Center"
                                FontWeight="Bold"
                                Text="Configuration"
                                TextWrapping="Wrap" />
 
-                    <ComboBox SelectedIndex="0" 
+                    <ComboBox Grid.Column="1"
+                              SelectedIndex="0" 
                               Width="200"
                               SelectedItem="{Binding SelectedConfiguration}"
                               ItemsSource="{Binding SelectableConfigurations}">
                     </ComboBox>
-                </StackPanel>
+                </Grid>
                 
                 <!-- Extra information for the IWad -->
                 <TextBlock Theme="{StaticResource TitleTextBlock}"
