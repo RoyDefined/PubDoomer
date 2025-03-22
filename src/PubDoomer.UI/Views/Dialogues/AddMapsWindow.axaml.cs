@@ -22,11 +22,15 @@ public partial class AddMapsWindow : Window
 
     private void CancelFormButton_OnClick(object? sender, RoutedEventArgs e)
     {
+        if (Design.IsDesignMode) return;
+
         Close(false);
     }
 
     private async void FinishFormButton_OnClick(object? sender, RoutedEventArgs e)
     {
+        if (Design.IsDesignMode) return;
+        
         var viewModel = (AddMapsWindowViewModel)DataContext!;
         if (!viewModel.FormIsValid) return;
 
