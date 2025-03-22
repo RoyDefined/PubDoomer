@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using PubDoomer.Project;
 using PubDoomer.Project.Archive;
+using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 using PubDoomer.Services;
 using PubDoomer.ViewModels.Dialogues;
@@ -61,6 +62,19 @@ public partial class ProjectPageViewModel : PageViewModel
     }
     
     public CurrentProjectProvider CurrentProjectProvider { get; }
+    
+    [RelayCommand]
+    private void AddEngine()
+    {
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        CurrentProjectProvider.ProjectContext.Engines.Add(new EngineContext());
+    }
+
+    [RelayCommand]
+    private async Task DeleteEngineAsync(EngineContext context)
+    {
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+    }
 
     [RelayCommand]
     private void AddArchive()

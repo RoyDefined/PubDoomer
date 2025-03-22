@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using PubDoomer.Project.Archive;
+using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 using PubDoomer.Project.Maps;
 using PubDoomer.Project.Profile;
@@ -58,6 +59,33 @@ public partial class CurrentProjectProvider : ObservableObject
             UdbExecutableFilePath = "Path/To/UtimateDoombuilder.exe",
             AcsVmExecutableFilePath = "Path/To/ACS-VM.exe",
             ZandronumExecutableFilePath = "Path/To/Zandronum.exe",
+            Engines = 
+            [
+                new EngineContext()
+                {
+                    Name = "Zandronum (latest)",
+                    Path = "Path/To/Zandronum.exe",
+                    Type = EngineType.Zandronum,
+                },
+                new EngineContext()
+                {
+                    Name = "GZDoom (latest)",
+                    Path = "Path/To/GZDoom.exe",
+                    Type = EngineType.GzDoom,
+                },
+                new EngineContext()
+                {
+                    Name = "ZDoom (latest)",
+                    Path = "Path/To/ZDoom.exe",
+                    Type = EngineType.Zdoom,
+                },
+                new EngineContext()
+                {
+                    Name = "Pending engine",
+                    Path = "Path/To/Something.exe",
+                    Type = EngineType.Unknown,
+                }
+            ],
             Archives =
             [
                 new ArchiveContext()

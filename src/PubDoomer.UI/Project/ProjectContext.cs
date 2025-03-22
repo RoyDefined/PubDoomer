@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Project.Archive;
+using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 using PubDoomer.Project.Maps;
 using PubDoomer.Project.Profile;
@@ -23,6 +24,8 @@ public partial class ProjectContext : ObservableObject
     [ObservableProperty] private string? _sladeExecutableFilePath;
     [ObservableProperty] private string? _udbExecutableFilePath;
     [ObservableProperty] private string? _acsVmExecutableFilePath;
+    
+    // TODO: Remove
     [ObservableProperty] private string? _zandronumExecutableFilePath;
 
     /// <summary>
@@ -56,6 +59,11 @@ public partial class ProjectContext : ObservableObject
     /// Configurable locations of archives.
     /// </summary>
     [ObservableProperty] private ObservableCollection<ArchiveContext> _archives = [];
+    
+    /// <summary>
+    /// Configurable locations of game engines.
+    /// </summary>
+    [ObservableProperty] private ObservableCollection<EngineContext> _engines = [];
     
     /// <summary>
     /// Configurable locations of maps.
