@@ -121,7 +121,7 @@ public partial class ProfilesPageViewModel : PageViewModel
             runTask.Exception = result.Exception;
             
             // Check error behaviour.
-            // If there was an error and the behaviour is to quit, then end the task invokation early.
+            // If there was an error and the behaviour is to quit, then end the task invocation early.
             if (runTask.Status == ProfileRunTaskStatus.Error)
             {
                 if (runTask.Behaviour == ProfileTaskErrorBehaviour.StopOnError)
@@ -176,7 +176,7 @@ public partial class ProfilesPageViewModel : PageViewModel
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
 
         CurrentProjectProvider.ProjectContext.Profiles.Add(vm.CurrentProfileContext);
-        _notificationManager?.Show(new Notification("Profile created", "The profile has been created succesfully.",
+        _notificationManager?.Show(new Notification("Profile created", "The profile has been created successfully.",
             NotificationType.Success));
     }
 
@@ -192,7 +192,7 @@ public partial class ProfilesPageViewModel : PageViewModel
 
         var index = CurrentProjectProvider.ProjectContext.Profiles.IndexOf(profileContext);
         CurrentProjectProvider.ProjectContext.Profiles[index] = vm.CurrentProfileContext;
-        _notificationManager?.Show(new Notification("Profile edited", "The profile has been edited succesfully.",
+        _notificationManager?.Show(new Notification("Profile edited", "The profile has been edited successfully.",
             NotificationType.Success));
     }
 

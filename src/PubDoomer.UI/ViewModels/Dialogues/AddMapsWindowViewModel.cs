@@ -68,7 +68,7 @@ public partial class AddMapsWindowViewModel : ViewModelBase
     /// <summary>
     /// Asynchronously adds maps through file selection.
     /// <br /> Used in both the UI as a command but also called directly on load.
-    /// <br /> <see cref="OnLoadAddMapsWithFileSelectAsync"/> covers file selection when the form is loaded.
+    /// <br /> <see cref="OnLoadAddMapsWithFileSelect"/> covers file selection when the form is loaded.
     /// </summary>
     [RelayCommand]
     private async Task AddMapsWithFileSelectAsync()

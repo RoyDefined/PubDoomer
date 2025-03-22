@@ -87,7 +87,7 @@ public partial class MapPageViewModel : PageViewModel
             CurrentProjectProvider.ProjectContext.Maps.Add(map);
         }
         
-        _notificationManager?.Show(new Notification("Profile created", "The profile has been created succesfully.",
+        _notificationManager?.Show(new Notification("Profile created", "The profile has been created successfully.",
             NotificationType.Success));
     }
 
@@ -97,13 +97,13 @@ public partial class MapPageViewModel : PageViewModel
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         
-        _logger.LogDebug("Opening map '{MapName}' using Ultimate Doombuilder configured at path '{UdbPath}'.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
+        _logger.LogDebug("Opening map '{MapName}' using Ultimate DoomBuilder configured at path '{UdbPath}'.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
         
         // Path to UDB must exist.
         if (_mergedSettings.UdbExecutableFilePath == null)
         {
             await _dialogueProvider.AlertAsync(AlertType.Warning, "Missing configuration",
-                "The path to Ultimate Doombuilder is not configured. You must either configure the path in the project settings, or your local settings.");
+                "The path to Ultimate DoomBuilder is not configured. You must either configure the path in the project settings, or your local settings.");
             return;
         }
         
@@ -136,9 +136,9 @@ public partial class MapPageViewModel : PageViewModel
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to open Ultimate Doombuilder");
-            await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Ultimate Doombuilder",
-                $"An error occurred while opening Ultimate Doombuilder. Please check your configuration. Error: {ex.Message}");
+            _logger.LogError(ex, "Failed to open Ultimate DoomBuilder");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Ultimate DoomBuilder",
+                $"An error occurred while opening Ultimate DoomBuilder. Please check your configuration. Error: {ex.Message}");
         }
     }
 
@@ -148,13 +148,13 @@ public partial class MapPageViewModel : PageViewModel
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         
-        _logger.LogDebug("Configuring to map '{MapName}' using Ultimate Doombuilder configured at path '{UdbPath}'.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
+        _logger.LogDebug("Configuring to map '{MapName}' using Ultimate DoomBuilder configured at path '{UdbPath}'.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
         
         // Path to UDB must exist.
         if (_mergedSettings.UdbExecutableFilePath == null)
         {
             await _dialogueProvider.AlertAsync(AlertType.Warning, "Missing configuration",
-                "The path to Ultimate Doombuilder is not configured. You must either configure the path in the project settings, or your local settings.");
+                "The path to Ultimate DoomBuilder is not configured. You must either configure the path in the project settings, or your local settings.");
             return;
         }
         

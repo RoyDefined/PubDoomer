@@ -208,7 +208,7 @@ public partial class MainWindowModel : MainViewModel
         {
             await _savingService.LoadProjectOrDefaultAsync(projectPath);
             
-            // If still null, the project no longer existed probably.
+            // If still null, the project no longer existed, probably.
             if (CurrentProjectProvider.ProjectContext == null)
             {
                 await _dialogueProvider.AlertAsync(AlertType.Warning,
