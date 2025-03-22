@@ -178,7 +178,7 @@ public partial class MapPageViewModel : PageViewModel
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         
-        _logger.LogDebug("Configuring to map '{MapName}' using Ultimate DoomBuilder configured at path '{UdbPath}'.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
+        _logger.LogDebug("Configuring to edit map '{MapName}' using Ultimate DoomBuilder configured at path '{UdbPath}'.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
         
         // Path to UDB must exist.
         if (_mergedSettings.UdbExecutableFilePath == null)
