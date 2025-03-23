@@ -21,9 +21,7 @@ public class EngineTypeToImagePathConverter : IValueConverter
             EngineType.Zandronum => "/Assets/engine-zandronum.png",
             EngineType.Zdoom => "/Assets/engine-zdoom.png",
             EngineType.GzDoom => "/Assets/engine-gzdoom.png",
-            
-            // TODO: Provide a better image for unknown images.
-            _ => "/Assets/engine-zandronum.png"
+            _ => "/Assets/engine-unknown.png"
         };
 
         // TODO: Improve to not contain the assembly name directly.
