@@ -8,5 +8,6 @@ namespace PubDoomer.Engine;
 /// </summary>
 public abstract partial class EngineRunConfiguration : ObservableObject
 {
-    [ObservableProperty] private EngineContext _context;
+    // Set during creation, never `null`.
+    public EngineContext Context { get; set; } = null!;
 }

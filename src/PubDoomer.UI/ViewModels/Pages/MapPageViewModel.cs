@@ -126,7 +126,7 @@ public partial class MapPageViewModel : PageViewModel
             return;
         }
         
-        var vm = new ConfigureRunMapViewModel(_mergedSettings.Engines, _mergedSettings.IWads, SelectedIWad, SelectedEngine);
+        var vm = new ConfigureRunMapViewModel(_dialogueProvider, _mergedSettings.Engines, _mergedSettings.IWads, SelectedIWad, SelectedEngine);
         var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
         if (!result || vm.SelectedEngine == null || vm.SelectedIWad == null) return;
         
