@@ -15,7 +15,6 @@ public partial class LocalSettings : ObservableObject
     [ObservableProperty] private string? _sladeExecutableFilePath;
     [ObservableProperty] private string? _udbExecutableFilePath;
     [ObservableProperty] private string? _acsVmExecutableFilePath;
-    [ObservableProperty] private string? _zandronumExecutableFilePath;
     
     /// <summary>
     /// Configurable locations of game engines.
@@ -38,7 +37,6 @@ public partial class LocalSettings : ObservableObject
         SladeExecutableFilePath = "Path/To/Slade.exe";
         UdbExecutableFilePath = "Path/To/UtimateDoombuilder.exe";
         AcsVmExecutableFilePath = "Path/To/ACS-VM.exe";
-        ZandronumExecutableFilePath = "Path/To/Zandronum.exe";
 
         Engines =
         [

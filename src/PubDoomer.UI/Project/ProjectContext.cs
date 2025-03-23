@@ -24,9 +24,6 @@ public partial class ProjectContext : ObservableObject
     [ObservableProperty] private string? _sladeExecutableFilePath;
     [ObservableProperty] private string? _udbExecutableFilePath;
     [ObservableProperty] private string? _acsVmExecutableFilePath;
-    
-    // TODO: Remove
-    [ObservableProperty] private string? _zandronumExecutableFilePath;
 
     /// <summary>
     /// Represents the file path that the project is saved under.

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using PubDoomer.Project;
+using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 using PubDoomer.Saving;
 using PubDoomer.ViewModels.Dialogues;
@@ -30,10 +31,17 @@ public static class SettingsMerger
                 : localSettingsPath?.Trim();
         }
 
-        static IEnumerable<IWadContext> MergeIWads(IEnumerable<IWadContext>? projectIWads, IEnumerable<IWadContext>? localIWads)
+        static IEnumerable<IWadContext> MergeIWads(IEnumerable<IWadContext>? projectIwads, IEnumerable<IWadContext>? localIwads)
         {
-            return (localIWads ?? [])
-                .Concat(projectIWads ?? [])
+            return (localIwads ?? [])
+                .Concat(projectIwads ?? [])
+                .DistinctBy(x => x.Path, StringComparer.OrdinalIgnoreCase);
+        }
+
+        static IEnumerable<EngineContext> MergeEngines(IEnumerable<EngineContext>? projectEngines, IEnumerable<EngineContext>? localEngines)
+        {
+            return (localEngines ?? [])
+                .Concat(projectEngines ?? [])
                 .DistinctBy(x => x.Path, StringComparer.OrdinalIgnoreCase);
         }
 
@@ -44,9 +52,9 @@ public static class SettingsMerger
             GdccAccCompilerExecutableFilePath = GetSetting(projectContext?.GdccCompilerExecutableFilePath, localSettings?.GdccCompilerExecutableFilePath),
             UdbExecutableFilePath = GetSetting(projectContext?.UdbExecutableFilePath, localSettings?.UdbExecutableFilePath),
             SladeExecutableFilePath = GetSetting(projectContext?.SladeExecutableFilePath, localSettings?.SladeExecutableFilePath),
-            ZandronumExecutableFilePath = GetSetting(projectContext?.ZandronumExecutableFilePath, localSettings?.ZandronumExecutableFilePath),
             AcsVmExecutableFilePath = GetSetting(projectContext?.AcsVmExecutableFilePath, localSettings?.AcsVmExecutableFilePath),
             IWads = MergeIWads(projectContext?.IWads, localSettings?.IWads).ToArray(),
+            Engines = MergeEngines(projectContext?.Engines, localSettings?.Engines).ToArray(),
         };
     }
 }

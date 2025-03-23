@@ -58,7 +58,6 @@ public partial class CurrentProjectProvider : ObservableObject
             SladeExecutableFilePath = "Path/To/Slade.exe",
             UdbExecutableFilePath = "Path/To/UtimateDoombuilder.exe",
             AcsVmExecutableFilePath = "Path/To/ACS-VM.exe",
-            ZandronumExecutableFilePath = "Path/To/Zandronum.exe",
             Engines = 
             [
                 new EngineContext()

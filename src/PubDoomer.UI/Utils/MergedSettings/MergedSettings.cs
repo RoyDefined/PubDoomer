@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PubDoomer.Engine.Orchestration;
+using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 
 namespace PubDoomer.Utils.MergedSettings;
@@ -15,6 +16,6 @@ public class MergedSettings : PublishingContext
 {
     public required string? UdbExecutableFilePath { get; init; }
     public required string? SladeExecutableFilePath { get; init; }
-    public required string? ZandronumExecutableFilePath { get; init; }
     public required IWadContext[] IWads { get; init; }
+    public required EngineContext[] Engines { get; init; }
 }

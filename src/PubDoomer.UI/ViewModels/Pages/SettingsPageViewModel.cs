@@ -34,7 +34,6 @@ public partial class SettingsPageViewModel : PageViewModel
         ["Udb"] = "Select Ultimate Doombuilder executable",
         ["Slade"] = "Select Slade executable",
         ["AcsVm"] = "Select ACS VM executable",
-        ["Zandronum"] = "Select Zandronum executable"
     };
 
     private readonly ILogger _logger;
@@ -186,9 +185,6 @@ public partial class SettingsPageViewModel : PageViewModel
                 break;
             case "AcsVm":
                 Settings.AcsVmExecutableFilePath = filePath;
-                break;
-            case "Zandronum":
-                Settings.ZandronumExecutableFilePath = filePath;
                 break;
 
             default:
