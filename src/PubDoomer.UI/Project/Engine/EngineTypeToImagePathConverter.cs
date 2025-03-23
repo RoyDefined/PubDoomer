@@ -9,6 +9,7 @@ namespace PubDoomer.Project.Engine;
 
 public class EngineTypeToImagePathConverter : IValueConverter
 {
+    // TODO: Cache bitmaps.
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is not EngineType engineType)
