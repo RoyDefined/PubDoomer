@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Project;
+using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 using PubDoomer.Saving;
 using PubDoomer.ViewModels.Pages;
@@ -13,9 +14,9 @@ namespace PubDoomer.ViewModels.Dialogues;
 public partial class ConfigureRunMapViewModel : PageViewModel
 {
     /// <summary>
-    /// The configured path to the engine.
+    /// The collection of Engine instances that can be selected.
     /// </summary>
-    [ObservableProperty] private string _zandronumExecutableFilePath;
+    [ObservableProperty] private ObservableCollection<EngineContext> _selectableEngines;
     
     /// <summary>
     /// The collection of IWad instances that can be selected.
@@ -29,24 +30,34 @@ public partial class ConfigureRunMapViewModel : PageViewModel
     [NotifyPropertyChangedFor(nameof(FormIsValid))]
     private IWadContext? _selectedIWad;
     
+    /// <summary>
+    /// The Engine configured to be opened.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FormIsValid))]
+    private EngineContext? _selectedEngine;
+    
     public ConfigureRunMapViewModel()
     {
         if (!Design.IsDesignMode) throw new InvalidOperationException();
 
         // Design-time data.
-        ZandronumExecutableFilePath = new LocalSettings().ZandronumExecutableFilePath!;
-        SelectableIWads = new CurrentProjectProvider().ProjectContext!.IWads;
+        var project = new CurrentProjectProvider().ProjectContext!;
+        SelectableIWads = project.IWads;
+        SelectableEngines = project.Engines;
     }
     
     public ConfigureRunMapViewModel(
-        string zandronumExecutableFilePath,
+        IEnumerable<EngineContext> engineContexts,
         IEnumerable<IWadContext> iWadContexts,
-        IWadContext? selectedIWad)
+        IWadContext? selectedIWad,
+        EngineContext? selectedEngine)
     {
-        ZandronumExecutableFilePath = zandronumExecutableFilePath;
+        SelectableEngines = new ObservableCollection<EngineContext>(engineContexts);
         SelectableIWads = new ObservableCollection<IWadContext>(iWadContexts);
+        SelectedEngine = selectedEngine;
         SelectedIWad = selectedIWad;
     }
 
-    public bool FormIsValid => SelectedIWad != null;
+    public bool FormIsValid => SelectedIWad != null && SelectedEngine != null;
 }

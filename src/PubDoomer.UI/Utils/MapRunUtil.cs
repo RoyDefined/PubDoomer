@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PubDoomer.Project.Archive;
+using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 using PubDoomer.Project.Maps;
 
@@ -15,7 +16,7 @@ internal static class MapRunUtil
     // TODO: Configurable log file
     // TODO: Configure bots
     // TODO: Configure multiplayer
-    public static void RunMap(string engineFilePath, MapContext map, IWadContext selectedIWad, IEnumerable<ArchiveContext> archives)
+    public static void RunMap(MapContext map, EngineContext selectedEngine, IWadContext selectedIWad, IEnumerable<ArchiveContext> archives)
     {
         var argumentBuilder = new StringBuilder();
 
@@ -38,7 +39,7 @@ internal static class MapRunUtil
 
         var processStartInfo = new ProcessStartInfo
         {
-            FileName = engineFilePath,
+            FileName = selectedEngine.Path,
             Arguments = argumentBuilder.ToString(),
             UseShellExecute = false
         };

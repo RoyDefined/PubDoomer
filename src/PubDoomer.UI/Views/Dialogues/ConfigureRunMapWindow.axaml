@@ -24,21 +24,52 @@
                        Theme="{StaticResource TitleTextBlock}"
                        Text="Configure and run map" />
             
-            <StackPanel Spacing="5">
+            <StackPanel Spacing="10">
+                <StackPanel Spacing="5">
                 
-                <!-- IWad selection -->
+                    <!-- IWad selection -->
+                    <Grid ColumnDefinitions="120, Auto">
+
+                        <TextBlock VerticalAlignment="Center"
+                                   FontWeight="Bold"
+                                   Text="IWad"
+                                   TextWrapping="Wrap" />
+
+                        <ComboBox Grid.Column="1"
+                                  SelectedIndex="0" 
+                                  Width="200"
+                                  SelectedItem="{Binding SelectedIWad}"
+                                  ItemsSource="{Binding SelectableIWads}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                    
+                    <!-- Extra information for the IWad -->
+                    <TextBlock Theme="{StaticResource TitleTextBlock}"
+                               Classes="Tertiary"
+                               FontSize="10"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center"
+                               Text="The IWad you select will be used as a base for the map."/>
+                </StackPanel>
+                
+                <!-- Engine selection -->
                 <Grid ColumnDefinitions="120, Auto">
 
                     <TextBlock VerticalAlignment="Center"
                                FontWeight="Bold"
-                               Text="IWad"
+                               Text="Engine"
                                TextWrapping="Wrap" />
 
                     <ComboBox Grid.Column="1"
                               SelectedIndex="0" 
                               Width="200"
-                              SelectedItem="{Binding SelectedIWad}"
-                              ItemsSource="{Binding SelectableIWads}">
+                              SelectedItem="{Binding SelectedEngine}"
+                              ItemsSource="{Binding SelectableEngines}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}"/>
@@ -46,22 +77,6 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                 </Grid>
-                
-                <!-- Extra information for the IWad -->
-                <TextBlock Theme="{StaticResource TitleTextBlock}"
-                           Classes="Tertiary"
-                           FontSize="10"
-                           TextWrapping="Wrap"
-                           VerticalAlignment="Center"
-                           Text="The IWad you select will be used as a base for the map."/>
-                
-                <!-- Engine path -->
-                <TextBlock Theme="{StaticResource TitleTextBlock}"
-                           Classes="Tertiary"
-                           FontSize="10"
-                           TextWrapping="Wrap"
-                           VerticalAlignment="Center"
-                           Text="{Binding ZandronumExecutableFilePath, StringFormat='The engine that will be opened is located at \'{0}\'.'}"/>
             </StackPanel>
             
             <!-- Cancel and submit button -->

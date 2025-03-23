@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using PubDoomer.Project;
 using PubDoomer.Project.Archive;
+using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 using PubDoomer.Project.Maps;
 using PubDoomer.Saving;
@@ -33,6 +34,7 @@ public partial class MapPageViewModel : PageViewModel
     private readonly MergedSettings? _mergedSettings;
 
     [ObservableProperty] private IWadContext? _selectedIWad;
+    [ObservableProperty] private EngineContext? _selectedEngine;
     [ObservableProperty] private string? _selectedConfiguration;
 
     private string[]? _selectableConfigurations;
@@ -99,18 +101,15 @@ public partial class MapPageViewModel : PageViewModel
         
         _logger.LogDebug("Run map '{MapName}'.", map.Name);
         
-        // TODO: Get selected engine when supporting multiple engines.
-        var engineFilePath = _mergedSettings.ZandronumExecutableFilePath;
-        
         // Verify an engine and IWad is selected.
         // If not, we open the dialogue to configure it and end this method.
-        if (engineFilePath == null || SelectedIWad == null)
+        if (SelectedEngine == null || SelectedIWad == null)
         {
             await ConfigureRunMapAsync(map);
             return;
         }
         
-        await StartMapAsync(engineFilePath, map, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
+        await StartMapAsync(map, SelectedEngine, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
     }
 
     [RelayCommand]
@@ -120,25 +119,23 @@ public partial class MapPageViewModel : PageViewModel
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         
         // Verify that we have engines configured for running a map.
-        // TODO: When multiple engines can be selected, open the configure form if any are defined, or alert of missing configuration.
-        if (false)
+        if (_mergedSettings.Engines.Length == 0)
         {
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Missing configuration",
+                "No engines are configured to be used. You must either configure engines in the project settings, or your local settings.");
             return;
         }
         
-        // TODO: Get selected engine when supporting multiple engines.
-        var engineFilePath = _mergedSettings.ZandronumExecutableFilePath;
-        Debug.Assert(engineFilePath != null);
-        
-        var vm = new ConfigureRunMapViewModel(engineFilePath, _mergedSettings.IWads, SelectedIWad);
+        var vm = new ConfigureRunMapViewModel(_mergedSettings.Engines, _mergedSettings.IWads, SelectedIWad, SelectedEngine);
         var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
-        if (!result || vm.SelectedIWad == null) return;
+        if (!result || vm.SelectedEngine == null || vm.SelectedIWad == null) return;
         
+        SelectedEngine = vm.SelectedEngine;
         SelectedIWad = vm.SelectedIWad;
-        await StartMapAsync(engineFilePath, map, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
+        await StartMapAsync(map, SelectedEngine, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
     }
 
-    private async Task StartMapAsync(string engineFilePath, MapContext map, IWadContext selectedIWad,
+    private async Task StartMapAsync(MapContext map, EngineContext selectedEngine, IWadContext selectedIWad,
         ObservableCollection<ArchiveContext> archives)
     {
         Debug.Assert(_dialogueProvider != null);
@@ -147,7 +144,7 @@ public partial class MapPageViewModel : PageViewModel
         // Any exceptions are displayed in a window.
         try
         {
-            MapRunUtil.RunMap(engineFilePath, map, selectedIWad, archives);
+            MapRunUtil.RunMap(map, selectedEngine, selectedIWad, archives);
         }
         catch (Exception ex)
         {
