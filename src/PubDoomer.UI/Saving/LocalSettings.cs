@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 
 namespace PubDoomer.Saving;
@@ -15,6 +16,11 @@ public partial class LocalSettings : ObservableObject
     [ObservableProperty] private string? _udbExecutableFilePath;
     [ObservableProperty] private string? _acsVmExecutableFilePath;
     [ObservableProperty] private string? _zandronumExecutableFilePath;
+    
+    /// <summary>
+    /// Configurable locations of game engines.
+    /// </summary>
+    [ObservableProperty] private ObservableCollection<EngineContext> _engines = [];
 
     /// <summary>
     /// Configurable locations of IWad files.
@@ -34,6 +40,34 @@ public partial class LocalSettings : ObservableObject
         AcsVmExecutableFilePath = "Path/To/ACS-VM.exe";
         ZandronumExecutableFilePath = "Path/To/Zandronum.exe";
 
+        Engines =
+        [
+            new EngineContext()
+            {
+                Name = "Zandronum (latest)",
+                Path = "Path/To/Zandronum.exe",
+                Type = EngineType.Zandronum,
+            },
+            new EngineContext()
+            {
+                Name = "GZDoom (latest)",
+                Path = "Path/To/GZDoom.exe",
+                Type = EngineType.GzDoom,
+            },
+            new EngineContext()
+            {
+                Name = "ZDoom (latest)",
+                Path = "Path/To/ZDoom.exe",
+                Type = EngineType.Zdoom,
+            },
+            new EngineContext()
+            {
+                Name = "Pending engine",
+                Path = "Path/To/Something.exe",
+                Type = EngineType.Unknown,
+            }
+        ];
+            
         IWads =
         [
             new IWadContext()

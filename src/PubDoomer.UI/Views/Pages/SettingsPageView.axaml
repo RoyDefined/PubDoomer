@@ -2,12 +2,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:engine="clr-namespace:PubDoomer.Project.Engine"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="PubDoomer.Views.Pages.SettingsPageView"
              x:DataType="SettingsPageViewModel">
+    
     <Design.DataContext>
         <SettingsPageViewModel />
     </Design.DataContext>
+
+    <UserControl.Resources>
+        <engine:EngineTypeToImagePathConverter x:Key="EngineTypeToImagePathConverter" />
+    </UserControl.Resources>
 
     <Border Padding="10">
         <ScrollViewer>
@@ -124,6 +130,107 @@
                             </HeaderedContentControl>
                             
                             <!-- Game engines -->
+                            <HeaderedContentControl Classes="GroupBox"
+                                                    BorderBrush="Gray"
+                                                    BorderThickness="1"
+                                                    CornerRadius="4"
+                                                    Header="Game engines">
+
+                                <StackPanel>
+                                    <Button HorizontalAlignment="Left"
+                                            Command="{Binding AddEngineCommand}"
+                                            Classes="Success"
+                                            Theme="{DynamicResource BorderlessButton}"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconPlusCircle}" />
+                                    </Button>
+                                    
+                                    <Border Padding="5 10" MaxHeight="400">
+                                    
+                                        <ScrollViewer>
+                                            <ItemsControl ItemsSource="{Binding Settings.Engines}">
+                                                <ItemsControl.ItemsPanel>
+
+                                                    <!-- Spaced layout -->
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Spacing="15" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        
+                                                        <Grid ColumnDefinitions="Auto, *"
+                                                              RowDefinitions="Auto, Auto">
+                                                            <!-- Left part -->
+                                                            
+                                                            <!-- Delete button -->
+                                                            <Border Margin="0 0 5 0">
+                                                                <Button  Command="{Binding $parent[UserControl].((SettingsPageViewModel)DataContext).DeleteEngineCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         Theme="{DynamicResource BorderlessButton}"
+                                                                         Classes="Danger"
+                                                                         Padding="5 0"
+                                                                         VerticalAlignment="Top">
+                                                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                              Classes="ExtraLarge"
+                                                                              Data="{StaticResource SemiIconDelete}" />
+                                                                </Button>
+                                                            </Border>
+                                                            
+                                                            <!-- Engine type -->
+                                                            <Border Grid.Row="1" Margin="0 0 5 0">
+                                                                <ComboBox ItemsSource="{x:Static engine:EngineTypeCollectionProvider.Result}" 
+                                                                          SelectedItem="{Binding Type}" Width="50">
+                                                                    <ComboBox.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <Image Width="26"
+                                                                                Height="26"
+                                                                                Margin="0 0 5 0"
+                                                                                Source="{Binding Converter={StaticResource EngineTypeToImagePathConverter}}"/>
+                                                                        </DataTemplate>
+                                                                    </ComboBox.ItemTemplate>
+                                                                </ComboBox>
+                                                            </Border>
+                                                            
+                                                            <!-- Right part -->
+                                                            
+                                                            <!-- Engine name -->
+                                                            <Grid Grid.Column="1"
+                                                                  ColumnDefinitions="60, *"
+                                                                  Margin="0 0 0 5">
+
+                                                                <TextBlock VerticalAlignment="Center"
+                                                                           FontWeight="Bold"
+                                                                           Text="Name"
+                                                                           TextWrapping="Wrap" />
+
+                                                                <StatefulTextbox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" />
+                                                            </Grid>
+                                                                
+                                                            <!-- Engine path -->
+                                                            <Grid Grid.Column="1" Grid.Row="1"
+                                                                  ColumnDefinitions="60, *">
+
+                                                                <TextBlock VerticalAlignment="Center"
+                                                                           FontWeight="Bold"
+                                                                           Text="Path"
+                                                                           TextWrapping="Wrap" />
+
+                                                                <StatefulTextbox Grid.Column="1" Text="{Binding Path, Mode=TwoWay}" />
+                                                            </Grid>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Border>
+                                </StackPanel>
+                            </HeaderedContentControl>
+                            
+                            <!-- Game engines (old) -->
                             <HeaderedContentControl Classes="GroupBox"
                                                     BorderBrush="Gray"
                                                     BorderThickness="1"

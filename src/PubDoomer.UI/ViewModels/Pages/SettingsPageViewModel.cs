@@ -14,6 +14,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using PubDoomer.Project;
+using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 using PubDoomer.Saving;
 using PubDoomer.Services;
@@ -87,6 +88,37 @@ public partial class SettingsPageViewModel : PageViewModel
         _logger.LogDebug("Setting new theme to {Theme}.", targetTheme);
         app.RequestedThemeVariant = targetTheme;
         OnPropertyChanged(new PropertyChangedEventArgs(nameof(DarkModeEnabled)));
+    }
+    
+    [RelayCommand]
+    private void AddEngine()
+    {
+        Settings.Engines.Add(new EngineContext());
+    }
+
+    [RelayCommand]
+    private async Task DeleteEngineAsync(EngineContext context)
+    {
+        // In design mode we delete without a prompt.
+        if (AssertInDesignMode())
+        {
+            Settings.Engines.Remove(context);
+            return;
+        }
+        
+        var result = await _dialogueProvider.PromptAsync(
+            AlertType.Warning,
+            "Delete engine",
+            "Are you sure you want to delete this engine?",
+            "The engine will be deleted and you will have to readd it.",
+            new InformationalWindowButton(AlertType.None, "Cancel"),
+            new InformationalWindowButton(AlertType.Error, "Delete"));
+
+        if (!result) return;
+
+        Settings.Engines.Remove(context);
+        _notificationManager?.Show(new Notification("Engine deleted", "The engine has been deleted.",
+            NotificationType.Success));
     }
     
     [RelayCommand]
