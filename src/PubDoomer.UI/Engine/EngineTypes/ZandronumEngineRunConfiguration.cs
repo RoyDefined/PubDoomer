@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.Generic;
+using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Project.Engine;
 
 namespace PubDoomer.Engine;
@@ -17,4 +18,13 @@ public sealed partial class ZandronumEngineRunConfiguration : ZdoomDerivedEngine
     /// The game mode to run the game in.
     /// </summary>
     [ObservableProperty] private string? _gameMode;
+
+
+    public override IEnumerable<string> GetCommandLineArguments()
+    {
+        foreach(var arg in base.GetCommandLineArguments()) yield return arg;
+        
+        if (ConfigurationFilePath != null) yield return $"+exec \"{ConfigurationFilePath}\"";
+        if (GameMode != null) yield return $"+{GameMode} true";
+    }
 }

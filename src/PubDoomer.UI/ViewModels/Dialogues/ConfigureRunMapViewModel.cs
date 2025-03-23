@@ -77,12 +77,13 @@ public partial class ConfigureRunMapViewModel : PageViewModel
         IEnumerable<EngineContext> engineContexts,
         IEnumerable<IWadContext> iWadContexts,
         IWadContext? selectedIWad,
-        EngineContext? selectedEngine)
+        EngineRunConfiguration? selectedEngineRunConfiguration)
     {
         _dialogueProvider = dialogueProvider;
         SelectableEngines = new ObservableCollection<EngineContext>(engineContexts);
         SelectableIWads = new ObservableCollection<IWadContext>(iWadContexts);
-        SelectedEngine = selectedEngine;
+        SelectedEngine = selectedEngineRunConfiguration?.Context;
+        SelectedEngineRunConfiguration = selectedEngineRunConfiguration;
         SelectedIWad = selectedIWad;
     }
 

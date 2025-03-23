@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PubDoomer.Engine;
 using PubDoomer.Project.Archive;
 using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
@@ -13,10 +14,7 @@ namespace PubDoomer.Utils;
 
 internal static class MapRunUtil
 {
-    // TODO: Configurable log file
-    // TODO: Configure bots
-    // TODO: Configure multiplayer
-    public static void RunMap(MapContext map, EngineContext selectedEngine, IWadContext selectedIWad, IEnumerable<ArchiveContext> archives)
+    public static void RunMap(MapContext map, EngineRunConfiguration selectedEngineRunConfiguration, IWadContext selectedIWad, IEnumerable<ArchiveContext> archives)
     {
         var argumentBuilder = new StringBuilder();
 
@@ -30,16 +28,15 @@ internal static class MapRunUtil
             argumentBuilder.AppendFormat("-file \"{0}\" ", archive.Path);
         }
 
-        // Set the skill level to 4 by default.
-        // TODO: Configurable.
-        argumentBuilder.Append("-skill 4 ");
-
         // Add map information
         argumentBuilder.AppendFormat("+map {0} ", map.MapLumpName);
+        
+        // Add additional command line arguments for engine specific settings.
+        argumentBuilder.AppendJoin(" ", selectedEngineRunConfiguration.GetCommandLineArguments());
 
         var processStartInfo = new ProcessStartInfo
         {
-            FileName = selectedEngine.Path,
+            FileName = selectedEngineRunConfiguration.Context.Path,
             Arguments = argumentBuilder.ToString(),
             UseShellExecute = false
         };

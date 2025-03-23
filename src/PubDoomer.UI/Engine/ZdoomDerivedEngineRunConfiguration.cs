@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.Generic;
+using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Project.Engine;
 
 namespace PubDoomer.Engine;
@@ -40,4 +41,15 @@ public abstract partial class ZdoomDerivedEngineRunConfiguration : EngineRunConf
     /// If <c>true</c>, the game will function as a host. This allows for playing a local server.
     /// </summary>
     [ObservableProperty] private bool _multiplayer;
+
+    public override IEnumerable<string> GetCommandLineArguments()
+    {
+        if (NoRun == true) yield return "-norun";
+        if (StdOut == true) yield return "-stdout";
+        if (LogFile != null) yield return $"+logfile \"{LogFile}\"";
+        if (Skill != null) yield return $"-skill {Skill}";
+        
+        // TODO: Additional configuration using `-netmode`.
+        if (Multiplayer == true) yield return "-host -netmode 1";
+    }
 }

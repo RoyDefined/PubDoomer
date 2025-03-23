@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.Generic;
+using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Project.Engine;
 
 namespace PubDoomer.Engine;
@@ -10,4 +11,6 @@ public abstract partial class EngineRunConfiguration : ObservableObject
 {
     // Set during creation, never `null`.
     public EngineContext Context { get; set; } = null!;
+    
+    public abstract IEnumerable<string> GetCommandLineArguments();
 }

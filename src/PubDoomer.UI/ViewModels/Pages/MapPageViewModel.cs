@@ -11,6 +11,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using PubDoomer.Engine;
 using PubDoomer.Project;
 using PubDoomer.Project.Archive;
 using PubDoomer.Project.Engine;
@@ -34,7 +35,7 @@ public partial class MapPageViewModel : PageViewModel
     private readonly MergedSettings? _mergedSettings;
 
     [ObservableProperty] private IWadContext? _selectedIWad;
-    [ObservableProperty] private EngineContext? _selectedEngine;
+    [ObservableProperty] private EngineRunConfiguration? _selectedEngineRunConfiguration;
     [ObservableProperty] private string? _selectedConfiguration;
 
     private string[]? _selectableConfigurations;
@@ -103,13 +104,13 @@ public partial class MapPageViewModel : PageViewModel
         
         // Verify an engine and IWad is selected.
         // If not, we open the dialogue to configure it and end this method.
-        if (SelectedEngine == null || SelectedIWad == null)
+        if (SelectedEngineRunConfiguration == null || SelectedIWad == null)
         {
             await ConfigureRunMapAsync(map);
             return;
         }
         
-        await StartMapAsync(map, SelectedEngine, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
+        await StartMapAsync(map, SelectedEngineRunConfiguration, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
     }
 
     [RelayCommand]
@@ -126,16 +127,16 @@ public partial class MapPageViewModel : PageViewModel
             return;
         }
         
-        var vm = new ConfigureRunMapViewModel(_dialogueProvider, _mergedSettings.Engines, _mergedSettings.IWads, SelectedIWad, SelectedEngine);
+        var vm = new ConfigureRunMapViewModel(_dialogueProvider, _mergedSettings.Engines, _mergedSettings.IWads, SelectedIWad, SelectedEngineRunConfiguration);
         var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
-        if (!result || vm.SelectedEngine == null || vm.SelectedIWad == null) return;
+        if (!result || vm.SelectedEngineRunConfiguration == null || vm.SelectedIWad == null) return;
         
-        SelectedEngine = vm.SelectedEngine;
+        SelectedEngineRunConfiguration = vm.SelectedEngineRunConfiguration;
         SelectedIWad = vm.SelectedIWad;
-        await StartMapAsync(map, SelectedEngine, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
+        await StartMapAsync(map, SelectedEngineRunConfiguration, SelectedIWad, CurrentProjectProvider.ProjectContext.Archives);
     }
 
-    private async Task StartMapAsync(MapContext map, EngineContext selectedEngine, IWadContext selectedIWad,
+    private async Task StartMapAsync(MapContext map, EngineRunConfiguration selectedEngineRunConfiguration, IWadContext selectedIWad,
         ObservableCollection<ArchiveContext> archives)
     {
         Debug.Assert(_dialogueProvider != null);
@@ -144,7 +145,7 @@ public partial class MapPageViewModel : PageViewModel
         // Any exceptions are displayed in a window.
         try
         {
-            MapRunUtil.RunMap(map, selectedEngine, selectedIWad, archives);
+            MapRunUtil.RunMap(map, selectedEngineRunConfiguration, selectedIWad, archives);
         }
         catch (Exception ex)
         {
