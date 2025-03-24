@@ -22,7 +22,7 @@ public partial class ConfigureRunMapViewModel : PageViewModel
     /// <summary>
     /// Maps the engine types to a configuration type.
     /// </summary>
-    private static Dictionary<EngineType, Type> _engineTypeToConfigurationMap = new()
+    private static readonly Dictionary<EngineType, Type> EngineTypeToConfigurationMap = new()
     {
         [EngineType.Zdoom] = typeof(ZdoomEngineRunConfiguration),
         [EngineType.GzDoom] = typeof(GzDoomEngineRunConfiguration),
@@ -131,7 +131,7 @@ public partial class ConfigureRunMapViewModel : PageViewModel
         if (!EngineRunContextCache.TryGetValue(value, out var engineRunConfiguration))
         {
             // Create the configuration instance.
-            if (!_engineTypeToConfigurationMap.TryGetValue(value.Type, out var configurationType))
+            if (!EngineTypeToConfigurationMap.TryGetValue(value.Type, out var configurationType))
             {
                 Debug.Fail($"Could not find configuration for '{value.Type}'.");
                 return;
