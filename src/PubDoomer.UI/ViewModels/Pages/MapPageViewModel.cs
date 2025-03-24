@@ -95,7 +95,7 @@ public partial class MapPageViewModel : PageViewModel
     }
     
     [RelayCommand]
-    private async Task RunMapAsync(MapContext map)
+    private async Task ExecuteRunMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
@@ -106,7 +106,7 @@ public partial class MapPageViewModel : PageViewModel
         // If not, we open the dialogue to configure it and end this method.
         if (SelectedEngineRunConfiguration == null || SelectedIWad == null)
         {
-            await ConfigureRunMapAsync(map);
+            await ConfigureExecuteRunMapAsync(map);
             return;
         }
         
@@ -114,7 +114,7 @@ public partial class MapPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private async Task ConfigureRunMapAsync(MapContext map)
+    private async Task ConfigureExecuteRunMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
@@ -156,7 +156,7 @@ public partial class MapPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private async Task EditMapAsync(MapContext map)
+    private async Task ExecuteEditMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
@@ -175,7 +175,7 @@ public partial class MapPageViewModel : PageViewModel
         // If not, we open the dialogue to configure it and end this method.
         if (SelectedIWad == null || SelectedConfiguration == null)
         {
-            await ConfigureEditMapAsync(map);
+            await ConfigureExecuteEditMapAsync(map);
             return;
         }
         
@@ -183,7 +183,7 @@ public partial class MapPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private async Task ConfigureEditMapAsync(MapContext map)
+    private async Task ConfigureExecuteEditMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);

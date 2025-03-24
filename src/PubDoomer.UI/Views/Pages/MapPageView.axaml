@@ -89,7 +89,7 @@
                                         -->
                                         <SplitButton Theme="{DynamicResource SolidSplitButton}"
                                                      Classes="Secondary"
-                                                     Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).RunMapCommand}"
+                                                     Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).ExecuteRunMapCommand}"
                                                      CommandParameter="{Binding}">
                                             <SplitButton.Content>
                                                 <StackPanel Orientation="Horizontal" Spacing="10">
@@ -121,7 +121,7 @@
                                                     
                                                     <!-- Configure and edit opens a separate dialogue. -->
                                                     <MenuItem Header="Configure and run..."
-                                                              Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).ConfigureRunMapCommand}"
+                                                              Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).ConfigureExecuteRunMapCommand}"
                                                               CommandParameter="{Binding}">
                                                         <MenuItem.Icon>
                                                             <PathIcon Theme="{StaticResource InnerPathIcon}"
@@ -138,7 +138,7 @@
                                         -->
                                         <SplitButton Theme="{DynamicResource SolidSplitButton}"
                                                      Classes="Secondary"
-                                                     Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).EditMapCommand}"
+                                                     Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).ExecuteEditMapCommand}"
                                                      CommandParameter="{Binding}">
                                             <SplitButton.Content>
                                                 <StackPanel Orientation="Horizontal" Spacing="10">
@@ -157,7 +157,7 @@
                                                     
                                                     <!-- Configure and edit opens a separate dialogue. -->
                                                     <MenuItem Header="Configure and edit..."
-                                                              Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).ConfigureEditMapCommand}"
+                                                              Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).ConfigureExecuteEditMapCommand}"
                                                               CommandParameter="{Binding}">
                                                         <MenuItem.Icon>
                                                             <PathIcon Theme="{StaticResource InnerPathIcon}"
