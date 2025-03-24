@@ -7,6 +7,9 @@ using Avalonia.Data.Converters;
 
 namespace PubDoomer.Converters;
 
+/// <summary>
+/// Represents a converter that converts an enum value to its description attribute or name.
+/// </summary>
 public sealed class EnumDescriptionConverter : IValueConverter
 {
     private static readonly ConcurrentDictionary<Enum, string> CachedDescriptions = new();
@@ -18,10 +21,8 @@ public sealed class EnumDescriptionConverter : IValueConverter
         return CachedDescriptions.GetOrAdd(enumValue, GetEnumDescription);
     }
 
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         throw new NotImplementedException();
-    }
 
     private static string GetEnumDescription(Enum enumValue)
     {
