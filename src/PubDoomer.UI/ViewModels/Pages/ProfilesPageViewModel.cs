@@ -18,6 +18,7 @@ using PubDoomer.Saving;
 using PubDoomer.Services;
 using PubDoomer.ViewModels.Dialogues;
 using PubDoomer.Engine.Orchestration;
+using PubDoomer.Utils.MergedSettings;
 
 namespace PubDoomer.ViewModels.Pages;
 
@@ -96,7 +97,7 @@ public partial class ProfilesPageViewModel : PageViewModel
         _logger.LogDebug("Executing profile {ProfileName}", SelectedRunProfile.Name);
 
         // Create the context to pass.
-        var context = CreatePublishingContext();
+        var context = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
 
         // TODO: Make use of the status.
         var stopwatch = Stopwatch.GetTimestamp();
@@ -120,7 +121,7 @@ public partial class ProfilesPageViewModel : PageViewModel
             runTask.Exception = result.Exception;
             
             // Check error behaviour.
-            // If there was an error and the behaviour is to quit, then end the task invokation early.
+            // If there was an error and the behaviour is to quit, then end the task invocation early.
             if (runTask.Status == ProfileRunTaskStatus.Error)
             {
                 if (runTask.Behaviour == ProfileTaskErrorBehaviour.StopOnError)
@@ -162,29 +163,6 @@ public partial class ProfilesPageViewModel : PageViewModel
         }
     }
 
-    // TODO: Somewhat duplicate code also in the code editor.
-    private PublishingContext CreatePublishingContext()
-    {
-        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
-
-        // The context determines the data to use based on the settings. Project specific settings take priority over local settings.
-        static string? GetExecutable(string? projectContextPath, string? localSettingsPath)
-        {
-            return !string.IsNullOrWhiteSpace(projectContextPath)
-                ? projectContextPath.Trim()
-                : localSettingsPath?.Trim();
-        }
-
-        var context = CurrentProjectProvider.ProjectContext;
-        return new PublishingContext(
-            GetExecutable(context.AccCompilerExecutableFilePath, Settings.AccCompilerExecutableFilePath),
-            GetExecutable(context.BccCompilerExecutableFilePath, Settings.BccCompilerExecutableFilePath),
-            GetExecutable(context.GdccCompilerExecutableFilePath, Settings.GdccCompilerExecutableFilePath),
-            GetExecutable(context.SladeExecutableFilePath, Settings.SladeExecutableFilePath),
-            GetExecutable(context.UdbExecutableFilePath, Settings.UdbExecutableFilePath),
-            GetExecutable(context.AcsVmExecutableFilePath, Settings.AcsVmExecutableFilePath));
-    }
-
     [RelayCommand]
     private async Task CreateProfileAsync()
     {
@@ -198,7 +176,7 @@ public partial class ProfilesPageViewModel : PageViewModel
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
 
         CurrentProjectProvider.ProjectContext.Profiles.Add(vm.CurrentProfileContext);
-        _notificationManager?.Show(new Notification("Profile created", "The profile has been created succesfully.",
+        _notificationManager?.Show(new Notification("Profile created", "The profile has been created successfully.",
             NotificationType.Success));
     }
 
@@ -214,15 +192,21 @@ public partial class ProfilesPageViewModel : PageViewModel
 
         var index = CurrentProjectProvider.ProjectContext.Profiles.IndexOf(profileContext);
         CurrentProjectProvider.ProjectContext.Profiles[index] = vm.CurrentProfileContext;
-        _notificationManager?.Show(new Notification("Profile edited", "The profile has been edited succesfully.",
+        _notificationManager?.Show(new Notification("Profile edited", "The profile has been edited successfully.",
             NotificationType.Success));
     }
 
     [RelayCommand]
     private async Task DeleteProfileAsync(ProfileContext profileContext)
     {
-        if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        
+        // In design mode we delete without a prompt.
+        if (AssertInDesignMode())
+        {
+            CurrentProjectProvider.ProjectContext.Profiles.Remove(profileContext);
+            return;
+        }
 
         var result = await _dialogueProvider.PromptAsync(
             AlertType.Warning,

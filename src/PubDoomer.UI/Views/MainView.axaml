@@ -92,6 +92,49 @@
                                            VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
+                            
+                            <!-- Maps. Will be disabled if no project is selected -->
+                            <Button Classes="Tertiary"
+                                    Theme="{DynamicResource OutlineButton}"
+                                    HorizontalAlignment="Stretch"
+                                    IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
+                                    Command="{Binding OpenPageCommand}"
+                                    CommandParameter="Maps">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    
+                                    <!-- Multiple icons on top of eachother -->
+                                    <Grid Width="24" Height="24">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  Width="20"
+                                                  Height="20"
+                                                  Margin="-18 0 0 0"
+                                                  Data="{StaticResource SemiIconFile}" />
+
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  HorizontalAlignment="Right"
+                                                  VerticalAlignment="Top"
+                                                  Width="10"
+                                                  Height="10"
+                                                  Margin="0 2 4 0"
+                                                  Data="{StaticResource SemiIconPlay}" />
+                                        
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  HorizontalAlignment="Right"
+                                                  VerticalAlignment="Top"
+                                                  Width="10"
+                                                  Height="10"
+                                                  Margin="0 12 4 0"
+                                                  Data="{StaticResource SemiIconWrench}" />
+                                    </Grid>
+                                    
+                                    <Label Classes="Tertiary"
+                                           Theme="{StaticResource TitleLabel}"
+                                           Content="Maps"
+                                           VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
 
                             <!-- Tasks. Will be disabled if no project is selected. -->
                             <Button Classes="Tertiary"

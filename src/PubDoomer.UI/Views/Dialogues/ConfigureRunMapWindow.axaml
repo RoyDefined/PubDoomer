@@ -1,0 +1,300 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:engine="clr-namespace:PubDoomer.Engine"
+        mc:Ignorable="d"
+        x:Class="PubDoomer.Views.Dialogues.ConfigureRunMapWindow"
+        Title="Configure and edit map"
+        Width="800"
+        CanResize="False"
+        SizeToContent="Height"
+        x:DataType="ConfigureRunMapViewModel"
+        x:Name="RootWindow">
+
+    <Design.DataContext>
+        <ConfigureRunMapViewModel />
+    </Design.DataContext>
+
+    <Window.Resources>
+        <!-- Converter to convert a null value to a boolean -->
+        <NullToBoolConverter x:Key="NullToBoolConverter" />
+    </Window.Resources>
+    
+    <Border Padding="20">
+        <StackPanel Spacing="20">
+
+            <!-- Title -->
+            <TextBlock Classes="H3"
+                       VerticalAlignment="Center"
+                       Theme="{StaticResource TitleTextBlock}"
+                       Text="Configure and run map" />
+            
+            <StackPanel Spacing="10">
+                <StackPanel Spacing="5">
+                
+                    <!-- IWad selection -->
+                    <Grid ColumnDefinitions="120, Auto">
+
+                        <TextBlock VerticalAlignment="Center"
+                                   FontWeight="Bold"
+                                   Text="IWad"
+                                   TextWrapping="Wrap" />
+
+                        <ComboBox Grid.Column="1"
+                                  SelectedIndex="0" 
+                                  Width="200"
+                                  SelectedItem="{Binding SelectedIWad}"
+                                  ItemsSource="{Binding SelectableIWads}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                    
+                    <!-- Extra information for the IWad -->
+                    <TextBlock Theme="{StaticResource TitleTextBlock}"
+                               Classes="Tertiary"
+                               FontSize="10"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center"
+                               Text="The IWad you select will be used as a base for the map."/>
+                </StackPanel>
+                
+                <!-- Engine selection -->
+                <Grid ColumnDefinitions="120, Auto">
+
+                    <TextBlock VerticalAlignment="Center"
+                               FontWeight="Bold"
+                               Text="Engine"
+                               TextWrapping="Wrap" />
+
+                    <ComboBox Grid.Column="1"
+                              SelectedIndex="0" 
+                              Width="200"
+                              SelectedItem="{Binding SelectedEngine}"
+                              ItemsSource="{Binding SelectableEngines}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Grid>
+            </StackPanel>
+            
+            <!-- Dynamically added DataTemplate for Zdoom derived engines. -->
+            <ContentControl Content="{Binding SelectedEngineRunConfiguration}"
+                            IsVisible="{Binding SelectedEngineRunConfiguration, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}">
+
+                <ContentControl.DataTemplates>
+                    <DataTemplate DataType="{x:Type engine:ZdoomDerivedEngineRunConfiguration}">
+                        
+                        <StackPanel Spacing="20">
+                            
+                            <!-- Debug settings -->
+                            <TextBlock Classes="H5"
+                                       Theme="{StaticResource TitleTextBlock}"
+                                       Text="Debug" />
+                        
+                            <StackPanel Spacing="10">
+                                
+                                <!-- Quit the game just before video initialization. -->
+                                <StackPanel>
+                                    <CheckBox IsChecked="{Binding NoRun, Mode=TwoWay}"
+                                              Content="Quit the game just before video initialization"/>
+                                
+                                    <!-- Extra information -->
+                                    <TextBlock Theme="{StaticResource TitleTextBlock}"
+                                               Classes="Tertiary"
+                                               FontSize="10"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"
+                                               Text="To be used to check for errors in scripts without actually running the game."/>
+                                </StackPanel>
+                                
+                                <!-- Standard output to a console. -->
+                                <StackPanel>
+                                    <CheckBox IsChecked="{Binding StdOut, Mode=TwoWay}"
+                                              Content="Send standard output to a console"/>
+                                
+                                    <!-- Extra information -->
+                                    <TextBlock Theme="{StaticResource TitleTextBlock}"
+                                               Classes="Tertiary"
+                                               FontSize="10"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"
+                                               Text="(Win32 only) Sends all output to a system console. Unix and MacOS builds of ZDoom will always do that."/>
+                                </StackPanel>
+                                
+                                <!-- Write to log file. -->
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="120, *">
+
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Text="Log file"
+                                                   TextWrapping="Wrap" />
+
+                                        <TextBox Grid.Column="1" Text="{Binding LogFile, Mode=TwoWay}" />
+                                    </Grid>
+                                
+                                    <!-- Extra information -->
+                                    <TextBlock Theme="{StaticResource TitleTextBlock}"
+                                               Classes="Tertiary"
+                                               FontSize="10"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"
+                                               Text="Writes the console log to the given log file path."/>
+                                </StackPanel>
+                            </StackPanel>
+                            
+                            <!-- Loading settings -->
+                            <TextBlock Classes="H5"
+                                       Theme="{StaticResource TitleTextBlock}"
+                                       Text="Loading" />
+                        
+                            <StackPanel Spacing="10">
+                                
+                                <!-- Skill level. -->
+                                <!-- TODO: Introduce combo box that lists all 16 skill levels and prefixes the first 5 with hardcoded text. https://zdoom.org/wiki/ChangeSkill -->
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="120, 50">
+
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Text="Skill"
+                                                   TextWrapping="Wrap" />
+
+                                        <NumericUpDown Grid.Column="1"
+                                                       Minimum="0"
+                                                       Maximum="15"
+                                                       Value="{Binding Skill, Mode=TwoWay}" />
+                                    </Grid>
+                                
+                                    <!-- Extra information -->
+                                    <TextBlock Theme="{StaticResource TitleTextBlock}"
+                                               Classes="Tertiary"
+                                               FontSize="10"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"
+                                               Text="Sets the initial skill level."/>
+                                </StackPanel>
+                            </StackPanel>
+                            
+                            <!-- Multiplayer settings -->
+                            <TextBlock Classes="H5"
+                                       Theme="{StaticResource TitleTextBlock}"
+                                       Text="Multiplayer" />
+                        
+                            <StackPanel Spacing="10">
+                                
+                                <!-- Quit the game just before video initialization. -->
+                                <StackPanel>
+                                    <CheckBox IsChecked="{Binding Multiplayer, Mode=TwoWay}"
+                                              Content="Enabled local multiplayer"/>
+                                
+                                    <!-- Extra information -->
+                                    <TextBlock Theme="{StaticResource TitleTextBlock}"
+                                               Classes="Tertiary"
+                                               FontSize="10"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"
+                                               Text="Opens a local server in which multiplayer behaviour can be tested."/>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ContentControl.DataTemplates>
+            </ContentControl>
+            
+            <!-- Dynamically added DataTemplate for specific engine types -->
+            <ContentControl Content="{Binding SelectedEngineRunConfiguration}"
+                            IsVisible="{Binding SelectedEngineRunConfiguration, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}">
+
+                <ContentControl.DataTemplates>
+            
+                    <!-- ZDoom -->
+                    <DataTemplate DataType="{x:Type engine:ZdoomEngineRunConfiguration}">
+                    </DataTemplate>
+            
+                    <!-- GZDoom -->
+                    <DataTemplate DataType="{x:Type engine:GzDoomEngineRunConfiguration}">
+                    </DataTemplate>
+            
+                    <!-- Zandronum -->
+                    <DataTemplate DataType="{x:Type engine:ZandronumEngineRunConfiguration}">
+                        
+                        <StackPanel Spacing="20">
+                            
+                            <!-- Header -->
+                            <TextBlock Classes="H5"
+                                       Theme="{StaticResource TitleTextBlock}"
+                                       Text="Zandronum specific" />
+                            
+                            <StackPanel Spacing="10">
+                        
+                                <!-- Execute configuration -->
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="120, *">
+
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Text="Configuration"
+                                                   TextWrapping="Wrap" />
+
+                                        <TextBox Grid.Column="1" Text="{Binding ConfigurationFilePath, Mode=TwoWay}" />
+                                    </Grid>
+                                    
+                                    <!-- Extra information -->
+                                    <TextBlock Theme="{StaticResource TitleTextBlock}"
+                                               Classes="Tertiary"
+                                               FontSize="10"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"
+                                               Text="Include additional configuration (server variables etc.)."/>
+                                </StackPanel>
+                                
+                                <!-- Game mode -->
+                                <!-- TODO: Support default set of game modes and allow for specifying a custom one? -->
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="120, *">
+
+                                        <TextBlock VerticalAlignment="Center"
+                                                   Text="Game mode"
+                                                   TextWrapping="Wrap" />
+
+                                        <TextBox Grid.Column="1" Text="{Binding GameMode, Mode=TwoWay}" />
+                                    </Grid>
+                                    
+                                    <!-- Extra information -->
+                                    <TextBlock Theme="{StaticResource TitleTextBlock}"
+                                               Classes="Tertiary"
+                                               FontSize="10"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"
+                                               Text="Specifies the game mode to play the game in."/>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ContentControl.DataTemplates>
+            </ContentControl>
+            
+            <!-- Cancel and submit button -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="10">
+                <Button Content="Cancel"
+                        Classes="Danger"
+                        Theme="{DynamicResource SolidButton}"
+                        Click="CancelFormButton_OnClick" />
+
+                <Button Content="Run map"
+                        IsEnabled="{Binding FormIsValid}"
+                        Classes="Success"
+                        Theme="{DynamicResource SolidButton}"
+                        Click="FinishFormButton_OnClick" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

@@ -3,11 +3,18 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Project.Archive;
+using PubDoomer.Project.Engine;
+using PubDoomer.Project.IWad;
+using PubDoomer.Project.Maps;
 using PubDoomer.Project.Profile;
 using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.Project;
 
+/// <summary>
+/// Represents the project context that contains the full state of a project.
+/// </summary>
 public partial class ProjectContext : ObservableObject
 {
     // Configurable executions
@@ -25,16 +32,40 @@ public partial class ProjectContext : ObservableObject
     [ObservableProperty] [property: JsonIgnore]
     private Uri? _filePath;
 
-
+    /// <summary>
+    /// A name to give to this project to show in the UI.
+    /// </summary>
     [ObservableProperty] private string? _name;
-    [ObservableProperty] private ObservableCollection<ProfileContext> _profiles;
-    [ObservableProperty] private ObservableCollection<ProjectTaskBase> _tasks;
-
-    public ProjectContext()
-    {
-        Tasks = [];
-        Profiles = [];
-    }
+    
+    /// <summary>
+    /// Configurable profiles that contain tasks to be invoked in order.
+    /// </summary>
+    [ObservableProperty] private ObservableCollection<ProfileContext> _profiles = [];
+    
+    /// <summary>
+    /// Configurable tasks that can be invoked.
+    /// </summary>
+    [ObservableProperty] private ObservableCollection<ProjectTaskBase> _tasks = [];
+    
+    /// <summary>
+    /// Configurable locations of IWAD files.
+    /// </summary>
+    [ObservableProperty] private ObservableCollection<IWadContext> _iWads = [];
+    
+    /// <summary>
+    /// Configurable locations of archives.
+    /// </summary>
+    [ObservableProperty] private ObservableCollection<ArchiveContext> _archives = [];
+    
+    /// <summary>
+    /// Configurable locations of game engines.
+    /// </summary>
+    [ObservableProperty] private ObservableCollection<EngineContext> _engines = [];
+    
+    /// <summary>
+    /// Configurable locations of maps.
+    /// </summary>
+    [ObservableProperty] private ObservableCollection<MapContext> _maps = [];
 
     public void AddTask(ProjectTaskBase task)
     {

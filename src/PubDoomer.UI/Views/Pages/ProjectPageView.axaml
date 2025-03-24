@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:engine="clr-namespace:PubDoomer.Project.Engine"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="PubDoomer.Views.Pages.ProjectPageView"
              x:DataType="ProjectPageViewModel">
@@ -9,6 +10,10 @@
     <Design.DataContext>
         <ProjectPageViewModel />
     </Design.DataContext>
+
+    <UserControl.Resources>
+        <engine:EngineTypeToImagePathConverter x:Key="EngineTypeToImagePathConverter" />
+    </UserControl.Resources>
 
     <Border Padding="10">
         <ScrollViewer>
@@ -27,11 +32,12 @@
                                Theme="{StaticResource TitleTextBlock}"
                                Classes="Tertiary"
                                FontSize="10"
-                               TextWrapping="Wrap"
-                               Text="Project settings are saved when you save the project as a whole." />
+                               TextWrapping="Wrap">
+                        Project settings are saved when you save the project as a whole.
+                        <LineBreak />
+                        Setting on this tab override similar configured settings in the settings tab.
+                    </TextBlock>
                 </Grid>
-                
-                <!-- TODO: Add a max width for the labels so they do not keep taking space when the text is already no longer wrapped -->
                 
                 <!-- Content -->
                 <Border Padding="10">
@@ -58,6 +64,292 @@
                                     <StatefulTextbox Text="{Binding CurrentProjectProvider.ProjectContext.Name, Mode=TwoWay}" />
                                 </Border>
                             </HeaderedContentControl>
+                            
+                            <!-- Game engines -->
+                            <HeaderedContentControl Classes="GroupBox"
+                                                    BorderBrush="Gray"
+                                                    BorderThickness="1"
+                                                    CornerRadius="4"
+                                                    Header="Game engines">
+
+                                <StackPanel>
+                                    <Button HorizontalAlignment="Left"
+                                            Command="{Binding AddEngineCommand}"
+                                            Classes="Success"
+                                            Theme="{DynamicResource BorderlessButton}"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconPlusCircle}" />
+                                    </Button>
+                                    
+                                    <Border Padding="5 10" MaxHeight="400">
+                                    
+                                        <ScrollViewer>
+                                            <ItemsControl ItemsSource="{Binding CurrentProjectProvider.ProjectContext.Engines}">
+                                                <ItemsControl.ItemsPanel>
+
+                                                    <!-- Spaced layout -->
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Spacing="15" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        
+                                                        <Grid ColumnDefinitions="Auto, *"
+                                                              RowDefinitions="Auto, Auto">
+                                                            <!-- Left part -->
+                                                            
+                                                            <!-- Delete button -->
+                                                            <Border Margin="0 0 5 0">
+                                                                <Button  Command="{Binding $parent[UserControl].((ProjectPageViewModel)DataContext).DeleteEngineCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         Theme="{DynamicResource BorderlessButton}"
+                                                                         Classes="Danger"
+                                                                         Padding="5 0"
+                                                                         VerticalAlignment="Top">
+                                                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                              Classes="ExtraLarge"
+                                                                              Data="{StaticResource SemiIconDelete}" />
+                                                                </Button>
+                                                            </Border>
+                                                            
+                                                            <!-- Engine type -->
+                                                            <Border Grid.Row="1" Margin="0 0 5 0">
+                                                                <ComboBox ItemsSource="{x:Static engine:EngineTypeCollectionProvider.Result}" 
+                                                                          SelectedItem="{Binding Type}" Width="50">
+                                                                    <ComboBox.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <Image Width="26"
+                                                                                Height="26"
+                                                                                Margin="0 0 5 0"
+                                                                                Source="{Binding Converter={StaticResource EngineTypeToImagePathConverter}}"/>
+                                                                        </DataTemplate>
+                                                                    </ComboBox.ItemTemplate>
+                                                                </ComboBox>
+                                                            </Border>
+                                                            
+                                                            <!-- Right part -->
+                                                            
+                                                            <!-- Engine name -->
+                                                            <Grid Grid.Column="1"
+                                                                  ColumnDefinitions="60, *"
+                                                                  Margin="0 0 0 5">
+
+                                                                <TextBlock VerticalAlignment="Center"
+                                                                           FontWeight="Bold"
+                                                                           Text="Name"
+                                                                           TextWrapping="Wrap" />
+
+                                                                <StatefulTextbox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" />
+                                                            </Grid>
+                                                                
+                                                            <!-- Engine path -->
+                                                            <Grid Grid.Column="1" Grid.Row="1"
+                                                                  ColumnDefinitions="60, *">
+
+                                                                <TextBlock VerticalAlignment="Center"
+                                                                           FontWeight="Bold"
+                                                                           Text="Path"
+                                                                           TextWrapping="Wrap" />
+
+                                                                <StatefulTextbox Grid.Column="1" Text="{Binding Path, Mode=TwoWay}" />
+                                                            </Grid>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Border>
+                                </StackPanel>
+                            </HeaderedContentControl>
+                            
+                            <!-- Archives -->
+                            <HeaderedContentControl Classes="GroupBox"
+                                                    BorderBrush="Gray"
+                                                    BorderThickness="1"
+                                                    CornerRadius="4"
+                                                    Header="Archives">
+
+                                <StackPanel>
+                                    <TextBlock Classes="Tertiary"
+                                               FontSize="10"
+                                               Margin="0 -5 0 0"
+                                               Text="Defined archives are used during testing and when editing maps."
+                                               TextWrapping="Wrap" />
+                                    
+                                    <Button HorizontalAlignment="Left"
+                                            Command="{Binding AddArchiveCommand}"
+                                            Classes="Success"
+                                            Theme="{DynamicResource BorderlessButton}"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconPlusCircle}" />
+                                    </Button>
+                                    
+                                    <Border Padding="5 10" MaxHeight="400">
+                                    
+                                        <ScrollViewer>
+                                            <ItemsControl ItemsSource="{Binding CurrentProjectProvider.ProjectContext.Archives}">
+                                                <ItemsControl.ItemsPanel>
+
+                                                    <!-- Spaced layout -->
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Spacing="15" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        
+                                                        <Grid ColumnDefinitions="Auto, *">
+                                                            <!-- Left part -->
+                                                            <Border Margin="0 0 5 0">
+                                                                <Button  Command="{Binding $parent[UserControl].((ProjectPageViewModel)DataContext).DeleteArchiveCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         Theme="{DynamicResource BorderlessButton}"
+                                                                         Classes="Danger"
+                                                                         Padding="5 0"
+                                                                         VerticalAlignment="Top">
+                                                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                              Classes="ExtraLarge"
+                                                                              Data="{StaticResource SemiIconDelete}" />
+                                                                </Button>
+                                                            </Border>
+                                                            
+                                                            <!-- Right part -->
+                                                            <StackPanel Grid.Column="1"
+                                                                        Spacing="5">
+                                                                
+                                                                <!-- Archive name -->
+                                                                <Grid ColumnDefinitions="60, *">
+
+                                                                    <TextBlock VerticalAlignment="Center"
+                                                                               FontWeight="Bold"
+                                                                               Text="Name"
+                                                                               TextWrapping="Wrap" />
+
+                                                                    <StatefulTextbox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" />
+                                                                </Grid>
+                                                                
+                                                                <!-- Archive path -->
+                                                                <Grid ColumnDefinitions="60, *">
+
+                                                                    <TextBlock VerticalAlignment="Center"
+                                                                               FontWeight="Bold"
+                                                                               Text="Path"
+                                                                               TextWrapping="Wrap" />
+
+                                                                    <StatefulTextbox Grid.Column="1" Text="{Binding Path, Mode=TwoWay}" />
+                                                                </Grid>
+                                                                
+                                                                <!-- Exclude from testin parameters and testing in general -->
+                                                                <CheckBox IsChecked="{Binding ExcludeFromTesting, Mode=TwoWay}"
+                                                                          Content="Exclude this archive from testing parameters."/>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Border>
+                                </StackPanel>
+                            </HeaderedContentControl>
+                            
+                            <!-- IWads -->
+                            <HeaderedContentControl Classes="GroupBox"
+                                                    BorderBrush="Gray"
+                                                    BorderThickness="1"
+                                                    CornerRadius="4"
+                                                    Header="IWads">
+
+                                <StackPanel>
+                                    <TextBlock Classes="Tertiary"
+                                               FontSize="10"
+                                               Margin="0 -5 0 0"
+                                               TextWrapping="Wrap">
+                                        IWads are used as a base when editing or testing maps.
+                                        <LineBreak />
+                                        IWads configured here will replace IWads in local settings that share the same path.
+                                    </TextBlock>
+                                    
+                                    <Button HorizontalAlignment="Left"
+                                            Command="{Binding AddIWadCommand}"
+                                            Classes="Success"
+                                            Theme="{DynamicResource BorderlessButton}"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconPlusCircle}" />
+                                    </Button>
+                                    
+                                    <Border Padding="5 10" MaxHeight="400">
+                                    
+                                        <ScrollViewer>
+                                            <ItemsControl ItemsSource="{Binding CurrentProjectProvider.ProjectContext.IWads}">
+                                                <ItemsControl.ItemsPanel>
+
+                                                    <!-- Spaced layout -->
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Spacing="15" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        
+                                                        <Grid ColumnDefinitions="Auto, *">
+                                                            <!-- Left part -->
+                                                            <Border Margin="0 0 5 0">
+                                                                <Button  Command="{Binding $parent[UserControl].((ProjectPageViewModel)DataContext).DeleteIWadCommand}"
+                                                                         CommandParameter="{Binding}"
+                                                                         Theme="{DynamicResource BorderlessButton}"
+                                                                         Classes="Danger"
+                                                                         Padding="5 0"
+                                                                         VerticalAlignment="Top">
+                                                                    <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                              Classes="ExtraLarge"
+                                                                              Data="{StaticResource SemiIconDelete}" />
+                                                                </Button>
+                                                            </Border>
+                                                            
+                                                            <!-- Right part -->
+                                                            <StackPanel Grid.Column="1"
+                                                                        Spacing="5">
+                                                                
+                                                                <!-- IWad name -->
+                                                                <Grid ColumnDefinitions="60, *">
+
+                                                                    <TextBlock VerticalAlignment="Center"
+                                                                               FontWeight="Bold"
+                                                                               Text="Name"
+                                                                               TextWrapping="Wrap" />
+
+                                                                    <StatefulTextbox Grid.Column="1" Text="{Binding Name, Mode=TwoWay}" />
+                                                                </Grid>
+                                                                
+                                                                <!-- IWad path -->
+                                                                <Grid ColumnDefinitions="60, *">
+
+                                                                    <TextBlock VerticalAlignment="Center"
+                                                                               FontWeight="Bold"
+                                                                               Text="Path"
+                                                                               TextWrapping="Wrap" />
+
+                                                                    <StatefulTextbox Grid.Column="1" Text="{Binding Path, Mode=TwoWay}" />
+                                                                </Grid>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Border>
+                                </StackPanel>
+                            </HeaderedContentControl>
                         </StackPanel>
 
                         <GridSplitter Grid.Column="1" ShowsPreview="True" />
@@ -73,18 +365,12 @@
                                                     Header="Compilers">
 
                                 <StackPanel>
-                                    <TextBlock Classes="Tertiary"
-                                               FontSize="10"
-                                               Margin="0 -5 0 0"
-                                               Text="Overrides globally configured compilers."
-                                               TextWrapping="Wrap" />
-
                                     <Border Padding="5 10">
 
                                         <StackPanel Spacing="10">
 
                                             <!-- ACC compiler -->
-                                            <Grid ColumnDefinitions="*, 2*">
+                                            <Grid ColumnDefinitions="115, *">
 
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"
@@ -109,7 +395,7 @@
                                             </Grid>
 
                                             <!-- BCC compiler -->
-                                            <Grid ColumnDefinitions="*, 2*">
+                                            <Grid ColumnDefinitions="115, *">
 
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"
@@ -134,7 +420,7 @@
                                             </Grid>
 
                                             <!-- GDCC compiler -->
-                                            <Grid ColumnDefinitions="*, 2*">
+                                            <Grid ColumnDefinitions="115, *">
 
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"
@@ -170,18 +456,12 @@
                                                     Header="Editors">
 
                                 <StackPanel>
-                                    <TextBlock Classes="Tertiary"
-                                               FontSize="10"
-                                               Margin="0 -5 0 0"
-                                               Text="Overrides globally configured editors."
-                                               TextWrapping="Wrap" />
-
                                     <Border Padding="5 10">
 
                                         <StackPanel Spacing="10">
 
                                             <!-- Ultimate Doombuilder executable -->
-                                            <Grid ColumnDefinitions="*, 2*">
+                                            <Grid ColumnDefinitions="115, *">
 
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"
@@ -207,7 +487,7 @@
                                             </Grid>
 
                                             <!-- Slade executable -->
-                                            <Grid ColumnDefinitions="*, 2*">
+                                            <Grid ColumnDefinitions="115, *">
 
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"
@@ -243,18 +523,12 @@
                                                     Header="Other executables">
 
                                 <StackPanel>
-                                    <TextBlock Classes="Tertiary"
-                                               FontSize="10"
-                                               Margin="0 -5 0 0"
-                                               Text="Overrides globally configured executables."
-                                               TextWrapping="Wrap" />
-
                                     <Border Padding="5 10">
 
                                         <StackPanel Spacing="10">
 
                                             <!-- ACS VM -->
-                                            <Grid ColumnDefinitions="*, 2*">
+                                            <Grid ColumnDefinitions="115, *">
 
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"

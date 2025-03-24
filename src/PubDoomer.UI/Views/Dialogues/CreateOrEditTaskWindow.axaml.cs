@@ -14,11 +14,15 @@ public partial class CreateOrEditTaskWindow : Window
 
     private void FormButtonCanceled_OnClick(object? sender, RoutedEventArgs e)
     {
+        if (Design.IsDesignMode) return;
+
         Close(false);
     }
 
     private async void FormButtonSuccess_OnClick(object? sender, RoutedEventArgs e)
     {
+        if (Design.IsDesignMode) return;
+
         var viewModel = (CreateOrEditTaskWindowViewModel)DataContext!;
         if (!viewModel.FormIsValid) return;
 

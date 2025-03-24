@@ -2,6 +2,9 @@
 
 namespace PubDoomer.Project.Profile;
 
+/// <summary>
+/// A provider that returns the <see cref="ProfileTaskErrorBehaviour"/> enum as a collection.
+/// </summary>
 public static class ProfileTaskErrorBehaviourCollectionProvider
 {
     private static ProfileTaskErrorBehaviour[]? _cachedResult;

@@ -98,5 +98,21 @@
           <DependentUpon>CodePageView.axaml</DependentUpon>
           <SubType>Code</SubType>
         </Compile>
+        <Compile Update="Views\Pages\MapPageView.axaml.cs">
+          <DependentUpon>RunMapPageView.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Dialogues\AddMapsWindow.axaml.cs">
+          <DependentUpon>AddMapsWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Dialogues\ConfigureEditMapWindow.axaml.cs">
+          <DependentUpon>ConfigureEditMapWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Dialogues\ConfigureRunMapWindow.axaml.cs">
+          <DependentUpon>ConfigureRunMapWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
     </ItemGroup>
 </Project>

@@ -27,6 +27,7 @@ using PubDoomer.Project.Run;
 using PubDoomer.Project.Tasks;
 using PubDoomer.Saving;
 using PubDoomer.Services;
+using PubDoomer.Utils.MergedSettings;
 using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
@@ -77,8 +78,10 @@ public partial class CodePageViewModel : PageViewModel
         if (!Design.IsDesignMode) throw new InvalidOperationException();
         
         // Dependencies
-        // TODO: Duplicate code in the profiles page.
         _logger = new NullLogger<CodePageViewModel>();
+        CurrentProjectProvider = new CurrentProjectProvider();
+        
+        // TODO: Duplicate code in the profiles page.
         _projectTaskOrchestrator = new ProjectTaskOrchestrator(
             NullLogger<ProjectTaskOrchestrator>.Instance,
             ((type, task, context) => Activator.CreateInstance(type, task, context) as ITaskHandler));
@@ -107,12 +110,14 @@ public partial class CodePageViewModel : PageViewModel
     /// </summary>
     public CodePageViewModel(
         ILogger<CodePageViewModel> logger,
+        CurrentProjectProvider currentProjectProvider,
         ProjectTaskOrchestrator projectTaskOrchestrator,
         DialogueProvider dialogueProvider,
         LocalSettings settings)
     {
         // Dependencies
         _logger = logger;
+        CurrentProjectProvider = currentProjectProvider;
         _projectTaskOrchestrator = projectTaskOrchestrator;
         _dialogueProvider = dialogueProvider;
         _settings = settings;
@@ -124,6 +129,9 @@ public partial class CodePageViewModel : PageViewModel
         
         PopulateAvailableCompilerTasks();
     }
+    
+    /// <remarks>The project provider can return no project in this context as it is optional.</remarks>
+    public CurrentProjectProvider CurrentProjectProvider { get; }
 
     /// <summary>
     /// Compiles the editor context. If succeeded, opens the file output directory.
@@ -211,7 +219,7 @@ public partial class CodePageViewModel : PageViewModel
             InvokedTasks.Add(runTask);
         }
         
-        var context = CreatePublishingContext();
+        var context = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, _settings);
 
         // TODO: Merge with the orchestrator.
         foreach (var runTask in runTasks)
@@ -261,25 +269,6 @@ public partial class CodePageViewModel : PageViewModel
         AvailableCompilerTasks.Add(new AccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
         AvailableCompilerTasks.Add(new BccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
         AvailableCompilerTasks.Add(new GdccAccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
-    }
-    
-    // TODO: Somewhat duplicate code also in the profiles page.
-    // TODO: It should be optional to use the project paths here.
-    // TODO: This whole thing is not validated.
-    private PublishingContext CreatePublishingContext()
-    {
-        Debug.Assert(_settings != null);
-        
-        return new PublishingContext(
-            _settings.AccCompilerExecutableFilePath,
-            _settings.BccCompilerExecutableFilePath,
-            _settings.GdccCompilerExecutableFilePath,
-            
-            // TODO: These two are completely useless in this context
-            _settings.SladeExecutableFilePath,
-            _settings.UdbExecutableFilePath,
-            
-            _settings.AcsVmExecutableFilePath);
     }
 
     [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_settings))]
