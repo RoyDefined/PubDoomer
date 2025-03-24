@@ -242,6 +242,33 @@ public partial class MapPageViewModel : PageViewModel
                 $"An error occurred while opening Ultimate DoomBuilder. Please check your configuration. Error: {ex.Message}");
         }
     }
+    
+    [RelayCommand]
+    private async Task DeleteMapAsync(MapContext context)
+    {
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        
+        // In design mode we delete without a prompt.
+        if (AssertInDesignMode())
+        {
+            CurrentProjectProvider.ProjectContext.Maps.Remove(context);
+            return;
+        }
+
+        var result = await _dialogueProvider.PromptAsync(
+            AlertType.Warning,
+            "Delete map",
+            "Are you sure you want to delete this map?",
+            "The map will be deleted and you will have to recreate it.",
+            new InformationalWindowButton(AlertType.None, "Cancel"),
+            new InformationalWindowButton(AlertType.Error, "Delete"));
+
+        if (!result) return;
+
+        CurrentProjectProvider.ProjectContext.Maps.Remove(context);
+        _notificationManager?.Show(new Notification("Map deleted", "The map has been deleted.",
+            NotificationType.Success));
+    }
 
     [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_windowProvider), nameof(_notificationManager), nameof(_mergedSettings))]
     private bool AssertInDesignMode()
