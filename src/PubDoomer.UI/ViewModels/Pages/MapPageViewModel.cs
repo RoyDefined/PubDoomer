@@ -244,6 +244,22 @@ public partial class MapPageViewModel : PageViewModel
     }
     
     [RelayCommand]
+    private async Task EditMapAsync(MapContext context)
+    {
+        if (AssertInDesignMode()) return;
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+
+        var vm = new EditMapWindowViewModel(context.DeepClone());
+        var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
+        if (!result) return;
+
+        var index = CurrentProjectProvider.ProjectContext.Maps.IndexOf(context);
+        CurrentProjectProvider.ProjectContext.Maps[index] = vm.MapContext;
+        _notificationManager?.Show(new Notification("Map edited", "The map has been edited successfully.",
+            NotificationType.Success));
+    }
+    
+    [RelayCommand]
     private async Task DeleteMapAsync(MapContext context)
     {
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);

@@ -21,4 +21,23 @@ public partial class MapContext : ObservableObject
     /// The defined name of the map as specified on the map lump, which is used to navigate to the map (e.g. using <c>ChangeMap {name}</c>).
     /// </summary>
     [ObservableProperty] private string? _mapLumpName;
+
+    public MapContext()
+    {
+    }
+    
+    public MapContext(string? path, string? name, string? mapLumpName)
+    {
+        Path = path;
+        Name = name;
+        MapLumpName = mapLumpName;
+    }
+
+    /// <summary>
+    /// Performs a full clone of the map and creates a new instance.
+    /// </summary>
+    public MapContext DeepClone()
+    {
+        return new MapContext(Path, Name, MapLumpName);
+    }
 }

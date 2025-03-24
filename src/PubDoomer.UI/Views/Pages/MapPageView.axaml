@@ -170,6 +170,8 @@
                                         
                                         <Button Theme="{DynamicResource SolidButton}"
                                                 Classes="Warning"
+                                                Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).EditMapCommand}"
+                                                CommandParameter="{Binding}"
                                                 Padding="5 0"
                                                 IsVisible="{Binding $parent[UserControl].((MapPageViewModel)DataContext).SessionSettings.EnableEditing}">
                                             <PathIcon Theme="{StaticResource InnerPathIcon}"
