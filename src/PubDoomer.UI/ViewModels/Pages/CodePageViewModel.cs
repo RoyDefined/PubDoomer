@@ -18,6 +18,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using PubDoomer.Engine.Compile;
 using PubDoomer.Engine.Orchestration;
 using PubDoomer.Engine.Static;
 using PubDoomer.Engine.Tasks;
@@ -35,6 +36,71 @@ namespace PubDoomer.ViewModels.Pages;
 // TODO: Proper syntax highlighting for the code editor. Currently c# but even better would be proper ACS support.
 public partial class CodePageViewModel : PageViewModel
 {
+    /* Code templates to display for design time and the different compilers */
+    private const string DesignTimeCode = BccCode;
+
+    private const string AccCode = """
+        #include "zcommon.acs"
+    
+        script 1 open
+        {
+            // Code goes here.
+            LogMessage("Hello, PubDoomer!");
+        }
+    
+        function void LogMessage(str message)
+        {
+            Print(s:message);
+        }
+        """;
+
+    private const string BccCode = """
+        #import "zcommon.bcs"
+        
+        strict namespace
+        {
+            script "PBOpen" open
+            {
+                // Code goes here.
+                Utils::LogMessage("Hello, PubDoomer!");
+            }
+        }
+        
+        strict namespace Utils
+        {
+            private void LogMessage(str message)
+            {
+                Print(s:message);
+            }
+        }
+        """;
+    
+    
+    private const string GdccAccCode = """
+        #include "zcommon.acs"
+        
+        // Function comes first, or GDCC-ACC will warn us of forward references.
+        function void LogMessage(str message)
+        {
+            Print("Hello, %s:!", message);
+        }
+    
+        script "PBOpen" open
+        {
+            LogMessage("PubDoomer");
+        }
+        """;
+
+    /// <summary>
+    /// Represents mappings of a compiler type to a code template.
+    /// </summary>
+    private static readonly Dictionary<CompilerType, string> CompilerToTemplateMap = new()
+    {
+        [CompilerType.Acc] = AccCode,
+        [CompilerType.Bcc] = BccCode,
+        [CompilerType.GdccAcc] = GdccAccCode,
+    };
+    
     // Paths used for the editor code.
     private readonly string _temporaryFileInputPath = Path.Combine(EngineStatics.TemporaryDirectory, "Editor", "code-editor-file.temp");
     private readonly string _temporaryFileOutputPath = Path.Combine(EngineStatics.TemporaryDirectory, "Editor", "output.o");
@@ -86,22 +152,7 @@ public partial class CodePageViewModel : PageViewModel
             NullLogger<ProjectTaskOrchestrator>.Instance,
             ((type, task, context) => Activator.CreateInstance(type, task, context) as ITaskHandler));
         
-        // Some editor code to get started.
-        EditorDocument.Text = """
-            strict namespace
-            {
-                script "PBOpen" open
-                {
-                    LogMessage("Hello, PubDoomer!");
-                }
-            
-                private void LogMessage(str message)
-                {
-                    Print(s:message);
-                }
-            }
-            """;
-        
+        EditorDocument.Text = DesignTimeCode;
         PopulateAvailableCompilerTasks();
     }
     
@@ -122,11 +173,7 @@ public partial class CodePageViewModel : PageViewModel
         _dialogueProvider = dialogueProvider;
         _settings = settings;
         
-        // Some editor code to get started.
-        EditorDocument.Text = """
-            // Code goes here.
-            """;
-        
+        EditorDocument.Text = AccCode;
         PopulateAvailableCompilerTasks();
     }
     
@@ -269,6 +316,15 @@ public partial class CodePageViewModel : PageViewModel
         AvailableCompilerTasks.Add(new AccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
         AvailableCompilerTasks.Add(new BccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
         AvailableCompilerTasks.Add(new GdccAccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
+    }
+
+    partial void OnSelectedCompilationTaskChanged(CompileTaskBase? value)
+    {
+        if (value == null) return;
+        
+        // Replace the code with a new template.
+        // TODO: Only change when dirty.
+        EditorDocument.Text = CompilerToTemplateMap[value.Type];
     }
 
     [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_settings))]
