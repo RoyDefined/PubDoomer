@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Engine.Compile;
 using PubDoomer.Engine.Compile.Acc;
 
 namespace PubDoomer.Project.Tasks;
@@ -44,6 +45,8 @@ public partial class AccCompileTask : CompileTaskBase
             KeepAccErrFile = KeepAccErrFile,
         };
     }
+
+    public override CompilerType Type => CompilerType.Acc;
 
     public override AccCompileTask DeepClone()
     {

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Engine.Compile;
 using PubDoomer.Engine.Compile.Gdcc;
 
 namespace PubDoomer.Project.Tasks;
@@ -25,6 +26,8 @@ public partial class GdccAccCompileTask : CompileTaskBase
         DontWarnForwardReferences = dontWarnForwardReferences;
     }
 
+    public override CompilerType Type => CompilerType.GdccAcc;
+    
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;
 

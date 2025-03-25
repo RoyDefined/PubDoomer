@@ -8,6 +8,7 @@ public abstract class EngineCompileTaskBase : EngineTaskBase
     public required string OutputFilePath { get; init; }
     public required bool GenerateStdOutAndStdErrFiles { get; init; }
     
+    public abstract CompilerType Type { get; }
     protected abstract string[] ExpectedFileExtensions { get; }
     
     // TODO: Add validation for the output path

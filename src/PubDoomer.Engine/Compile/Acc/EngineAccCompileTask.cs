@@ -12,5 +12,7 @@ public sealed class EngineAccCompileTask : EngineCompileTaskBase
     public required bool KeepAccErrFile { get; init; }
 
     public override Type HandlerType => HandlerTypeCached;
+
+    public override CompilerType Type => CompilerType.Acc;
     protected override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
 }

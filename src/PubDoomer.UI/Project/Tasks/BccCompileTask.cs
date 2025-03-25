@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Engine.Compile;
 using PubDoomer.Engine.Compile.Bcc;
 
 namespace PubDoomer.Project.Tasks;
@@ -31,6 +32,8 @@ public partial class BccCompileTask : CompileTaskBase
         : base(name, inputFilePath, outputFilePath)
     {
     }
+    
+    public override CompilerType Type => CompilerType.Bcc;
 
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;

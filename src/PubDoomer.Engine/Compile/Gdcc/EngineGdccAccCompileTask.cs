@@ -7,5 +7,7 @@ public sealed class EngineGdccAccCompileTask : EngineCompileTaskBase
     public required bool DontWarnForwardReferences { get; init; }
     
     public override Type HandlerType => HandlerTypeCached;
+    
+    public override CompilerType Type => CompilerType.GdccAcc;
     protected override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
 }
