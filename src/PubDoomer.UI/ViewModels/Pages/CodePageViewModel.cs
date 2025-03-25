@@ -13,6 +13,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
+using Avalonia.Utilities;
 using AvaloniaEdit.Document;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -137,6 +138,12 @@ public partial class CodePageViewModel : PageViewModel
     [ObservableProperty] private ObservableCollection<ProfileRunTask> _invokedTasks = [];
 
     /// <summary>
+    /// If <c>true</c> the code editor was changed since its initial setup.
+    /// <br /> This is used to determine if the code editor should have its template replaced without modifying user code.
+    /// </summary>
+    private bool _codeEditorIsDirty;
+
+    /// <summary>
     /// Design mode view model constructor
     /// </summary>
     public CodePageViewModel()
@@ -153,9 +160,10 @@ public partial class CodePageViewModel : PageViewModel
             ((type, task, context) => Activator.CreateInstance(type, task, context) as ITaskHandler));
         
         EditorDocument.Text = DesignTimeCode;
+        WeakSubscribeToDocumentChanges(EditorDocument);
         PopulateAvailableCompilerTasks();
     }
-    
+
     /// <summary>
     /// Non-design constructor for this view model.
     /// </summary>
@@ -174,6 +182,7 @@ public partial class CodePageViewModel : PageViewModel
         _settings = settings;
         
         EditorDocument.Text = AccCode;
+        WeakSubscribeToDocumentChanges(EditorDocument);
         PopulateAvailableCompilerTasks();
     }
     
@@ -301,6 +310,18 @@ public partial class CodePageViewModel : PageViewModel
             }
         }
     }
+    
+    private void WeakSubscribeToDocumentChanges(TextDocument editorDocument)
+    {
+        WeakEventHandlerManager.Subscribe<TextDocument, EventArgs, CodePageViewModel>(
+            editorDocument, nameof(TextDocument.TextChanged), OnTextDocumentTextChanged);
+    }
+
+    private void OnTextDocumentTextChanged(object? _, EventArgs __)
+    {
+        // Unconditionally set as dirty.
+        _codeEditorIsDirty = true;
+    }
 
     private void PopulateAvailableCompilerTasks()
     {
@@ -322,9 +343,12 @@ public partial class CodePageViewModel : PageViewModel
     {
         if (value == null) return;
         
-        // Replace the code with a new template.
-        // TODO: Only change when dirty.
-        EditorDocument.Text = CompilerToTemplateMap[value.Type];
+        // Replace the code with a new template unless dirty.
+        if (!_codeEditorIsDirty)
+        {
+            EditorDocument.Text = CompilerToTemplateMap[value.Type];
+            _codeEditorIsDirty = false;
+        }
     }
 
     [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_settings))]
