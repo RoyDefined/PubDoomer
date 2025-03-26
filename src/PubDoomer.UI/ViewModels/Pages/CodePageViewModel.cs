@@ -29,7 +29,7 @@ using PubDoomer.Project.Run;
 using PubDoomer.Project.Tasks;
 using PubDoomer.Saving;
 using PubDoomer.Services;
-using PubDoomer.Utils.MergedSettings;
+using PubDoomer.Settings.Merged;
 using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;

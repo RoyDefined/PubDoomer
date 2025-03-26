@@ -7,7 +7,7 @@ using PubDoomer.Engine.Orchestration;
 using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 
-namespace PubDoomer.Utils.MergedSettings;
+namespace PubDoomer.Settings.Merged;
 
 /// <summary>
 /// Represents the context which contains configuration used for tasks.

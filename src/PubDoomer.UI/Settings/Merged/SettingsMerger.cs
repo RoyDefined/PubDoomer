@@ -10,7 +10,7 @@ using PubDoomer.Saving;
 using PubDoomer.ViewModels.Dialogues;
 using PubDoomer.Views.Dialogues;
 
-namespace PubDoomer.Utils.MergedSettings;
+namespace PubDoomer.Settings.Merged;
 
 /// <summary>
 /// Represents a class that merges project settings and local settings together.

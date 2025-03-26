@@ -18,7 +18,7 @@ using PubDoomer.Saving;
 using PubDoomer.Services;
 using PubDoomer.ViewModels.Dialogues;
 using PubDoomer.Engine.Orchestration;
-using PubDoomer.Utils.MergedSettings;
+using PubDoomer.Settings.Merged;
 
 namespace PubDoomer.ViewModels.Pages;
 
