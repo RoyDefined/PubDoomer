@@ -21,6 +21,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using PubDoomer.Engine.Compile;
 using PubDoomer.Engine.Orchestration;
+using PubDoomer.Engine.Orchestrator;
 using PubDoomer.Engine.Static;
 using PubDoomer.Engine.Tasks;
 using PubDoomer.Project;
