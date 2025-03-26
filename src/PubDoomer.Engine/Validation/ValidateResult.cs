@@ -1,4 +1,4 @@
-﻿namespace PubDoomer.Engine.Orchestration;
+﻿namespace PubDoomer.Engine.Validation;
 
 public struct ValidateResult
 {
@@ -12,7 +12,7 @@ public struct ValidateResult
         Message = message;
         Exception = exception;
     }
-    
+
     public ValidateResultType Type { get; }
     public string Message { get; }
     public Exception? Exception { get; }

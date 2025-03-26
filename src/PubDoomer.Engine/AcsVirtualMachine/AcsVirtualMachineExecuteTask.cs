@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using PubDoomer.Engine.Orchestration;
 using PubDoomer.Engine.TaskHandlers;
+using PubDoomer.Engine.Validation;
 
 namespace PubDoomer.Engine.Tasks;
 

@@ -1,3 +1,5 @@
+using PubDoomer.Engine.Validation;
+
 namespace PubDoomer.Engine.Orchestration;
 
 public abstract class EngineTaskBase
