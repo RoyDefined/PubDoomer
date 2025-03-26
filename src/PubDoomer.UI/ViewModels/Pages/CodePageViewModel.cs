@@ -23,6 +23,7 @@ using PubDoomer.Engine.Compile;
 using PubDoomer.Engine.Orchestration;
 using PubDoomer.Engine.Orchestrator;
 using PubDoomer.Engine.Static;
+using PubDoomer.Engine.TaskHandling;
 using PubDoomer.Engine.Tasks;
 using PubDoomer.Project;
 using PubDoomer.Project.Profile;

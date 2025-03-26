@@ -1,4 +1,6 @@
-﻿namespace PubDoomer.Engine.Orchestration;
+﻿using PubDoomer.Engine.TaskHandling;
+
+namespace PubDoomer.Engine.Orchestration;
 
 public interface ITaskHandler
 {

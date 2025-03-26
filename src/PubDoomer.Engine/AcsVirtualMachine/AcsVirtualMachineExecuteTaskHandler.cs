@@ -2,6 +2,7 @@
 using PubDoomer.Engine.Compile.Acc;
 using PubDoomer.Engine.Orchestration;
 using PubDoomer.Engine.Process;
+using PubDoomer.Engine.TaskHandling;
 using PubDoomer.Engine.Tasks;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
