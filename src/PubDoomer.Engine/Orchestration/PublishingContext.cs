@@ -9,7 +9,7 @@ namespace PubDoomer.Engine.Orchestration;
 /// <summary>
 /// Represents the context which contains configuration used for tasks.
 /// </summary>
-public abstract class PublishingContext
+public sealed class PublishingContext
 {
     public required string? AccCompilerExecutableFilePath { get; init; }
     public required string? BccCompilerExecutableFilePath { get; init; }

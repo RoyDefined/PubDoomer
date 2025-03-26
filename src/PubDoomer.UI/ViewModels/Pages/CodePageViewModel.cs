@@ -275,7 +275,14 @@ public partial class CodePageViewModel : PageViewModel
             InvokedTasks.Add(runTask);
         }
         
-        var context = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, _settings);
+        var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, _settings);
+        var context = new PublishingContext()
+        {
+            AccCompilerExecutableFilePath = settings.AccCompilerExecutableFilePath,
+            BccCompilerExecutableFilePath = settings.BccCompilerExecutableFilePath,
+            GdccAccCompilerExecutableFilePath = settings.GdccAccCompilerExecutableFilePath,
+            AcsVmExecutableFilePath = settings.AcsVmExecutableFilePath,
+        };
 
         // TODO: Merge with the orchestrator.
         foreach (var runTask in runTasks)

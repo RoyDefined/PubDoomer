@@ -19,6 +19,7 @@ using PubDoomer.Services;
 using PubDoomer.ViewModels.Dialogues;
 using PubDoomer.Engine.Orchestration;
 using PubDoomer.Settings.Merged;
+using System.Runtime;
 
 namespace PubDoomer.ViewModels.Pages;
 
@@ -96,8 +97,14 @@ public partial class ProfilesPageViewModel : PageViewModel
         
         _logger.LogDebug("Executing profile {ProfileName}", SelectedRunProfile.Name);
 
-        // Create the context to pass.
-        var context = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
+        var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
+        var context = new PublishingContext()
+        {
+            AccCompilerExecutableFilePath = settings.AccCompilerExecutableFilePath,
+            BccCompilerExecutableFilePath = settings.BccCompilerExecutableFilePath,
+            GdccAccCompilerExecutableFilePath = settings.GdccAccCompilerExecutableFilePath,
+            AcsVmExecutableFilePath = settings.AcsVmExecutableFilePath,
+        };
 
         // TODO: Make use of the status.
         var stopwatch = Stopwatch.GetTimestamp();
