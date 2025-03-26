@@ -18,6 +18,7 @@ using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 using PubDoomer.Saving;
 using PubDoomer.Services;
+using PubDoomer.Settings;
 using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;

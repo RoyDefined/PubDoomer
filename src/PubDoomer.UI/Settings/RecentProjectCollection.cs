@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace PubDoomer.Saving;
+namespace PubDoomer.Settings;
 
 public class RecentProjectCollection : ObservableCollection<RecentProject>;

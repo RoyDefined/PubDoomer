@@ -6,11 +6,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using PubDoomer.Project;
+using PubDoomer.Saving;
 using PubDoomer.Utils;
 
 // TODO: Implement caching.
 
-namespace PubDoomer.Saving;
+namespace PubDoomer.Settings;
 
 public sealed class SavingService(
     EncryptionService encryptionService,
@@ -20,7 +21,7 @@ public sealed class SavingService(
 {
     private static readonly string LocalSavesFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PubDoomer");
-    
+
     private static readonly JsonSerializerOptions ProjectSerializationOptions = new()
     {
         ReferenceHandler = ReferenceHandler.Preserve,
@@ -33,7 +34,7 @@ public sealed class SavingService(
     public async Task SaveProjectAsync(bool encrypt)
     {
         if (currentProjectProvider.ProjectContext == null) return;
-        
+
         if (currentProjectProvider.ProjectContext.FilePath == null)
             throw new ArgumentException("The project does not have a valid known saving file path.");
 
@@ -54,7 +55,7 @@ public sealed class SavingService(
         if (!File.Exists(projectFilePath)) return;
 
         ProjectContext? project;
-        
+
         // If the project's extension is not json, do decrypt.
         if (Path.GetExtension(projectFilePath) != ".json")
         {
@@ -66,7 +67,7 @@ public sealed class SavingService(
             var projectJson = await File.ReadAllTextAsync(projectFilePath);
             project = DeserializeProject(projectJson);
         }
-        
+
         if (project != null) project.FilePath = new Uri(projectFilePath);
 
         currentProjectProvider.ProjectContext = project;
@@ -85,12 +86,12 @@ public sealed class SavingService(
         var project = DeserializeProject(json);
         return project;
     }
-    
+
     private string SerializeProject(ProjectContext project)
     {
         return JsonSerializer.Serialize(project, ProjectSerializationOptions);
     }
-    
+
     private ProjectContext? DeserializeProject(string projectJson)
     {
         return JsonSerializer.Deserialize<ProjectContext>(projectJson, ProjectSerializationOptions);
