@@ -6,12 +6,12 @@ using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.Tasks.Compile.Bcc;
 
-public partial class BccCompileTask : CompileTaskBase
+public partial class ObservableBccCompileTask : CompileTaskBase
 {
     public const string TaskName = "Compile (BCC)";
     private const string TaskDescription = "Compiles the ACS file from the given file path using a BCC compiler.";
 
-    private static readonly Type HandlerTypeCached = typeof(EngineBccCompileTaskHandler);
+    private static readonly Type HandlerTypeCached = typeof(BccCompileTaskHandler);
     public override Type HandlerType => HandlerTypeCached;
     protected override string[] ExpectedFileExtensions { get; } = [".acs", ".bcs", ".txt"];
 
@@ -27,11 +27,11 @@ public partial class BccCompileTask : CompileTaskBase
     // [ObservableProperty] private Collection<string> _macros;
     // [ObservableProperty] private Collection<string> _linkLibraries;
 
-    public BccCompileTask()
+    public ObservableBccCompileTask()
     {
     }
 
-    public BccCompileTask(string? name, string? inputFilePath, string? outputFilePath)
+    public ObservableBccCompileTask(string? name, string? inputFilePath, string? outputFilePath)
         : base(name, inputFilePath, outputFilePath)
     {
     }
@@ -41,11 +41,11 @@ public partial class BccCompileTask : CompileTaskBase
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;
 
-    public override BccCompileTask ToEngineTaskBase()
+    public override ObservableBccCompileTask ToEngineTaskBase()
     {
         Debug.Assert(InputFilePath != null && OutputFilePath != null && Name != null);
 
-        return new BccCompileTask
+        return new ObservableBccCompileTask
         {
             Name = Name,
             InputFilePath = InputFilePath,
@@ -54,14 +54,14 @@ public partial class BccCompileTask : CompileTaskBase
         };
     }
 
-    public override BccCompileTask DeepClone()
+    public override ObservableBccCompileTask DeepClone()
     {
-        return new BccCompileTask(Name, InputFilePath, OutputFilePath);
+        return new ObservableBccCompileTask(Name, InputFilePath, OutputFilePath);
     }
 
     public override void Merge(ProjectTaskBase task)
     {
-        if (task is not BccCompileTask bccCompileTask)
+        if (task is not ObservableBccCompileTask bccCompileTask)
         {
             // TODO: Error?
             return;

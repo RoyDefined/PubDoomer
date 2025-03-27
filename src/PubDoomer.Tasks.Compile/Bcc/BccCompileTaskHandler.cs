@@ -7,9 +7,9 @@ using System.Diagnostics;
 
 namespace PubDoomer.Tasks.Compile.Bcc;
 
-public sealed class EngineBccCompileTaskHandler(
-    ILogger<EngineBccCompileTaskHandler> logger,
-    BccCompileTask taskInfo,
+public sealed class BccCompileTaskHandler(
+    ILogger<BccCompileTaskHandler> logger,
+    ObservableBccCompileTask taskInfo,
     TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
 {
     protected override string StdOutFileName => "stdout_bcc.txt";
@@ -18,7 +18,7 @@ public sealed class EngineBccCompileTaskHandler(
     public async ValueTask<TaskInvokationResult> HandleAsync()
     {
         var path = context.ContextBag.GetBccCompilerExecutableFilePath();
-        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of BCC executable: {BccExecutablePath}", nameof(EngineBccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
+        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of BCC executable: {BccExecutablePath}", nameof(BccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
 
         // Create streams for stdout and stderr if configured.
         // The stderr stream is always created, as this gives us access to compile errors when they occured.

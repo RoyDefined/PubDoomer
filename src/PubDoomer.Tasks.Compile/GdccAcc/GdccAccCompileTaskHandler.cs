@@ -7,9 +7,9 @@ using System.Diagnostics;
 
 namespace PubDoomer.Tasks.Compile.GdccAcc;
 
-public sealed class EngineGdccAccCompileTaskHandler(
-    ILogger<EngineGdccAccCompileTaskHandler> logger,
-    GdccAccCompileTask taskInfo,
+public sealed class GdccAccCompileTaskHandler(
+    ILogger<GdccAccCompileTaskHandler> logger,
+    ObservableGdccAccCompileTask taskInfo,
     TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
 {
     private const string CompileResultWarningPrefix = "WARNING: ";
@@ -21,7 +21,7 @@ public sealed class EngineGdccAccCompileTaskHandler(
     public async ValueTask<TaskInvokationResult> HandleAsync()
     {
         var path = context.ContextBag.GetGdccAccCompilerExecutableFilePath();
-        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of GDCC-ACC executable: {GdccAccExecutablePath}", nameof(EngineGdccAccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
+        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of GDCC-ACC executable: {GdccAccExecutablePath}", nameof(GdccAccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
 
         // Create streams for stdout and stderr if configured.
         // The stderr stream is always created, as this gives us access to compile warnings and errors when they occured.

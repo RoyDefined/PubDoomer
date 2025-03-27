@@ -34,9 +34,9 @@ public partial class TasksPageViewModel : PageViewModel
         CurrentProjectProvider = new CurrentProjectProvider();
         
         // In this instance we replace the project's tasks to a predefined set, because otherwise we're just looking at designer tasks.
-        var compileTask1 = new AccCompileTask("Compile Foo project task", "Path/To/Foo.acs", "Path/To/Foo.o");
-        var compileTask2 = new BccCompileTask("Compile Bar BCC project task", "Path/To/Bar.acs", "Path/To/Bar.o");
-        var compileTask3 = new GdccAccCompileTask("Compile Baz GDCC-ACC project task", "Path/To/Baz.bcs", "Path/To/Baz.o");
+        var compileTask1 = new ObservableAccCompileTask("Compile Foo project task", "Path/To/Foo.acs", "Path/To/Foo.o");
+        var compileTask2 = new ObservableBccCompileTask("Compile Bar BCC project task", "Path/To/Bar.acs", "Path/To/Bar.o");
+        var compileTask3 = new ObservableGdccAccCompileTask("Compile Baz GDCC-ACC project task", "Path/To/Baz.bcs", "Path/To/Baz.o");
         CurrentProjectProvider.ProjectContext!.Tasks.Clear();
         CurrentProjectProvider.ProjectContext!.Tasks.Add(compileTask1);
         CurrentProjectProvider.ProjectContext!.Tasks.Add(compileTask2);

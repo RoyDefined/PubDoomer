@@ -37,9 +37,9 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
     // The available task types.
     [ObservableProperty] private ObservableCollection<ProjectTaskBase> _availableTaskTypes =
     [
-        new AccCompileTask(),
-        new BccCompileTask(),
-        new GdccAccCompileTask()
+        new ObservableAccCompileTask(),
+        new ObservableBccCompileTask(),
+        new ObservableGdccAccCompileTask()
     ];
 
     [ObservableProperty] private string _createOrEditButtonText;
@@ -92,9 +92,9 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
 
     public bool FormIsValid => CurrentTask switch
     {
-        AccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
-        BccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
-        GdccAccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
+        ObservableAccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
+        ObservableBccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
+        ObservableGdccAccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
         _ => false
     };
 

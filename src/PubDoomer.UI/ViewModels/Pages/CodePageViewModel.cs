@@ -341,9 +341,9 @@ public partial class CodePageViewModel : PageViewModel
         };
 
         const string taskName = "Compiler";
-        AvailableCompilerTasks.Add(new AccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
-        AvailableCompilerTasks.Add(new BccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
-        AvailableCompilerTasks.Add(new GdccAccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
+        AvailableCompilerTasks.Add(new ObservableAccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
+        AvailableCompilerTasks.Add(new ObservableBccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
+        AvailableCompilerTasks.Add(new ObservableGdccAccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
     }
 
     partial void OnSelectedCompilationTaskChanged(CompileTaskBase? value)

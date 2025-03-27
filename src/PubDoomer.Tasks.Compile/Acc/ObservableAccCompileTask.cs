@@ -5,12 +5,12 @@ using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.Tasks.Compile.Acc;
 
-public partial class AccCompileTask : CompileTaskBase
+public partial class ObservableAccCompileTask : CompileTaskBase
 {
     private const string TaskName = "Compile (ACC)";
     private const string TaskDescription = "Compiles the ACS file from the given file path using an ACS compiler.";
 
-    private static readonly Type HandlerTypeCached = typeof(EngineAccCompileTaskHandler);
+    private static readonly Type HandlerTypeCached = typeof(AccCompileTaskHandler);
     public override Type HandlerType => HandlerTypeCached;
     protected override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
 
@@ -22,11 +22,11 @@ public partial class AccCompileTask : CompileTaskBase
     // [ObservableProperty] private string? _debugFilePath;
     // [ObservableProperty] private AccBytecodeLevel _bytecodeLevel;
 
-    public AccCompileTask()
+    public ObservableAccCompileTask()
     {
     }
 
-    public AccCompileTask(string? name, string? inputFilePath, string? outputFilePath, bool keepAccErrFile = false)
+    public ObservableAccCompileTask(string? name, string? inputFilePath, string? outputFilePath, bool keepAccErrFile = false)
         : base(name, inputFilePath, outputFilePath)
     {
         KeepAccErrFile = keepAccErrFile;
@@ -35,11 +35,11 @@ public partial class AccCompileTask : CompileTaskBase
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;
 
-    public override AccCompileTask ToEngineTaskBase()
+    public override ObservableAccCompileTask ToEngineTaskBase()
     {
         Debug.Assert(InputFilePath != null && OutputFilePath != null && Name != null);
 
-        return new AccCompileTask
+        return new ObservableAccCompileTask
         {
             Name = Name,
             InputFilePath = InputFilePath,
@@ -51,14 +51,14 @@ public partial class AccCompileTask : CompileTaskBase
 
     public override CompilerType Type => CompilerType.Acc;
 
-    public override AccCompileTask DeepClone()
+    public override ObservableAccCompileTask DeepClone()
     {
-        return new AccCompileTask(Name, InputFilePath, OutputFilePath, KeepAccErrFile);
+        return new ObservableAccCompileTask(Name, InputFilePath, OutputFilePath, (bool)this.KeepAccErrFile);
     }
 
     public override void Merge(ProjectTaskBase task)
     {
-        if (task is not AccCompileTask accCompileTask)
+        if (task is not ObservableAccCompileTask accCompileTask)
         {
             // TODO: Error?
             return;

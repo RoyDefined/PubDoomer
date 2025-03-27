@@ -10,9 +10,9 @@ using System.Text;
 
 namespace PubDoomer.Tasks.Compile.Acc;
 
-public sealed class EngineAccCompileTaskHandler(
-    ILogger<EngineAccCompileTaskHandler> logger,
-    AccCompileTask taskInfo,
+public sealed class AccCompileTaskHandler(
+    ILogger<AccCompileTaskHandler> logger,
+    ObservableAccCompileTask taskInfo,
     TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
 {
     private readonly string _errorFilePath = Path.Combine(Path.GetDirectoryName(taskInfo.InputFilePath)!, "acs.err");
@@ -24,7 +24,7 @@ public sealed class EngineAccCompileTaskHandler(
     public async ValueTask<TaskInvokationResult> HandleAsync()
     {
         var path = context.ContextBag.GetAccCompilerExecutableFilePath();
-        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of ACC executable: {AccExecutablePath}", nameof(EngineAccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
+        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of ACC executable: {AccExecutablePath}", nameof(AccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
 
         // Check for existing 'acs.err' file.
         // If found, move this file because otherwise the compiler gets rid of it.

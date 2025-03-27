@@ -71,7 +71,7 @@
                                             <ContentControl.DataTemplates>
                                                 
                                                 <!-- DataTemplate for CompileTask -->
-                                                <DataTemplate DataType="acc:AccCompileTask">
+                                                <DataTemplate DataType="acc:ObservableAccCompileTask">
                                                     <StackPanel>
                                                         <TextBlock Text="{Binding InputFilePath, StringFormat='Input: {0}'}"
                                                                    FontSize="12" Foreground="Gray" />
@@ -81,7 +81,7 @@
                                                 </DataTemplate>
                                                 
                                                 <!-- DataTemplate for CompileTask -->
-                                                <DataTemplate DataType="bcc:BccCompileTask">
+                                                <DataTemplate DataType="bcc:ObservableBccCompileTask">
                                                     <StackPanel>
                                                         <TextBlock Text="{Binding InputFilePath, StringFormat='Input: {0}'}"
                                                                    FontSize="12" Foreground="Gray" />
@@ -91,7 +91,7 @@
                                                 </DataTemplate>
                                                 
                                                 <!-- DataTemplate for CompileTask -->
-                                                <DataTemplate DataType="gdccAcc:GdccAccCompileTask">
+                                                <DataTemplate DataType="gdccAcc:ObservableGdccAccCompileTask">
                                                     <StackPanel>
                                                         <TextBlock Text="{Binding InputFilePath, StringFormat='Input: {0}'}"
                                                                    FontSize="12" Foreground="Gray" />
