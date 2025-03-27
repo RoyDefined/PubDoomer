@@ -11,8 +11,9 @@ public partial class ObservableAccCompileTask : CompileTaskBase
     private const string TaskDescription = "Compiles the ACS file from the given file path using an ACS compiler.";
 
     private static readonly Type HandlerTypeCached = typeof(AccCompileTaskHandler);
-    public override Type HandlerType => HandlerTypeCached;
-    protected override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
+    [JsonIgnore] public override Type HandlerType => HandlerTypeCached;
+    [JsonIgnore] public override CompilerType Type => CompilerType.Acc;
+    [JsonIgnore] protected override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
 
     [ObservableProperty] private bool _keepAccErrFile;
 
@@ -48,8 +49,6 @@ public partial class ObservableAccCompileTask : CompileTaskBase
             KeepAccErrFile = KeepAccErrFile,
         };
     }
-
-    public override CompilerType Type => CompilerType.Acc;
 
     public override ObservableAccCompileTask DeepClone()
     {

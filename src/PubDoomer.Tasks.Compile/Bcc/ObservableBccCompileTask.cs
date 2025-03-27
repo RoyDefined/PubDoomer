@@ -12,8 +12,9 @@ public partial class ObservableBccCompileTask : CompileTaskBase
     private const string TaskDescription = "Compiles the ACS file from the given file path using a BCC compiler.";
 
     private static readonly Type HandlerTypeCached = typeof(BccCompileTaskHandler);
-    public override Type HandlerType => HandlerTypeCached;
-    protected override string[] ExpectedFileExtensions { get; } = [".acs", ".bcs", ".txt"];
+    [JsonIgnore] public override Type HandlerType => HandlerTypeCached;
+    [JsonIgnore] public override CompilerType Type => CompilerType.Bcc;
+    [JsonIgnore] protected override string[] ExpectedFileExtensions { get; } = [".acs", ".bcs", ".txt"];
 
     // TODO: Implement additional parameters
     // [ObservableProperty] private bool _accErrorFile;
@@ -35,8 +36,6 @@ public partial class ObservableBccCompileTask : CompileTaskBase
         : base(name, inputFilePath, outputFilePath)
     {
     }
-
-    public override CompilerType Type => CompilerType.Bcc;
 
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;

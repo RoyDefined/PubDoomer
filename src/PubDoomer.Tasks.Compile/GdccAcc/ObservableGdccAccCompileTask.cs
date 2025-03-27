@@ -11,8 +11,9 @@ public partial class ObservableGdccAccCompileTask : CompileTaskBase
     private const string TaskDescription = "Compiles the ACS file from the given file path using a GDCC-ACC compiler.";
 
     private static readonly Type HandlerTypeCached = typeof(GdccAccCompileTaskHandler);
-    public override Type HandlerType => HandlerTypeCached;
-    protected override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
+    [JsonIgnore] public override Type HandlerType => HandlerTypeCached;
+    [JsonIgnore] public override CompilerType Type => CompilerType.GdccAcc;
+    [JsonIgnore] protected override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
 
 
     [ObservableProperty] private bool _dontWarnForwardReferences;
@@ -28,8 +29,6 @@ public partial class ObservableGdccAccCompileTask : CompileTaskBase
     {
         DontWarnForwardReferences = dontWarnForwardReferences;
     }
-
-    public override CompilerType Type => CompilerType.GdccAcc;
 
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;
