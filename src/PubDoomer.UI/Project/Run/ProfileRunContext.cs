@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Engine.TaskInvokation.Task;
 using PubDoomer.Engine.Tasks;
 
 namespace PubDoomer.Project.Run;
@@ -53,9 +54,12 @@ public partial class ProfileRunContext : ObservableObject
     /// </summary>
     public void ValidateContext()
     {
-        var validationResultsNullable = Tasks.Select(x =>
+        var validationResultsNullable = Tasks
+            .Where(x => x.Task is IValidatableTask)
+            .Select(x =>
         {
-            var results = x.Task.Validate();
+            var validatableTask = (IValidatableTask)x.Task;
+            var results = validatableTask.Validate();
             var collection = new TaskValidationCollection(x, results);
 
             // Return `null` if no validation results were found.

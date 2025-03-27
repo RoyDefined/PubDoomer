@@ -10,10 +10,4 @@ public sealed class AcsVirtualMachineExecuteTask : IRunnableTask
 
     public required string Name { get; init; }
     public required string InputFilePath { get; init; }
-
-    // TODO: Implement. Current not implemented as this task is part of automatically generated tasks for the code editor page.
-    public IEnumerable<ValidateResult> Validate()
-    {
-        yield break;
-    }
 }

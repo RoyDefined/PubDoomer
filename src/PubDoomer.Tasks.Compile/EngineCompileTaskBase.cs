@@ -3,7 +3,7 @@ using PubDoomer.Engine.TaskInvokation.Validation;
 
 namespace PubDoomer.Tasks.Compile;
 
-public abstract class EngineCompileTaskBase : IRunnableTask
+public abstract class EngineCompileTaskBase : IRunnableTask, IValidatableTask
 {
     public required string Name { get; init; }
     public required string InputFilePath { get; init; }

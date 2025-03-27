@@ -7,7 +7,7 @@ using PubDoomer.Engine.TaskInvokation.Validation;
 namespace PubDoomer.UI.Editor.Tasks;
 
 // Represents a task that will always return two errors.
-public sealed class ErrorEditorEngineTask : IRunnableTask
+public sealed class ErrorEditorEngineTask : IRunnableTask, IValidatableTask
 {
     private static readonly Type HandlerTypeCached = typeof(ErrorEditorEngineTaskHandler);
 

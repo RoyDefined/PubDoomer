@@ -7,7 +7,7 @@ using PubDoomer.Engine.TaskInvokation.Validation;
 namespace PubDoomer.UI.Editor.Tasks;
 
 // Represents a task that will always return two warnings.
-public sealed class WarningEditorEngineTask : IRunnableTask
+public sealed class WarningEditorEngineTask : IRunnableTask, IValidatableTask
 {
     private static readonly Type HandlerTypeCached = typeof(WarningEditorEngineTaskHandler);
 

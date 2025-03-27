@@ -7,7 +7,7 @@ using PubDoomer.Engine.TaskInvokation.Validation;
 namespace PubDoomer.UI.Editor.Tasks;
 
 // Represents a task that will always complete succesfully.
-public sealed class SuccesfulEditorEngineTask : IRunnableTask
+public sealed class SuccesfulEditorEngineTask : IRunnableTask, IValidatableTask
 {
     private static readonly Type HandlerTypeCached = typeof(SuccesfulEditorEngineTaskHandler);
 
