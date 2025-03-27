@@ -7,13 +7,14 @@ using PubDoomer.Engine.TaskInvokation.Validation;
 namespace PubDoomer.UI.Editor.Tasks;
 
 // Represents a task that will always return two warnings.
-public sealed class WarningEditorEngineTask : EngineTaskBase
+public sealed class WarningEditorEngineTask : IRunnableTask
 {
     private static readonly Type HandlerTypeCached = typeof(WarningEditorEngineTaskHandler);
 
-    public override Type HandlerType => HandlerTypeCached;
+    public Type HandlerType => HandlerTypeCached;
+    public required string Name { get; init; }
 
-    public override IEnumerable<ValidateResult> Validate()
+    public IEnumerable<ValidateResult> Validate()
     {
         yield return ValidateResult.FromWarning("Warning number #1");
         yield return ValidateResult.FromWarning("Warning number #2");

@@ -19,7 +19,7 @@ public abstract partial class ProjectTaskBase : ObservableObject, ICloneable
         return DeepClone();
     }
 
-    public abstract EngineTaskBase ToEngineTaskBase();
+    public abstract IRunnableTask ToEngineTaskBase();
     public abstract ProjectTaskBase DeepClone();
     public abstract void Merge(ProjectTaskBase task);
 }

@@ -7,13 +7,14 @@ using PubDoomer.Engine.TaskInvokation.Validation;
 namespace PubDoomer.UI.Editor.Tasks;
 
 // Represents a task that will always return two errors.
-public sealed class ErrorEditorEngineTask : EngineTaskBase
+public sealed class ErrorEditorEngineTask : IRunnableTask
 {
     private static readonly Type HandlerTypeCached = typeof(ErrorEditorEngineTaskHandler);
 
-    public override Type HandlerType => HandlerTypeCached;
+    public Type HandlerType => HandlerTypeCached;
+    public required string Name { get; init; }
 
-    public override IEnumerable<ValidateResult> Validate()
+    public IEnumerable<ValidateResult> Validate()
     {
         yield return ValidateResult.FromError("Error number #1");
         yield return ValidateResult.FromError("Error number #2");

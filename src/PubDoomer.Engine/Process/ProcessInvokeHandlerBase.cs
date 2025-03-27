@@ -7,7 +7,7 @@ using SystemProcess = System.Diagnostics.Process;
 namespace PubDoomer.Engine.Process;
 
 public abstract class ProcessInvokeHandlerBase(
-    ILogger<ProcessInvokeHandlerBase> logger, EngineTaskBase taskInfo)
+    ILogger<ProcessInvokeHandlerBase> logger, IRunnableTask taskInfo)
 {
     protected abstract string StdOutFileName { get; }
     protected abstract string StdErrFileName { get; }

@@ -14,7 +14,7 @@ namespace PubDoomer.Project.Run;
 /// </summary>
 public partial class ProfileRunTask : ObservableObject
 {
-    [ObservableProperty] private EngineTaskBase _task;
+    [ObservableProperty] private IRunnableTask _task;
     [ObservableProperty] private ProfileTaskErrorBehaviour _behaviour;
 
     [ObservableProperty] private ObservableCollection<ValidateResult>? _validations;
@@ -27,7 +27,7 @@ public partial class ProfileRunTask : ObservableObject
 
     public ProfileRunTask(
         ProfileTaskErrorBehaviour behaviour,
-        EngineTaskBase task)
+        IRunnableTask task)
     {
         _behaviour = behaviour;
         _task = task;

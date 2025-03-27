@@ -3,17 +3,19 @@ using PubDoomer.Engine.TaskInvokation.Validation;
 
 namespace PubDoomer.Tasks.Compile;
 
-public abstract class EngineCompileTaskBase : EngineTaskBase
+public abstract class EngineCompileTaskBase : IRunnableTask
 {
+    public required string Name { get; init; }
     public required string InputFilePath { get; init; }
     public required string OutputFilePath { get; init; }
     public required bool GenerateStdOutAndStdErrFiles { get; init; }
-    
+
+    public abstract Type HandlerType { get; }
     public abstract CompilerType Type { get; }
     protected abstract string[] ExpectedFileExtensions { get; }
     
     // TODO: Add validation for the output path
-    public override IEnumerable<ValidateResult> Validate()
+    public IEnumerable<ValidateResult> Validate()
     {
         // Check if path is set.
         if (string.IsNullOrWhiteSpace(InputFilePath))
