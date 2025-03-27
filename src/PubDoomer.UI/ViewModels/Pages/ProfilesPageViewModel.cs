@@ -103,49 +103,7 @@ public partial class ProfilesPageViewModel : PageViewModel
         var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
         var context = TaskInvokeContextUtil.BuildContext(settings);
 
-        // TODO: Make use of the status.
-        var stopwatch = Stopwatch.GetTimestamp();
-        SelectedRunProfile.Status = ProfileRunContextStatus.Running;
-
-        // TODO: Merge with the orchestrator.
-        foreach (var runTask in SelectedRunProfile.Tasks)
-        {
-            runTask.Status = ProfileRunTaskStatus.Running;
-
-            var result = await _projectTaskOrchestrator.InvokeTaskAsync(runTask.Task, context);
-            _logger.LogDebug("Task result: {ResultType}, {Result}", result.ResultType, result.ResultMessage);
-
-            runTask.Status = result.ResultType == TaskResultType.Success
-                ? ProfileRunTaskStatus.Success
-                : ProfileRunTaskStatus.Error;
-
-            runTask.ResultMessage = result.ResultMessage;
-            runTask.ResultWarnings = result.Warnings != null ? new ObservableCollection<string>(result.Warnings) : null;
-            runTask.ResultErrors = result.Errors != null ? new ObservableCollection<string>(result.Errors) : null;
-            runTask.Exception = result.Exception;
-            
-            // Check error behaviour.
-            // If there was an error and the behaviour is to quit, then end the task invocation early.
-            if (runTask.Status == ProfileRunTaskStatus.Error)
-            {
-                if (runTask.Behaviour == ProfileTaskErrorBehaviour.StopOnError)
-                {
-                    _logger.LogWarning(runTask.Exception, "Task failure.");
-                    SelectedRunProfile.Status = ProfileRunContextStatus.Error;
-                    break;
-                }
-                else
-                {
-                    _logger.LogWarning(runTask.Exception, "Task failed but is configured to not stop on errors. Execution will continue.");
-                }
-            }
-        }
-
-        SelectedRunProfile.ElapsedTimeMs = (int)Stopwatch.GetElapsedTime(stopwatch).TotalMilliseconds;
-        if (SelectedRunProfile.Status != ProfileRunContextStatus.Error)
-        {
-            SelectedRunProfile.Status = ProfileRunContextStatus.Success;
-        }
+        await _projectTaskOrchestrator.InvokeProfileAsync(SelectedRunProfile, context);
         
         _logger.LogDebug("Finished execution.");
     }

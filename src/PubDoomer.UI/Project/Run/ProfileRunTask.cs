@@ -1,9 +1,9 @@
 using System;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.Task;
 using PubDoomer.Engine.TaskInvokation.Validation;
-using PubDoomer.Project.Profile;
 using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.Project.Run;
@@ -12,7 +12,7 @@ namespace PubDoomer.Project.Run;
 /// Represents the main context of a task to run.
 /// <br /> Contains additional fields and properties to indicate result.
 /// </summary>
-public partial class ProfileRunTask : ObservableObject
+public partial class ProfileRunTask : ObservableObject, IInvokableTask
 {
     [ObservableProperty] private IRunnableTask _task;
     [ObservableProperty] private ProfileTaskErrorBehaviour _behaviour;

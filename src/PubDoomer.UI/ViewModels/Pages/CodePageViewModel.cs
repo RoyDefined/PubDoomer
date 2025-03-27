@@ -280,42 +280,14 @@ public partial class CodePageViewModel : PageViewModel
         {
             InvokedTasks.Add(runTask);
         }
-        
+
+        // Set up profile and context
+        var profile = new ProfileRunContext("Code editor run profile", runTasks);
         var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, _settings);
         var context = TaskInvokeContextUtil.BuildContext(settings);
 
-        // TODO: Merge with the orchestrator.
-        foreach (var runTask in runTasks)
-        {
-            runTask.Status = ProfileRunTaskStatus.Running;
-
-            var result = await _projectTaskOrchestrator.InvokeTaskAsync(runTask.Task, context);
-            _logger.LogDebug("Task result: {ResultType}, {Result}", result.ResultType, result.ResultMessage);
-
-            runTask.Status = result.ResultType == TaskResultType.Success
-                ? ProfileRunTaskStatus.Success
-                : ProfileRunTaskStatus.Error;
-
-            runTask.ResultMessage = result.ResultMessage;
-            runTask.ResultWarnings = result.Warnings != null ? new ObservableCollection<string>(result.Warnings) : null;
-            runTask.ResultErrors = result.Errors != null ? new ObservableCollection<string>(result.Errors) : null;
-            runTask.Exception = result.Exception;
-            
-            // Check error behaviour.
-            // If there was an error and the behaviour is to quit, then end the task invokation early.
-            if (runTask.Status == ProfileRunTaskStatus.Error)
-            {
-                if (runTask.Behaviour == ProfileTaskErrorBehaviour.StopOnError)
-                {
-                    _logger.LogWarning(runTask.Exception, "Task failure.");
-                    break;
-                }
-                else
-                {
-                    _logger.LogWarning(runTask.Exception, "Task failed but is configured to not stop on errors. Execution will continue.");
-                }
-            }
-        }
+        // TODO: Make use of the profile.
+        await _projectTaskOrchestrator.InvokeProfileAsync(profile, context);
     }
     
     private void WeakSubscribeToDocumentChanges(TextDocument editorDocument)

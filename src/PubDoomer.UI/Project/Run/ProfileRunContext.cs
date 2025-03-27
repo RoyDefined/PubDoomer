@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.Task;
 using PubDoomer.Engine.Tasks;
 
@@ -11,7 +12,7 @@ namespace PubDoomer.Project.Run;
 /// <summary>
 /// Represents the main context of a profile that contains invokable tasks that can be invoked.
 /// </summary>
-public partial class ProfileRunContext : ObservableObject
+public partial class ProfileRunContext : ObservableObject, IInvokableProfile
 {
     /// <summary>
     /// The name of the profile to display in the UI.
@@ -47,6 +48,8 @@ public partial class ProfileRunContext : ObservableObject
         Name = name;
         Tasks = new ObservableCollection<ProfileRunTask>(tasks);
     }
+
+    IEnumerable<IInvokableTask> IInvokableProfile.Tasks => Tasks.Cast<IInvokableTask>();
 
     /// <summary>
     /// Fully validates the current profile to ensure it can run properly.
