@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PubDoomer.Engine.TaskInvokation\PubDoomer.Engine.TaskInvokation.csproj" />
     <ProjectReference Include="..\PubDoomer.Engine\PubDoomer.Engine.csproj" />
   </ItemGroup>
 

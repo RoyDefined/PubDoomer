@@ -2,6 +2,8 @@
 using PubDoomer.Engine.Orchestration;
 using PubDoomer.Engine.Process;
 using PubDoomer.Engine.TaskHandling;
+using PubDoomer.Engine.TaskInvokation.Context;
+using PubDoomer.Tasks.Compile.Extensions;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Globalization;
@@ -12,7 +14,7 @@ namespace PubDoomer.Tasks.Compile.Acc;
 public sealed class EngineAccCompileTaskHandler(
     ILogger<EngineAccCompileTaskHandler> logger,
     EngineAccCompileTask taskInfo,
-    PublishingContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
+    TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
 {
     private readonly string _errorFilePath = Path.Combine(Path.GetDirectoryName(taskInfo.InputFilePath)!, "acs.err");
     private readonly CompositeFormat _errorFileRenamePathTemplate = CompositeFormat.Parse(Path.Combine(Path.GetDirectoryName(taskInfo.InputFilePath)!, "acs.err.backup{0}"));
@@ -22,8 +24,8 @@ public sealed class EngineAccCompileTaskHandler(
 
     public async ValueTask<TaskInvokationResult> HandleAsync()
     {
-        Debug.Assert(context.AccCompilerExecutableFilePath != null);
-        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of ACC executable: {AccExecutablePath}", nameof(EngineAccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, context.AccCompilerExecutableFilePath);
+        var path = context.ContextBag.GetAccCompilerExecutableFilePath();
+        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of ACC executable: {AccExecutablePath}", nameof(EngineAccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
 
         // Check for existing 'acs.err' file.
         // If found, move this file because otherwise the compiler gets rid of it.
@@ -38,7 +40,7 @@ public sealed class EngineAccCompileTaskHandler(
         using var stdErrStream = taskInfo.GenerateStdOutAndStdErrFiles ? new MemoryStream() : null;
 
         var result = await StartProcessAsync(
-            new ProcessInvokeContext(context.AccCompilerExecutableFilePath, BuildArguments(), stdOutStream, stdErrStream));
+            new ProcessInvokeContext(path, BuildArguments(), stdOutStream, stdErrStream));
 
         // Premature exception was thrown, not related to compilation.
         // TODO: Continue if possible and check if we also have compiler errors, should the process have executed succesfully?

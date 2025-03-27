@@ -7,7 +7,7 @@ namespace PubDoomer.UI.Editor.Tasks;
 
 public sealed class WarningEditorEngineTaskHandler(
     WarningEditorEngineTask taskInfo,
-    PublishingContext context) : ITaskHandler
+    TaskInvokeContext context) : ITaskHandler
 {
     public ValueTask<TaskInvokationResult> HandleAsync()
     {

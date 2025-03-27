@@ -5,4 +5,4 @@ using PubDoomer.Engine.TaskHandling;
 
 namespace PubDoomer.Engine.Orchestrator;
 
-public delegate ITaskHandler? ProjectTaskOrchestratorProviderDelegate(Type handlerType, EngineTaskBase task, PublishingContext context);
+public delegate ITaskHandler? ProjectTaskOrchestratorProviderDelegate(Type handlerType, EngineTaskBase task, TaskInvokeContext context);

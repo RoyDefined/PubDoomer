@@ -2,6 +2,8 @@
 using PubDoomer.Engine.Orchestration;
 using PubDoomer.Engine.Process;
 using PubDoomer.Engine.TaskHandling;
+using PubDoomer.Engine.TaskInvokation.Context;
+using PubDoomer.Tasks.Compile.Extensions;
 using System.Diagnostics;
 
 namespace PubDoomer.Tasks.Compile.Bcc;
@@ -9,15 +11,15 @@ namespace PubDoomer.Tasks.Compile.Bcc;
 public sealed class EngineBccCompileTaskHandler(
     ILogger<EngineBccCompileTaskHandler> logger,
     EngineBccCompileTask taskInfo,
-    PublishingContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
+    TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
 {
     protected override string StdOutFileName => "stdout_bcc.txt";
     protected override string StdErrFileName => "stderr_bcc.txt";
 
     public async ValueTask<TaskInvokationResult> HandleAsync()
     {
-        Debug.Assert(context.BccCompilerExecutableFilePath != null);
-        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of BCC executable: {BccExecutablePath}", nameof(EngineBccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, context.BccCompilerExecutableFilePath);
+        var path = context.ContextBag.GetBccCompilerExecutableFilePath();
+        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of BCC executable: {BccExecutablePath}", nameof(EngineBccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
 
         // Create streams for stdout and stderr if configured.
         // The stderr stream is always created, as this gives us access to compile errors when they occured.
@@ -25,7 +27,7 @@ public sealed class EngineBccCompileTaskHandler(
         using var stdErrStream = new MemoryStream();
 
         var result = await StartProcessAsync(
-            new ProcessInvokeContext(context.BccCompilerExecutableFilePath, BuildArguments(), stdOutStream, stdErrStream));
+            new ProcessInvokeContext(path, BuildArguments(), stdOutStream, stdErrStream));
 
         // Premature exception was thrown, not related to compilation.
         // TODO: Continue if possible and check if we also have compiler errors, should the process have executed?

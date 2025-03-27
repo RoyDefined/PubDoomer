@@ -32,6 +32,7 @@ using PubDoomer.Saving;
 using PubDoomer.Services;
 using PubDoomer.Settings.Merged;
 using PubDoomer.Tasks.Compile;
+using PubDoomer.Utils.TaskInvokation;
 using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
@@ -278,13 +279,7 @@ public partial class CodePageViewModel : PageViewModel
         }
         
         var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, _settings);
-        var context = new PublishingContext()
-        {
-            AccCompilerExecutableFilePath = settings.AccCompilerExecutableFilePath,
-            BccCompilerExecutableFilePath = settings.BccCompilerExecutableFilePath,
-            GdccAccCompilerExecutableFilePath = settings.GdccAccCompilerExecutableFilePath,
-            AcsVmExecutableFilePath = settings.AcsVmExecutableFilePath,
-        };
+        var context = TaskInvokeContextUtil.BuildContext(settings);
 
         // TODO: Merge with the orchestrator.
         foreach (var runTask in runTasks)

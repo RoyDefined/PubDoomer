@@ -8,7 +8,7 @@ namespace PubDoomer.UI.Editor.Tasks;
 
 public sealed class ErrorEditorEngineTaskHandler(
     ErrorEditorEngineTask taskInfo,
-    PublishingContext context) : ITaskHandler
+    TaskInvokeContext context) : ITaskHandler
 {
     public ValueTask<TaskInvokationResult> HandleAsync()
     {

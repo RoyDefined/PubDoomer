@@ -7,7 +7,7 @@ public sealed class ProjectTaskOrchestrator(
     ILogger<ProjectTaskOrchestrator> logger,
     ProjectTaskOrchestratorProviderDelegate projectTaskOrchestratorProviderDelegate)
 {
-    public async Task<TaskInvokationResult> InvokeTaskAsync(EngineTaskBase task, PublishingContext context)
+    public async Task<TaskInvokationResult> InvokeTaskAsync(EngineTaskBase task, TaskInvokeContext context)
     {
         var handler = projectTaskOrchestratorProviderDelegate(task.HandlerType, task, context);
         if (handler == null)

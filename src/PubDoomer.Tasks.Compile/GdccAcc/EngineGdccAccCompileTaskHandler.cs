@@ -2,6 +2,8 @@
 using PubDoomer.Engine.Orchestration;
 using PubDoomer.Engine.Process;
 using PubDoomer.Engine.TaskHandling;
+using PubDoomer.Engine.TaskInvokation.Context;
+using PubDoomer.Tasks.Compile.Extensions;
 using System.Diagnostics;
 
 namespace PubDoomer.Tasks.Compile.GdccAcc;
@@ -9,7 +11,7 @@ namespace PubDoomer.Tasks.Compile.GdccAcc;
 public sealed class EngineGdccAccCompileTaskHandler(
     ILogger<EngineGdccAccCompileTaskHandler> logger,
     EngineGdccAccCompileTask taskInfo,
-    PublishingContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
+    TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
 {
     private const string CompileResultWarningPrefix = "WARNING: ";
     private const string CompileResultErrorPrefix = "ERROR: ";
@@ -19,8 +21,8 @@ public sealed class EngineGdccAccCompileTaskHandler(
 
     public async ValueTask<TaskInvokationResult> HandleAsync()
     {
-        Debug.Assert(context.GdccAccCompilerExecutableFilePath != null);
-        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of GDCC-ACC executable: {GdccAccExecutablePath}", nameof(EngineGdccAccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, context.GdccAccCompilerExecutableFilePath);
+        var path = context.ContextBag.GetGdccAccCompilerExecutableFilePath();
+        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of GDCC-ACC executable: {GdccAccExecutablePath}", nameof(EngineGdccAccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
 
         // Create streams for stdout and stderr if configured.
         // The stderr stream is always created, as this gives us access to compile warnings and errors when they occured.
@@ -28,7 +30,7 @@ public sealed class EngineGdccAccCompileTaskHandler(
         using var stdErrStream = new MemoryStream();
 
         var result = await StartProcessAsync(
-            new ProcessInvokeContext(context.GdccAccCompilerExecutableFilePath, BuildArguments(), stdOutStream, stdErrStream));
+            new ProcessInvokeContext(path, BuildArguments(), stdOutStream, stdErrStream));
         
         // Premature exception was thrown, not related to compilation.
         // TODO: Continue if possible and check if we also have compiler errors, should the process have executed succesfully?

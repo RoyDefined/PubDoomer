@@ -2,7 +2,9 @@
 using PubDoomer.Engine.Orchestration;
 using PubDoomer.Engine.Process;
 using PubDoomer.Engine.TaskHandling;
+using PubDoomer.Engine.TaskInvokation.Context;
 using PubDoomer.Engine.Tasks;
+using PubDoomer.Tasks.Compile.Extensions;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Globalization;
@@ -13,7 +15,7 @@ namespace PubDoomer.Engine.Tasks.AcsVM;
 public sealed class AcsVirtualMachineExecuteTaskHandler(
     ILogger<AcsVirtualMachineExecuteTaskHandler> logger,
     AcsVirtualMachineExecuteTask taskInfo,
-    PublishingContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
+    TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
 {
     // Note, currently unused
     protected override string StdOutFileName => "stdout_acsvm.txt";
@@ -21,15 +23,15 @@ public sealed class AcsVirtualMachineExecuteTaskHandler(
 
     public async ValueTask<TaskInvokationResult> HandleAsync()
     {
-        Debug.Assert(context.AcsVmExecutableFilePath != null);
-        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Location of ACSVM executable: {AccExecutablePath}", nameof(AcsVirtualMachineExecuteTaskHandler), taskInfo.InputFilePath, context.AcsVmExecutableFilePath);
+        var path = context.ContextBag.GetAcsVmExecutableFilePath();
+        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Location of ACSVM executable: {AccExecutablePath}", nameof(AcsVirtualMachineExecuteTaskHandler), taskInfo.InputFilePath, path);
 
         // We make an stdout and stderr stream regardless of configuration.
         using var stdOutStream = new MemoryStream();
         using var stdErrStream = new MemoryStream();
 
         var result = await StartProcessAsync(
-            new ProcessInvokeContext(context.AcsVmExecutableFilePath, BuildArguments(), stdOutStream, stdErrStream));
+            new ProcessInvokeContext(path, BuildArguments(), stdOutStream, stdErrStream));
 
         // Premature exception was thrown, not related to compilation.
         // TODO: Continue if possible and check if we also have compiler errors, should the process have executed succesfully?
