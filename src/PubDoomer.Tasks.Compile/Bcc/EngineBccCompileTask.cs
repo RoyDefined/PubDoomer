@@ -1,4 +1,4 @@
-namespace PubDoomer.Engine.Compile.Bcc;
+namespace PubDoomer.Tasks.Compile.Bcc;
 
 public sealed class EngineBccCompileTask : EngineCompileTaskBase
 {

@@ -4,7 +4,7 @@ using PubDoomer.Engine.Process;
 using PubDoomer.Engine.TaskHandling;
 using System.Diagnostics;
 
-namespace PubDoomer.Engine.Compile.Bcc;
+namespace PubDoomer.Tasks.Compile.Bcc;
 
 public sealed class EngineBccCompileTaskHandler(
     ILogger<EngineBccCompileTaskHandler> logger,

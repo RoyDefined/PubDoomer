@@ -1,7 +1,7 @@
 ﻿using PubDoomer.Engine.TaskHandling;
 using PubDoomer.Engine.Validation;
 
-namespace PubDoomer.Engine.Compile;
+namespace PubDoomer.Tasks.Compile;
 
 public abstract class EngineCompileTaskBase : EngineTaskBase
 {

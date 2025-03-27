@@ -2,8 +2,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using PubDoomer.Engine.Compile;
-using PubDoomer.Engine.Compile.Bcc;
+using PubDoomer.Tasks.Compile;
+using PubDoomer.Tasks.Compile.Bcc;
 
 namespace PubDoomer.Project.Tasks;
 

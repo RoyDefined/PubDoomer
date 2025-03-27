@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 
-namespace PubDoomer.Engine.Compile.Acc;
+namespace PubDoomer.Tasks.Compile.Acc;
 
 public sealed class EngineAccCompileTaskHandler(
     ILogger<EngineAccCompileTaskHandler> logger,

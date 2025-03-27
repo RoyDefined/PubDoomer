@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using PubDoomer.Engine.Compile;
-using PubDoomer.Engine.Compile.Gdcc;
+using PubDoomer.Tasks.Compile;
+using PubDoomer.Tasks.Compile.GdccAcc;
 
 namespace PubDoomer.Project.Tasks;
 

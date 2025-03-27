@@ -1,4 +1,4 @@
-namespace PubDoomer.Engine.Compile.Gdcc;
+namespace PubDoomer.Tasks.Compile.GdccAcc;
 
 public sealed class EngineGdccAccCompileTask : EngineCompileTaskBase
 {

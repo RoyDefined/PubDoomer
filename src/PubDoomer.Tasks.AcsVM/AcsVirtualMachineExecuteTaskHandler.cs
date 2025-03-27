@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using PubDoomer.Engine.Compile.Acc;
 using PubDoomer.Engine.Orchestration;
 using PubDoomer.Engine.Process;
 using PubDoomer.Engine.TaskHandling;
@@ -9,7 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 
-namespace PubDoomer.Engine.TaskHandlers;
+namespace PubDoomer.Engine.Tasks.AcsVM;
 
 public sealed class AcsVirtualMachineExecuteTaskHandler(
     ILogger<AcsVirtualMachineExecuteTaskHandler> logger,

@@ -1,4 +1,4 @@
-﻿namespace PubDoomer.Engine.Compile;
+﻿namespace PubDoomer.Tasks.Compile;
 
 /// <summary>
 /// Represents a type of compiler.

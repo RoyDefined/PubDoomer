@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PubDoomer.Engine.Compile.Gdcc;
+namespace PubDoomer.Tasks.Compile.GdccAcc;
 
 internal readonly struct GdccCompileResult
 {

@@ -19,7 +19,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using PubDoomer.Engine.Compile;
 using PubDoomer.Engine.Orchestration;
 using PubDoomer.Engine.Orchestrator;
 using PubDoomer.Engine.Static;
@@ -32,6 +31,7 @@ using PubDoomer.Project.Tasks;
 using PubDoomer.Saving;
 using PubDoomer.Services;
 using PubDoomer.Settings.Merged;
+using PubDoomer.Tasks.Compile;
 using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
