@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using PubDoomer.Engine.TaskHandling;
-using PubDoomer.Engine.Validation;
+using PubDoomer.Engine.TaskInvokation.Task;
+using PubDoomer.Engine.TaskInvokation.Validation;
 
 namespace PubDoomer.UI.Editor.Tasks;
 

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using PubDoomer.Engine.TaskHandling;
-using PubDoomer.Engine.Validation;
+using PubDoomer.Engine.TaskInvokation.Task;
+using PubDoomer.Engine.TaskInvokation.Validation;
 using PubDoomer.Project.Profile;
 using PubDoomer.Project.Tasks;
 

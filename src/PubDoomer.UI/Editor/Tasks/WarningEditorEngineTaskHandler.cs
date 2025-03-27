@@ -1,13 +1,13 @@
 ﻿using System.Threading.Tasks;
-using PubDoomer.Engine.Orchestration;
-using PubDoomer.Engine.TaskHandling;
+using PubDoomer.Engine.TaskInvokation.Context;
+using PubDoomer.Engine.TaskInvokation.Task;
 using PubDoomer.UI.Editor.Tasks;
 
 namespace PubDoomer.UI.Editor.Tasks;
 
 public sealed class WarningEditorEngineTaskHandler(
-    WarningEditorEngineTask taskInfo,
-    TaskInvokeContext context) : ITaskHandler
+    WarningEditorEngineTask _,
+    TaskInvokeContext __) : ITaskHandler
 {
     public ValueTask<TaskInvokationResult> HandleAsync()
     {

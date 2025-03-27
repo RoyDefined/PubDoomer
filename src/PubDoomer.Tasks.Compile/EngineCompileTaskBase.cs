@@ -1,5 +1,5 @@
-﻿using PubDoomer.Engine.TaskHandling;
-using PubDoomer.Engine.Validation;
+﻿using PubDoomer.Engine.TaskInvokation.Task;
+using PubDoomer.Engine.TaskInvokation.Validation;
 
 namespace PubDoomer.Tasks.Compile;
 

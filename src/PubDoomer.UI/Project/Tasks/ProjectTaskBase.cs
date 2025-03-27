@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using PubDoomer.Engine.TaskHandling;
+using PubDoomer.Engine.TaskInvokation.Task;
 
 namespace PubDoomer.Project.Tasks;
 

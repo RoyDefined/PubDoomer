@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace PubDoomer.Engine.TaskHandling;
+namespace PubDoomer.Engine.TaskInvokation.Task;
 
 public sealed class TaskInvokationResult
 {
