@@ -1,21 +1,20 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using PubDoomer.Tasks.Compile;
-using PubDoomer.Tasks.Compile.GdccAcc;
+using PubDoomer.Project.Tasks;
 
-namespace PubDoomer.Project.Tasks;
+namespace PubDoomer.Tasks.Compile.GdccAcc;
 
 public partial class GdccAccCompileTask : CompileTaskBase
 {
     public const string TaskName = "Compile (GDCC-ACC)";
     private const string TaskDescription = "Compiles the ACS file from the given file path using a GDCC-ACC compiler.";
 
-    
+
     [ObservableProperty] private bool _dontWarnForwardReferences;
-    
+
     // TODO: Implement additional parameters assuming these exist?
-    
+
     public GdccAccCompileTask()
     {
     }
@@ -27,14 +26,14 @@ public partial class GdccAccCompileTask : CompileTaskBase
     }
 
     public override CompilerType Type => CompilerType.GdccAcc;
-    
+
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;
 
     public override EngineGdccAccCompileTask ToEngineTaskBase()
     {
         Debug.Assert(InputFilePath != null && OutputFilePath != null && Name != null);
-        
+
         return new EngineGdccAccCompileTask
         {
             Name = Name,
@@ -49,7 +48,7 @@ public partial class GdccAccCompileTask : CompileTaskBase
     {
         return new GdccAccCompileTask(Name, InputFilePath, OutputFilePath, DontWarnForwardReferences);
     }
-    
+
 
     public override void Merge(ProjectTaskBase task)
     {

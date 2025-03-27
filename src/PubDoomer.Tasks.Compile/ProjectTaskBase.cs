@@ -2,6 +2,9 @@ using System;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Engine.TaskInvokation.Task;
+using PubDoomer.Tasks.Compile.Acc;
+using PubDoomer.Tasks.Compile.Bcc;
+using PubDoomer.Tasks.Compile.GdccAcc;
 
 namespace PubDoomer.Project.Tasks;
 

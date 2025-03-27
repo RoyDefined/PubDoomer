@@ -1,18 +1,17 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using PubDoomer.Tasks.Compile;
-using PubDoomer.Tasks.Compile.Acc;
+using PubDoomer.Project.Tasks;
 
-namespace PubDoomer.Project.Tasks;
+namespace PubDoomer.Tasks.Compile.Acc;
 
 public partial class AccCompileTask : CompileTaskBase
 {
     private const string TaskName = "Compile (ACC)";
     private const string TaskDescription = "Compiles the ACS file from the given file path using an ACS compiler.";
-    
+
     [ObservableProperty] private bool _keepAccErrFile;
-    
+
     // TODO: Implement additional parameters
     // [ObservableProperty] private string? _includeFolder;
     // [ObservableProperty] private bool _outputDebug;
@@ -35,7 +34,7 @@ public partial class AccCompileTask : CompileTaskBase
     public override EngineAccCompileTask ToEngineTaskBase()
     {
         Debug.Assert(InputFilePath != null && OutputFilePath != null && Name != null);
-        
+
         return new EngineAccCompileTask
         {
             Name = Name,

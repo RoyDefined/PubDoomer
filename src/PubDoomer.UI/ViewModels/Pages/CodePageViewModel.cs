@@ -32,6 +32,9 @@ using PubDoomer.Saving;
 using PubDoomer.Services;
 using PubDoomer.Settings.Merged;
 using PubDoomer.Tasks.Compile;
+using PubDoomer.Tasks.Compile.Acc;
+using PubDoomer.Tasks.Compile.Bcc;
+using PubDoomer.Tasks.Compile.GdccAcc;
 using PubDoomer.Utils.TaskInvokation;
 using PubDoomer.ViewModels.Dialogues;
 

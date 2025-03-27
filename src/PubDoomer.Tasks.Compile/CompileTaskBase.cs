@@ -1,6 +1,5 @@
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using PubDoomer.Engine.Tasks;
 using PubDoomer.Tasks.Compile;
 
 namespace PubDoomer.Project.Tasks;

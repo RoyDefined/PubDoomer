@@ -2,7 +2,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:tasks="clr-namespace:PubDoomer.Project.Tasks"
+        xmlns:acc="clr-namespace:PubDoomer.Tasks.Compile.Acc;assembly=PubDoomer.Tasks.Compile"
+        xmlns:bcc="clr-namespace:PubDoomer.Tasks.Compile.Bcc;assembly=PubDoomer.Tasks.Compile"
+        xmlns:gdccAcc="clr-namespace:PubDoomer.Tasks.Compile.GdccAcc;assembly=PubDoomer.Tasks.Compile"
         mc:Ignorable="d"
         x:Class="PubDoomer.Views.Dialogues.CreateOrEditTaskWindow"
         Title="{Binding WindowTitle}"
@@ -67,7 +69,7 @@
                 <ContentControl.DataTemplates>
 
                     <!-- DataTemplate for AccCompileTask -->
-                    <DataTemplate DataType="{x:Type tasks:AccCompileTask}">
+                    <DataTemplate DataType="{x:Type acc:AccCompileTask}">
                         <StackPanel Spacing="10">
                             
                             <!-- Input path -->
@@ -149,7 +151,7 @@
                     </DataTemplate>
                     
                     <!-- DataTemplate for BccCompileTask -->
-                    <DataTemplate DataType="{x:Type tasks:BccCompileTask}">
+                    <DataTemplate DataType="{x:Type bcc:BccCompileTask}">
                         <StackPanel Spacing="10">
                             
                             <!-- Input path -->
@@ -216,7 +218,7 @@
                     </DataTemplate>
                     
                     <!-- DataTemplate for GdccCompileTask -->
-                    <DataTemplate DataType="{x:Type tasks:GdccAccCompileTask}">
+                    <DataTemplate DataType="{x:Type gdccAcc:GdccAccCompileTask}">
                         <StackPanel Spacing="10">
                             
                             <!-- Input path -->

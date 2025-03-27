@@ -13,6 +13,9 @@ using CommunityToolkit.Mvvm.Input;
 using PubDoomer.Objects;
 using PubDoomer.Project.Tasks;
 using PubDoomer.Services;
+using PubDoomer.Tasks.Compile.Acc;
+using PubDoomer.Tasks.Compile.Bcc;
+using PubDoomer.Tasks.Compile.GdccAcc;
 
 namespace PubDoomer.ViewModels.Dialogues;
 

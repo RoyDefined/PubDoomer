@@ -2,10 +2,9 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using PubDoomer.Tasks.Compile;
-using PubDoomer.Tasks.Compile.Bcc;
+using PubDoomer.Project.Tasks;
 
-namespace PubDoomer.Project.Tasks;
+namespace PubDoomer.Tasks.Compile.Bcc;
 
 public partial class BccCompileTask : CompileTaskBase
 {
@@ -23,7 +22,7 @@ public partial class BccCompileTask : CompileTaskBase
     // [ObservableProperty] private bool _preprocessOnly;
     // [ObservableProperty] private Collection<string> _macros;
     // [ObservableProperty] private Collection<string> _linkLibraries;
-    
+
     public BccCompileTask()
     {
     }
@@ -32,7 +31,7 @@ public partial class BccCompileTask : CompileTaskBase
         : base(name, inputFilePath, outputFilePath)
     {
     }
-    
+
     public override CompilerType Type => CompilerType.Bcc;
 
     [JsonIgnore] public override string DisplayName => TaskName;
@@ -41,7 +40,7 @@ public partial class BccCompileTask : CompileTaskBase
     public override EngineBccCompileTask ToEngineTaskBase()
     {
         Debug.Assert(InputFilePath != null && OutputFilePath != null && Name != null);
-        
+
         return new EngineBccCompileTask
         {
             Name = Name,

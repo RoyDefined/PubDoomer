@@ -6,6 +6,8 @@ using CommunityToolkit.Mvvm.Input;
 using PubDoomer.Project;
 using PubDoomer.Project.Profile;
 using PubDoomer.Project.Tasks;
+using PubDoomer.Tasks.Compile.Acc;
+using PubDoomer.Tasks.Compile.Bcc;
 
 namespace PubDoomer.ViewModels.Dialogues;
 

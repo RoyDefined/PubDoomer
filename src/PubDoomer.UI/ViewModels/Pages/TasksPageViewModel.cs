@@ -11,6 +11,9 @@ using PubDoomer.Project;
 using PubDoomer.Project.Tasks;
 using PubDoomer.Saving;
 using PubDoomer.Services;
+using PubDoomer.Tasks.Compile.Acc;
+using PubDoomer.Tasks.Compile.Bcc;
+using PubDoomer.Tasks.Compile.GdccAcc;
 using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
