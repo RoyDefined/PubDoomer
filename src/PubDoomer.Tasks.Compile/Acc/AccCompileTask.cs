@@ -10,6 +10,10 @@ public partial class AccCompileTask : CompileTaskBase
     private const string TaskName = "Compile (ACC)";
     private const string TaskDescription = "Compiles the ACS file from the given file path using an ACS compiler.";
 
+    private static readonly Type HandlerTypeCached = typeof(EngineAccCompileTaskHandler);
+    public override Type HandlerType => HandlerTypeCached;
+    protected override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
+
     [ObservableProperty] private bool _keepAccErrFile;
 
     // TODO: Implement additional parameters
@@ -31,11 +35,11 @@ public partial class AccCompileTask : CompileTaskBase
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;
 
-    public override EngineAccCompileTask ToEngineTaskBase()
+    public override AccCompileTask ToEngineTaskBase()
     {
         Debug.Assert(InputFilePath != null && OutputFilePath != null && Name != null);
 
-        return new EngineAccCompileTask
+        return new AccCompileTask
         {
             Name = Name,
             InputFilePath = InputFilePath,

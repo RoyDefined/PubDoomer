@@ -9,7 +9,7 @@ namespace PubDoomer.Tasks.Compile.GdccAcc;
 
 public sealed class EngineGdccAccCompileTaskHandler(
     ILogger<EngineGdccAccCompileTaskHandler> logger,
-    EngineGdccAccCompileTask taskInfo,
+    GdccAccCompileTask taskInfo,
     TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
 {
     private const string CompileResultWarningPrefix = "WARNING: ";

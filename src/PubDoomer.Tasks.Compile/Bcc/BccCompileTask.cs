@@ -11,6 +11,10 @@ public partial class BccCompileTask : CompileTaskBase
     public const string TaskName = "Compile (BCC)";
     private const string TaskDescription = "Compiles the ACS file from the given file path using a BCC compiler.";
 
+    private static readonly Type HandlerTypeCached = typeof(EngineBccCompileTaskHandler);
+    public override Type HandlerType => HandlerTypeCached;
+    protected override string[] ExpectedFileExtensions { get; } = [".acs", ".bcs", ".txt"];
+
     // TODO: Implement additional parameters
     // [ObservableProperty] private bool _accErrorFile;
     // [ObservableProperty] private bool _accStats;
@@ -37,11 +41,11 @@ public partial class BccCompileTask : CompileTaskBase
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;
 
-    public override EngineBccCompileTask ToEngineTaskBase()
+    public override BccCompileTask ToEngineTaskBase()
     {
         Debug.Assert(InputFilePath != null && OutputFilePath != null && Name != null);
 
-        return new EngineBccCompileTask
+        return new BccCompileTask
         {
             Name = Name,
             InputFilePath = InputFilePath,

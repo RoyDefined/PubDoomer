@@ -12,7 +12,7 @@ namespace PubDoomer.Tasks.Compile.Acc;
 
 public sealed class EngineAccCompileTaskHandler(
     ILogger<EngineAccCompileTaskHandler> logger,
-    EngineAccCompileTask taskInfo,
+    AccCompileTask taskInfo,
     TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
 {
     private readonly string _errorFilePath = Path.Combine(Path.GetDirectoryName(taskInfo.InputFilePath)!, "acs.err");

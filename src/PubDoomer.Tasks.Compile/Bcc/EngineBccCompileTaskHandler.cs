@@ -9,7 +9,7 @@ namespace PubDoomer.Tasks.Compile.Bcc;
 
 public sealed class EngineBccCompileTaskHandler(
     ILogger<EngineBccCompileTaskHandler> logger,
-    EngineBccCompileTask taskInfo,
+    BccCompileTask taskInfo,
     TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
 {
     protected override string StdOutFileName => "stdout_bcc.txt";

@@ -8,6 +8,7 @@ using PubDoomer.Tasks.Compile.GdccAcc;
 
 namespace PubDoomer.Project.Tasks;
 
+// TODO: Convert into interface.
 [JsonDerivedType(typeof(AccCompileTask), "AccCompile")]
 [JsonDerivedType(typeof(BccCompileTask), "BccCompile")]
 [JsonDerivedType(typeof(GdccAccCompileTask), "GdccAccCompile")]

@@ -10,6 +10,10 @@ public partial class GdccAccCompileTask : CompileTaskBase
     public const string TaskName = "Compile (GDCC-ACC)";
     private const string TaskDescription = "Compiles the ACS file from the given file path using a GDCC-ACC compiler.";
 
+    private static readonly Type HandlerTypeCached = typeof(EngineGdccAccCompileTaskHandler);
+    public override Type HandlerType => HandlerTypeCached;
+    protected override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
+
 
     [ObservableProperty] private bool _dontWarnForwardReferences;
 
@@ -30,11 +34,11 @@ public partial class GdccAccCompileTask : CompileTaskBase
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;
 
-    public override EngineGdccAccCompileTask ToEngineTaskBase()
+    public override GdccAccCompileTask ToEngineTaskBase()
     {
         Debug.Assert(InputFilePath != null && OutputFilePath != null && Name != null);
 
-        return new EngineGdccAccCompileTask
+        return new GdccAccCompileTask
         {
             Name = Name,
             InputFilePath = InputFilePath,
