@@ -10,7 +10,7 @@ using PubDoomer.Project.Tasks;
 namespace PubDoomer.UI.Editor.Tasks;
 
 // Represents a task that will always return two warnings.
-public partial class ObservableWarningEditorTask : ProjectTaskBase, IValidatableTask
+public partial class ObservableWarningEditorTask : ProjectTaskBase, ITaskValidator
 {
     private static readonly Type HandlerTypeCached = typeof(WarningEditorTaskHandler);
 

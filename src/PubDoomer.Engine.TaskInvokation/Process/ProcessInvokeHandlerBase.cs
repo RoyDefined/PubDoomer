@@ -4,7 +4,7 @@ using PubDoomer.Engine.Abstract;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using SystemProcess = System.Diagnostics.Process;
 
-namespace PubDoomer.Engine.Process;
+namespace PubDoomer.Engine.TaskInvokation.Process;
 
 public abstract class ProcessInvokeHandlerBase(
     ILogger<ProcessInvokeHandlerBase> logger, IRunnableTask taskInfo)

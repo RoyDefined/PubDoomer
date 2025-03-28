@@ -12,7 +12,7 @@ public partial class ObservableAccCompileTask : CompileTaskBase
 
     [JsonIgnore] public override Type HandlerType => typeof(AccCompileTaskHandler);
     [JsonIgnore] public override CompilerType Type => CompilerType.Acc;
-    [JsonIgnore] protected override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
+    [JsonIgnore] public override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
 
     [ObservableProperty] private bool _keepAccErrFile;
 

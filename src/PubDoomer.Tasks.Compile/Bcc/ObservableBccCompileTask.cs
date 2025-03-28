@@ -13,7 +13,7 @@ public partial class ObservableBccCompileTask : CompileTaskBase
 
     [JsonIgnore] public override Type HandlerType => typeof(BccCompileTaskHandler);
     [JsonIgnore] public override CompilerType Type => CompilerType.Bcc;
-    [JsonIgnore] protected override string[] ExpectedFileExtensions { get; } = [".acs", ".bcs", ".txt"];
+    [JsonIgnore] public override string[] ExpectedFileExtensions { get; } = [".acs", ".bcs", ".txt"];
 
     // TODO: Implement additional parameters
     // [ObservableProperty] private bool _accErrorFile;

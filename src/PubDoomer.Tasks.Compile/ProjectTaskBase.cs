@@ -17,7 +17,9 @@ public abstract partial class ProjectTaskBase : ObservableObject, IRunnableTask,
     [ObservableProperty] private string? _name;
     public abstract string DisplayName { get; }
     public abstract string Description { get; }
+
     public abstract Type HandlerType { get; }
+    public virtual Type? ValidatorType { get; }
 
     public object Clone()
     {

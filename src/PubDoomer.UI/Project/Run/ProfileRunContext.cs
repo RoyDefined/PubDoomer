@@ -4,6 +4,7 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using PubDoomer.Engine.TaskInvokation.Validation;
 
 namespace PubDoomer.Project.Run;
 
@@ -23,12 +24,6 @@ public partial class ProfileRunContext : ObservableObject, IInvokableProfile
     [ObservableProperty] private ObservableCollection<ProfileRunTask> _tasks;
 
     /// <summary>
-    /// Delegated from each task. Contains found validation results.
-    /// <br /> Can be completely empty, meaning the tasks yielded no warnings/errors.
-    /// </summary>
-    [ObservableProperty] private ObservableCollection<TaskValidationCollection>? _validations;
-
-    /// <summary>
     /// The status of the profile. Indicates how invokation goes.
     /// </summary>
     [ObservableProperty] private ProfileRunContextStatus _status;
@@ -44,39 +39,8 @@ public partial class ProfileRunContext : ObservableObject, IInvokableProfile
         IEnumerable<ProfileRunTask> tasks)
     {
         Name = name;
-        Tasks = new ObservableCollection<ProfileRunTask>(tasks);
+        Tasks = [.. tasks];
     }
 
     IEnumerable<IInvokableTask> IInvokableProfile.Tasks => Tasks.Cast<IInvokableTask>();
-
-    /// <summary>
-    /// Fully validates the current profile to ensure it can run properly.
-    /// <br/> Validation is before the tasks are invoked. This means it does not guarantee the tasks run succesfully at runtime.
-    /// </summary>
-    public void ValidateContext()
-    {
-        var validationResultsNullable = Tasks
-            .Where(x => x.Task is IValidatableTask)
-            .Select(x =>
-        {
-            var validatableTask = (IValidatableTask)x.Task;
-            var results = validatableTask.Validate();
-            var collection = new TaskValidationCollection(x, results);
-
-            // Return `null` if no validation results were found.
-            // This is filtered below.
-            if (collection.Results.Count == 0)
-            {
-                return null;
-            }
-
-            return collection;
-        });
-
-        var validationResults = validationResultsNullable
-            .Where(x => x != null)
-            .Cast<TaskValidationCollection>();
-
-        Validations = new ObservableCollection<TaskValidationCollection>(validationResults);
-    }
 }

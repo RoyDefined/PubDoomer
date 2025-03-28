@@ -12,7 +12,7 @@ public partial class ObservableGdccAccCompileTask : CompileTaskBase
 
     [JsonIgnore] public override Type HandlerType => typeof(GdccAccCompileTaskHandler);
     [JsonIgnore] public override CompilerType Type => CompilerType.GdccAcc;
-    [JsonIgnore] protected override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
+    [JsonIgnore] public override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
 
 
     [ObservableProperty] private bool _dontWarnForwardReferences;

@@ -12,12 +12,19 @@ public static class EngineServiceCollectionExtensions
     {
         return serviceCollection
             .AddTransient(GetTaskHandlerOrDefault)
+            .AddTransient(GetTaskValidatorOrDefault)
             .AddTransient<ProjectTaskOrchestrator>();
     }
 
-    private static ProjectTaskOrchestratorProviderDelegate GetTaskHandlerOrDefault(IServiceProvider provider)
+    private static ProjectTaskOrchestratorHandlerProviderDelegate GetTaskHandlerOrDefault(IServiceProvider provider)
     {
-        return (Type taskHandlerType, IRunnableTask task, TaskInvokeContext context)
-            => ActivatorUtilities.CreateInstance(provider, taskHandlerType, task, context) as ITaskHandler;
+        return (IRunnableTask task, TaskInvokeContext context)
+            => ActivatorUtilities.CreateInstance(provider, task.HandlerType, task, context) as ITaskHandler;
+    }
+
+    private static ProjectTaskOrchestratorValidatorProviderDelegate GetTaskValidatorOrDefault(IServiceProvider provider)
+    {
+        return (IRunnableTask task)
+            => ActivatorUtilities.CreateInstance(provider, task.ValidatorType!, task) as ITaskValidator;
     }
 }

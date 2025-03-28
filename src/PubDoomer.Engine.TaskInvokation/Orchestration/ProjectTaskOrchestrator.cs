@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using PubDoomer.Engine.TaskInvokation.Context;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using PubDoomer.Engine.TaskInvokation.Validation;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 
@@ -8,9 +9,41 @@ namespace PubDoomer.Engine.TaskInvokation.Orchestration;
 
 public sealed class ProjectTaskOrchestrator(
     ILogger<ProjectTaskOrchestrator> logger,
-    ProjectTaskOrchestratorProviderDelegate projectTaskOrchestratorProviderDelegate)
+    ProjectTaskOrchestratorHandlerProviderDelegate handlerProviderDelegate,
+    ProjectTaskOrchestratorValidatorProviderDelegate validatorProviderDelegate)
 {
-    public async System.Threading.Tasks.Task InvokeProfileAsync(IInvokableProfile profile, TaskInvokeContext context)
+    /// <summary>
+    /// Fully validates the current profile to ensure it can run properly.
+    /// <br/> Validation is before the tasks are invoked. This means it does not guarantee the tasks run succesfully at runtime.
+    /// </summary>
+    public TaskValidationCollection[] ValidateProfile(IInvokableProfile profile)
+    {
+        var validationResultsNullable = profile.Tasks
+            .Where(x => x.Task.ValidatorType != null)
+            .Select(x =>
+            {
+                var validatableTask = GetTaskValidator(x.Task);
+
+                var results = validatableTask.Validate();
+                var collection = new TaskValidationCollection(x, results.ToArray());
+
+                // Return `null` if no validation results were found.
+                // This is filtered below.
+                if (collection.Results.Count == 0)
+                {
+                    return null;
+                }
+
+                return collection;
+            });
+
+        return validationResultsNullable
+            .Where(x => x != null)
+            .Cast<TaskValidationCollection>()
+            .ToArray();
+    }
+
+    public async Task InvokeProfileAsync(IInvokableProfile profile, TaskInvokeContext context)
     {
         // TODO: Make use of the status.
         var stopwatch = Stopwatch.GetTimestamp();
@@ -56,9 +89,18 @@ public sealed class ProjectTaskOrchestrator(
         }
     }
 
+    private ITaskValidator GetTaskValidator(IRunnableTask task)
+    {
+        var handler = validatorProviderDelegate(task);
+        if (handler == null)
+            throw new ArgumentException($"Unknown validator type: {task.HandlerType.FullName}");
+
+        return handler;
+    }
+
     private async Task<TaskInvokationResult> InvokeTaskAsync(IRunnableTask task, TaskInvokeContext context)
     {
-        var handler = projectTaskOrchestratorProviderDelegate(task.HandlerType, task, context);
+        var handler = handlerProviderDelegate(task, context);
         if (handler == null)
             throw new ArgumentException($"Unknown handler type: {task.HandlerType.FullName}");
 

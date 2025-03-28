@@ -10,7 +10,7 @@ using PubDoomer.Project.Tasks;
 namespace PubDoomer.UI.Editor.Tasks;
 
 // Represents a task that will always return two errors.
-public partial class ObservableErrorEditorTask : ProjectTaskBase, IValidatableTask
+public partial class ObservableErrorEditorTask : ProjectTaskBase, ITaskValidator
 {
     private static readonly Type HandlerTypeCached = typeof(ErrorEditorTaskHandler);
 

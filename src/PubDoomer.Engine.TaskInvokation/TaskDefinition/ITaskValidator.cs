@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PubDoomer.Engine.TaskInvokation.TaskDefinition;
 
-public interface IValidatableTask
+public interface ITaskValidator
 {
     IEnumerable<ValidateResult> Validate();
 }

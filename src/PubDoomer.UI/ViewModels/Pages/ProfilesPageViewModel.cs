@@ -106,14 +106,13 @@ public partial class ProfilesPageViewModel : PageViewModel
     {
         foreach (var validation in validations)
         {
-            var results = validation.Results.Where(y => y.Type == type);
-            var resultCollection = new Collection<ValidateResult>(results.ToArray());
-            if (resultCollection.Count == 0)
+            var results = validation.Results.Where(y => y.Type == type).ToArray();
+            if (results.Length == 0)
             {
                 continue;
             }
             
-            yield return new TaskValidationCollection(validation.Task, resultCollection);
+            yield return new TaskValidationCollection(validation.Task, results);
         }
     }
 
@@ -179,21 +178,21 @@ public partial class ProfilesPageViewModel : PageViewModel
 
     partial void OnSelectedProfileChanged(ProfileContext? value)
     {
+        if (AssertInDesignMode()) return;
+
         if (value == null)
         {
             return;
         }
 
         SelectedRunProfile = value.ToProfileRunContext();
-        
-        // Validate the profile before running it.
-        // If this results in validation errors, don't continue.
-        // The UI will display the errors.
-        SelectedRunProfile.ValidateContext();
-        Debug.Assert(SelectedRunProfile?.Validations != null);
 
-        Warnings = new ObservableCollection<TaskValidationCollection>(GetValidationsByType(SelectedRunProfile.Validations, ValidateResultType.Warning));
-        Errors = new ObservableCollection<TaskValidationCollection>(GetValidationsByType(SelectedRunProfile.Validations, ValidateResultType.Error));
+        // Validate the profile before running it.
+        // The UI will display the errors.
+        var validations = _projectTaskOrchestrator.ValidateProfile(SelectedRunProfile);
+
+        Warnings = new ObservableCollection<TaskValidationCollection>(GetValidationsByType(validations, ValidateResultType.Warning));
+        Errors = new ObservableCollection<TaskValidationCollection>(GetValidationsByType(validations, ValidateResultType.Error));
     }
 
     [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_dialogueProvider), nameof(_projectTaskOrchestrator))]
