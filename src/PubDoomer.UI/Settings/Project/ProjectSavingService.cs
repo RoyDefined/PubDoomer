@@ -13,6 +13,10 @@ using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 using PubDoomer.Project.Maps;
 using PubDoomer.Project.Profile;
+using PubDoomer.Project.Tasks;
+using PubDoomer.Tasks.Compile.Acc;
+using PubDoomer.Tasks.Compile.Bcc;
+using PubDoomer.Tasks.Compile.GdccAcc;
 
 namespace PubDoomer.Settings.Project;
 
@@ -20,6 +24,14 @@ public sealed class ProjectSavingService(
     EncryptionService encryptionService,
     CurrentProjectProvider currentProjectProvider)
 {
+    // TODO: This has to be generic, not hardcoded in here.
+    private static Dictionary<string, ProjectTaskBase> _projectTaskMap = new()
+    {
+        [ObservableAccCompileTask.TaskName] = new ObservableAccCompileTask(),
+        [ObservableBccCompileTask.TaskName] = new ObservableBccCompileTask(),
+        [ObservableGdccAccCompileTask.TaskName] = new ObservableGdccAccCompileTask(),
+    };
+
     private static readonly JsonSerializerOptions ProjectSerializationOptions = new()
     {
         ReferenceHandler = ReferenceHandler.Preserve,
@@ -136,6 +148,7 @@ public sealed class ProjectSavingService(
         writer.Write(projectContext.Tasks.Count);
         foreach (var task in projectContext.Tasks)
         {
+            writer.Write(task.DisplayName ?? string.Empty);
             writer.Write(task.Name ?? string.Empty);
             task.Serialize(writer);
         }
@@ -226,10 +239,18 @@ public sealed class ProjectSavingService(
 
     private void ReadTasks(ProjectContext projectContext, BinaryReader reader)
     {
-        foreach (var _ in Enumerable.Range(0, reader.ReadInt32()))
-        {
-            // TODO
-        }
+        var tasksIterator = Enumerable.Range(0, reader.ReadInt32())
+            .Select(x =>
+            {
+
+                var displayName = reader.ReadString();
+                var task = _projectTaskMap[displayName].DeepClone();
+                task.Name = reader.ReadString();
+                task.Deserialize(reader);
+                return task;
+            });
+
+        projectContext.Tasks = [.. tasksIterator];
     }
 
     private void ReadProfiles(ProjectContext projectContext, BinaryReader reader)

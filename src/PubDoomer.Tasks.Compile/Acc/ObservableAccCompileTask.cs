@@ -7,7 +7,7 @@ namespace PubDoomer.Tasks.Compile.Acc;
 
 public partial class ObservableAccCompileTask : CompileTaskBase
 {
-    private const string TaskName = "Compile (ACC)";
+    public const string TaskName = "Compile (ACC)";
     private const string TaskDescription = "Compiles the ACS file from the given file path using an ACS compiler.";
 
     public override Type HandlerType => typeof(AccCompileTaskHandler);
