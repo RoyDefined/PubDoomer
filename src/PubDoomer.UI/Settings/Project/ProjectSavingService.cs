@@ -5,31 +5,23 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using PubDoomer.Encryption;
 using PubDoomer.Project;
 using PubDoomer.Saving;
+using PubDoomer.Settings.Recent;
 using PubDoomer.Utils;
 
-// TODO: Implement caching.
+namespace PubDoomer.Settings.Project;
 
-namespace PubDoomer.Settings;
-
-public sealed class SavingService(
+public sealed class ProjectSavingService(
     EncryptionService encryptionService,
-    CurrentProjectProvider currentProjectProvider,
-    RecentProjectCollection recentProjects,
-    LocalSettings settings)
+    CurrentProjectProvider currentProjectProvider)
 {
-    private static readonly string LocalSavesFolder = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PubDoomer");
-
     private static readonly JsonSerializerOptions ProjectSerializationOptions = new()
     {
         ReferenceHandler = ReferenceHandler.Preserve,
         WriteIndented = true,
     };
-
-    private static readonly string RecentProjectsFile = Path.Combine(LocalSavesFolder, "recent_projects.dat");
-    private static readonly string LocalSettingsFile = Path.Combine(LocalSavesFolder, "settings.dat");
 
     public async Task SaveProjectAsync(bool encrypt)
     {
@@ -95,45 +87,5 @@ public sealed class SavingService(
     private ProjectContext? DeserializeProject(string projectJson)
     {
         return JsonSerializer.Deserialize<ProjectContext>(projectJson, ProjectSerializationOptions);
-    }
-
-    public async Task SaveRecentProjectsAsync()
-    {
-        Directory.CreateDirectory(LocalSavesFolder);
-
-        var json = JsonSerializer.Serialize(recentProjects.ToArray());
-        var encryptedData = await encryptionService.EncryptAsync(json);
-
-        await File.WriteAllBytesAsync(RecentProjectsFile, encryptedData);
-    }
-
-    public async Task LoadRecentProjectsAsync()
-    {
-        if (!File.Exists(RecentProjectsFile)) return;
-
-        var encryptedBytes = await File.ReadAllBytesAsync(RecentProjectsFile);
-        var json = await encryptionService.DecryptAsync(encryptedBytes);
-        var result = JsonSerializer.Deserialize<RecentProject[]>(json) ?? [];
-
-        foreach (var project in result) recentProjects.Add(project);
-    }
-
-    public async Task SaveLocalSettingsAsync()
-    {
-        Directory.CreateDirectory(LocalSavesFolder);
-
-        var json = JsonSerializer.Serialize(settings);
-        var encryptedData = await encryptionService.EncryptAsync(json);
-
-        await File.WriteAllBytesAsync(LocalSettingsFile, encryptedData);
-    }
-
-    public async Task LoadLocalSettingsAsyncAsync()
-    {
-        if (!File.Exists(LocalSettingsFile)) return;
-
-        var encryptedBytes = await File.ReadAllBytesAsync(LocalSettingsFile);
-        var json = await encryptionService.DecryptAsync(encryptedBytes);
-        JsonSerializerExtensions.Populate(settings, json);
     }
 }

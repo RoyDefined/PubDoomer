@@ -18,7 +18,9 @@ using PubDoomer.Logging;
 using PubDoomer.Project;
 using PubDoomer.Saving;
 using PubDoomer.Services;
-using PubDoomer.Settings;
+using PubDoomer.Settings.Local;
+using PubDoomer.Settings.Project;
+using PubDoomer.Settings.Recent;
 using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels;
@@ -27,7 +29,9 @@ namespace PubDoomer.ViewModels;
 public partial class MainWindowModel : MainViewModel
 {
     private readonly DialogueProvider? _dialogueProvider;
-    private readonly SavingService? _savingService;
+    private readonly ProjectSavingService? _savingService;
+    private readonly LocalSettingsService? _localSettingsService;
+    private readonly RecentProjectsService? _recentProjectsService;
     private readonly WindowProvider? _windowProvider;
 
     [ObservableProperty] private RecentProjectCollection _recentProjects;
@@ -52,12 +56,17 @@ public partial class MainWindowModel : MainViewModel
         PageViewModelFactory pageViewModelFactory,
         WindowNotificationManager windowNotificationManager,
         RecentProjectCollection recentProjects,
-        SavingService savingService,
+        ProjectSavingService savingService,
+        LocalSettingsService localSettingsService,
+        RecentProjectsService recentProjectsService,
         WindowProvider windowProvider,
         DialogueProvider dialogueProvider)
         : base(logger, logEmitter, environment, sessionSettings, currentProjectProvider, pageViewModelFactory, windowNotificationManager)
     {
         _savingService = savingService;
+        _localSettingsService = localSettingsService;
+        _recentProjectsService = recentProjectsService;
+
         _windowProvider = windowProvider;
         _dialogueProvider = dialogueProvider;
         _recentProjects = recentProjects;
@@ -232,7 +241,7 @@ public partial class MainWindowModel : MainViewModel
 
         try
         {
-            await _savingService.LoadRecentProjectsAsync();
+            await _recentProjectsService.LoadRecentProjectsAsync();
         }
         catch (Exception e)
         {
@@ -242,7 +251,7 @@ public partial class MainWindowModel : MainViewModel
 
         try
         {
-            await _savingService.LoadLocalSettingsAsyncAsync();
+            await _localSettingsService.LoadLocalSettingsAsyncAsync();
         }
         catch (Exception e)
         {
@@ -268,10 +277,10 @@ public partial class MainWindowModel : MainViewModel
         recentProject = new RecentProject(CurrentProjectProvider.ProjectContext.Name!, CurrentProjectProvider.ProjectContext.FilePath.LocalPath);
         RecentProjects.Insert(0, recentProject);
 
-        await _savingService.SaveRecentProjectsAsync();
+        await _recentProjectsService.SaveRecentProjectsAsync();
     }
 
-    [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_savingService), nameof(_dialogueProvider))]
+    [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_savingService), nameof(_localSettingsService), nameof(_recentProjectsService), nameof(_dialogueProvider))]
     private bool AssertInDesignMode()
     {
         return Design.IsDesignMode;

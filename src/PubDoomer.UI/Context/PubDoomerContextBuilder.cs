@@ -6,13 +6,16 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PubDoomer.Encryption;
 using PubDoomer.Engine.Extensions;
 using PubDoomer.Factory;
 using PubDoomer.Logging;
 using PubDoomer.Project;
 using PubDoomer.Saving;
 using PubDoomer.Services;
-using PubDoomer.Settings;
+using PubDoomer.Settings.Local;
+using PubDoomer.Settings.Project;
+using PubDoomer.Settings.Recent;
 using PubDoomer.ViewModels;
 using Serilog;
 
@@ -65,7 +68,9 @@ public static class PubDoomerContextBuilder
         });
 
         // Saving
-        _ = services.AddTransient<SavingService>()
+        _ = services.AddTransient<ProjectSavingService>()
+            .AddTransient<RecentProjectsService>()
+            .AddTransient<LocalSettingsService>()
             .AddTransient<EncryptionService>()
             .AddSingleton<RecentProjectCollection>()
             .AddSingleton<LocalSettings>()

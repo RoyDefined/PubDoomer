@@ -18,7 +18,8 @@ using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 using PubDoomer.Saving;
 using PubDoomer.Services;
-using PubDoomer.Settings;
+using PubDoomer.Settings.Local;
+using PubDoomer.Settings.Project;
 using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
@@ -38,7 +39,8 @@ public partial class SettingsPageViewModel : PageViewModel
     };
 
     private readonly ILogger _logger;
-    private readonly SavingService? _savingService;
+    private readonly ProjectSavingService? _savingService;
+    private readonly LocalSettingsService? _localSettingsService;
     private readonly WindowProvider? _windowProvider;
     private readonly WindowNotificationManager? _notificationManager;
     private readonly DialogueProvider? _dialogueProvider;
@@ -56,7 +58,8 @@ public partial class SettingsPageViewModel : PageViewModel
         WindowProvider windowProvider,
         WindowNotificationManager notificationManager,
         DialogueProvider dialogueProvider,
-        SavingService savingService,
+        ProjectSavingService savingService,
+        LocalSettingsService localSettingsService,
         LocalSettings settings)
     {
         _logger = logger;
@@ -64,6 +67,7 @@ public partial class SettingsPageViewModel : PageViewModel
         _notificationManager = notificationManager;
         _dialogueProvider = dialogueProvider;
         _savingService = savingService;
+        _localSettingsService = localSettingsService;
 
         Settings = settings;
 
@@ -198,12 +202,12 @@ public partial class SettingsPageViewModel : PageViewModel
     {
         if (AssertInDesignMode()) return;
 
-        await _savingService.SaveLocalSettingsAsync();
+        await _localSettingsService.SaveLocalSettingsAsync();
         _notificationManager.Show(new Notification("Settings saved", "The settings have been updated succesfully.",
             NotificationType.Success));
     }
 
-    [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_savingService), nameof(_notificationManager), nameof(_dialogueProvider))]
+    [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_savingService), nameof(_localSettingsService), nameof(_notificationManager), nameof(_dialogueProvider))]
     private bool AssertInDesignMode()
     {
         return Design.IsDesignMode;

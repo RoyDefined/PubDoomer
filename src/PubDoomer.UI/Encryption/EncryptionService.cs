@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PubDoomer.Settings;
+namespace PubDoomer.Encryption;
 
 public sealed class EncryptionService
 {
