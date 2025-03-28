@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using PubDoomer.Engine.Static;
+using PubDoomer.Engine.Abstract;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using SystemProcess = System.Diagnostics.Process;
 

@@ -1,4 +1,4 @@
-﻿namespace PubDoomer.Engine.Static;
+﻿namespace PubDoomer.Engine.Abstract;
 
 public static class EngineStatics
 {

@@ -12,7 +12,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using PubDoomer.Engine.Static;
+using PubDoomer.Engine.Abstract;
 using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Project;
