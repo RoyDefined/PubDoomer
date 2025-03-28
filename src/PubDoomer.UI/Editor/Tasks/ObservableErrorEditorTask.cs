@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text.Json.Serialization;
 using Avalonia.Controls;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
@@ -39,6 +40,16 @@ public partial class ObservableErrorEditorTask : ProjectTaskBase, ITaskValidator
     }
 
     public override void Merge(ProjectTaskBase task)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void Serialize(BinaryWriter writer)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void Deserialize(BinaryReader reader)
     {
         throw new NotImplementedException();
     }
