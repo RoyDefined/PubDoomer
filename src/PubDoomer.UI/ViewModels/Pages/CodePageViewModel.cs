@@ -1,35 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Notifications;
-using Avalonia.Platform.Storage;
-using Avalonia.Styling;
 using Avalonia.Utilities;
 using AvaloniaEdit.Document;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using PubDoomer.Engine.Compile;
-using PubDoomer.Engine.Orchestration;
-using PubDoomer.Engine.Static;
-using PubDoomer.Engine.Tasks;
+using PubDoomer.Engine.Abstract;
+using PubDoomer.Engine.TaskInvokation.Orchestration;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Project;
-using PubDoomer.Project.Profile;
 using PubDoomer.Project.Run;
 using PubDoomer.Project.Tasks;
 using PubDoomer.Saving;
 using PubDoomer.Services;
-using PubDoomer.Utils.MergedSettings;
+using PubDoomer.Settings.Merged;
+using PubDoomer.Tasks.AcsVM;
+using PubDoomer.Tasks.Compile;
+using PubDoomer.Tasks.Compile.Acc;
+using PubDoomer.Tasks.Compile.Bcc;
+using PubDoomer.Tasks.Compile.GdccAcc;
+using PubDoomer.Utils.TaskInvokation;
 using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
@@ -108,7 +105,7 @@ public partial class CodePageViewModel : PageViewModel
     
     // Dependencies
     private readonly ILogger _logger;
-    private readonly ProjectTaskOrchestrator _projectTaskOrchestrator;
+    private readonly ProjectTaskOrchestrator? _projectTaskOrchestrator;
     private readonly DialogueProvider? _dialogueProvider;
     private readonly LocalSettings? _settings;
     
@@ -153,11 +150,6 @@ public partial class CodePageViewModel : PageViewModel
         // Dependencies
         _logger = new NullLogger<CodePageViewModel>();
         CurrentProjectProvider = new CurrentProjectProvider();
-        
-        // TODO: Duplicate code in the profiles page.
-        _projectTaskOrchestrator = new ProjectTaskOrchestrator(
-            NullLogger<ProjectTaskOrchestrator>.Instance,
-            ((type, task, context) => Activator.CreateInstance(type, task, context) as ITaskHandler));
         
         EditorDocument.Text = DesignTimeCode;
         WeakSubscribeToDocumentChanges(EditorDocument);
@@ -244,10 +236,9 @@ public partial class CodePageViewModel : PageViewModel
         compileTask.OutputFilePath = _temporaryFileOutputPath;
         
         // Set up the task
-        var engineTask = compileTask.ToEngineTaskBase();
         var runTask = new ProfileRunTask(
             ProfileTaskErrorBehaviour.StopOnError,
-            engineTask);
+            compileTask);
 
         return runTask;
     }
@@ -268,47 +259,22 @@ public partial class CodePageViewModel : PageViewModel
     /// </summary>
     private async Task RunTasksAsync(params IList<ProfileRunTask> runTasks)
     {
+        if (AssertInDesignMode()) return;
+        
         // Update the invoked tasks.
         InvokedTasks.Clear();
         foreach (var runTask in runTasks)
         {
             InvokedTasks.Add(runTask);
         }
-        
-        var context = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, _settings);
 
-        // TODO: Merge with the orchestrator.
-        foreach (var runTask in runTasks)
-        {
-            runTask.Status = ProfileRunTaskStatus.Running;
+        // Set up profile and context
+        var profile = new ProfileRunContext("Code editor run profile", runTasks);
+        var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, _settings);
+        var context = TaskInvokeContextUtil.BuildContext(settings);
 
-            var result = await _projectTaskOrchestrator.InvokeTaskAsync(runTask.Task, context);
-            _logger.LogDebug("Task result: {ResultType}, {Result}", result.ResultType, result.ResultMessage);
-
-            runTask.Status = result.ResultType == TaskResultType.Success
-                ? ProfileRunTaskStatus.Success
-                : ProfileRunTaskStatus.Error;
-
-            runTask.ResultMessage = result.ResultMessage;
-            runTask.ResultWarnings = result.Warnings != null ? new ObservableCollection<string>(result.Warnings) : null;
-            runTask.ResultErrors = result.Errors != null ? new ObservableCollection<string>(result.Errors) : null;
-            runTask.Exception = result.Exception;
-            
-            // Check error behaviour.
-            // If there was an error and the behaviour is to quit, then end the task invokation early.
-            if (runTask.Status == ProfileRunTaskStatus.Error)
-            {
-                if (runTask.Behaviour == ProfileTaskErrorBehaviour.StopOnError)
-                {
-                    _logger.LogWarning(runTask.Exception, "Task failure.");
-                    break;
-                }
-                else
-                {
-                    _logger.LogWarning(runTask.Exception, "Task failed but is configured to not stop on errors. Execution will continue.");
-                }
-            }
-        }
+        // TODO: Make use of the profile.
+        await _projectTaskOrchestrator.InvokeProfileAsync(profile, context);
     }
     
     private void WeakSubscribeToDocumentChanges(TextDocument editorDocument)
@@ -334,9 +300,9 @@ public partial class CodePageViewModel : PageViewModel
         };
 
         const string taskName = "Compiler";
-        AvailableCompilerTasks.Add(new AccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
-        AvailableCompilerTasks.Add(new BccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
-        AvailableCompilerTasks.Add(new GdccAccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
+        AvailableCompilerTasks.Add(new ObservableAccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
+        AvailableCompilerTasks.Add(new ObservableBccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
+        AvailableCompilerTasks.Add(new ObservableGdccAccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
     }
 
     partial void OnSelectedCompilationTaskChanged(CompileTaskBase? value)
@@ -351,7 +317,7 @@ public partial class CodePageViewModel : PageViewModel
         }
     }
 
-    [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_settings))]
+    [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_settings), nameof(_projectTaskOrchestrator))]
     private bool AssertInDesignMode()
     {
         return Design.IsDesignMode;

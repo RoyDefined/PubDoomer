@@ -19,8 +19,8 @@ using PubDoomer.Project.IWad;
 using PubDoomer.Project.Maps;
 using PubDoomer.Saving;
 using PubDoomer.Services;
+using PubDoomer.Settings.Merged;
 using PubDoomer.Utils;
-using PubDoomer.Utils.MergedSettings;
 using PubDoomer.ViewModels.Dialogues;
 using PubDoomer.Views.Dialogues;
 

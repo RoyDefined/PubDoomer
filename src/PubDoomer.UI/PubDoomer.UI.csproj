@@ -33,7 +33,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\PubDoomer.Engine.TaskInvokation\PubDoomer.Engine.TaskInvokation.csproj" />
         <ProjectReference Include="..\PubDoomer.Engine\PubDoomer.Engine.csproj" />
+        <ProjectReference Include="..\PubDoomer.Tasks.AcsVM\PubDoomer.Tasks.AcsVM.csproj" />
+        <ProjectReference Include="..\PubDoomer.Tasks.Compile\PubDoomer.Tasks.Compile.csproj" />
     </ItemGroup>
 
     <ItemGroup>

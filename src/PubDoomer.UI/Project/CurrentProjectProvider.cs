@@ -12,6 +12,7 @@ using PubDoomer.Project.Maps;
 using PubDoomer.Project.Profile;
 using PubDoomer.Project.Tasks;
 using PubDoomer.UI.Editor.Tasks;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 
 namespace PubDoomer.Project;
 
@@ -27,9 +28,9 @@ public partial class CurrentProjectProvider : ObservableObject
         if (!Design.IsDesignMode) return;
         
         // Add a dummy project in design mode.
-        var successTask = new SuccesfulEditorTask("Successful task :)");
-        var warningTask = new WarningEditorTask("Warning task :l");
-        var errorTask = new ErrorEditorTask("Error task :(");
+        var successTask = new ObservableSuccesfulEditorTask("Successful task :)");
+        var warningTask = new ObservableWarningEditorTask("Warning task :l");
+        var errorTask = new ObservableErrorEditorTask("Error task :(");
 
         var successProfileTask = new ProfileTask
         {

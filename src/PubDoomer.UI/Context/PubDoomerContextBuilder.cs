@@ -12,6 +12,7 @@ using PubDoomer.Logging;
 using PubDoomer.Project;
 using PubDoomer.Saving;
 using PubDoomer.Services;
+using PubDoomer.Settings;
 using PubDoomer.ViewModels;
 using Serilog;
 
