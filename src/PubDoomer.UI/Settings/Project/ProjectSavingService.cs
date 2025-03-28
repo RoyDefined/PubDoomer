@@ -23,6 +23,7 @@ public sealed class ProjectSavingService(
         WriteIndented = true,
     };
 
+    // TODO: Deprecated
     public async Task SaveProjectAsync(bool encrypt)
     {
         if (currentProjectProvider.ProjectContext == null) return;
@@ -42,6 +43,7 @@ public sealed class ProjectSavingService(
         }
     }
 
+    // TODO: Deprecated
     public async Task LoadProjectOrDefaultAsync(string projectFilePath)
     {
         if (!File.Exists(projectFilePath)) return;
@@ -63,6 +65,35 @@ public sealed class ProjectSavingService(
         if (project != null) project.FilePath = new Uri(projectFilePath);
 
         currentProjectProvider.ProjectContext = project;
+    }
+
+    public void SaveProject(ProjectContext projectContext, string path)
+    {
+        using var fileStream = File.OpenWrite(path);
+        var writer = new BinaryWriter(fileStream);
+
+        WriteProjectToStream(projectContext, writer);
+    }
+
+    public ProjectContext LoadProjectAsync(string path)
+    {
+        using var fileStream = File.OpenRead(path);
+        var reader = new BinaryReader(fileStream);
+
+        var projectContext = new ProjectContext();
+        ReadStreamIntoProject(projectContext, reader);
+
+        return projectContext;
+    }
+
+    private void WriteProjectToStream(ProjectContext projectContext, BinaryWriter writer)
+    {
+        writer.Write(projectContext.Name ?? string.Empty);
+    }
+
+    private void ReadStreamIntoProject(ProjectContext projectContext, BinaryReader reader)
+    {
+        projectContext.Name = reader.ReadString();
     }
 
     private async Task<byte[]> EncryptProjectAsync(ProjectContext project)

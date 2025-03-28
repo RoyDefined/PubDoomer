@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Engine.TaskInvokation.Validation;
 using PubDoomer.Tasks.Compile;
+using static CommunityToolkit.Mvvm.ComponentModel.__Internals.__TaskExtensions.TaskAwaitableWithoutEndValidation;
 
 namespace PubDoomer.Project.Tasks;
 
@@ -28,4 +29,18 @@ public abstract partial class CompileTaskBase : ProjectTaskBase
     }
 
     public abstract override CompileTaskBase DeepClone();
+
+    public override void Serialize(BinaryWriter writer)
+    {
+        writer.Write(InputFilePath ?? string.Empty);
+        writer.Write(OutputFilePath ?? string.Empty);
+        writer.Write(GenerateStdOutAndStdErrFiles);
+    }
+
+    public override void Deserialize(BinaryReader reader)
+    {
+        InputFilePath = reader.ReadString();
+        OutputFilePath = reader.ReadString();
+        GenerateStdOutAndStdErrFiles = reader.ReadBoolean();
+    }
 }

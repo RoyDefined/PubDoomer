@@ -28,4 +28,14 @@ public abstract partial class ProjectTaskBase : ObservableObject, IRunnableTask,
 
     public abstract ProjectTaskBase DeepClone();
     public abstract void Merge(ProjectTaskBase task);
+
+    /// <summary>
+    /// Serializes the task into the given writer.
+    /// </summary>
+    public abstract void Serialize(BinaryWriter writer);
+
+    /// <summary>
+    /// Deserializes the task into the given reader.
+    /// </summary>
+    public abstract void Deserialize(BinaryReader reader);
 }

@@ -57,4 +57,14 @@ public partial class ObservableBccCompileTask : CompileTaskBase
         OutputFilePath = bccCompileTask.OutputFilePath;
         GenerateStdOutAndStdErrFiles = bccCompileTask.GenerateStdOutAndStdErrFiles;
     }
+
+    public override void Serialize(BinaryWriter writer)
+    {
+        base.Serialize(writer);
+    }
+
+    public override void Deserialize(BinaryReader reader)
+    {
+        base.Deserialize(reader);
+    }
 }

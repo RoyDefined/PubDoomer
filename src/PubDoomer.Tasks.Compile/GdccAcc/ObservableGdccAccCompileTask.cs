@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Project.Tasks;
+using static CommunityToolkit.Mvvm.ComponentModel.__Internals.__TaskExtensions.TaskAwaitableWithoutEndValidation;
 
 namespace PubDoomer.Tasks.Compile.GdccAcc;
 
@@ -50,5 +51,17 @@ public partial class ObservableGdccAccCompileTask : CompileTaskBase
         OutputFilePath = gdccAccCompileTask.OutputFilePath;
         GenerateStdOutAndStdErrFiles = gdccAccCompileTask.GenerateStdOutAndStdErrFiles;
         DontWarnForwardReferences = gdccAccCompileTask.DontWarnForwardReferences;
+    }
+
+    public override void Serialize(BinaryWriter writer)
+    {
+        base.Serialize(writer);
+        writer.Write(DontWarnForwardReferences);
+    }
+
+    public override void Deserialize(BinaryReader reader)
+    {
+        base.Deserialize(reader);
+        DontWarnForwardReferences = reader.ReadBoolean();
     }
 }
