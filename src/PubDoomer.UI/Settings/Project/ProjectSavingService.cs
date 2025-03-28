@@ -255,27 +255,31 @@ public sealed class ProjectSavingService(
 
     private void ReadProfiles(ProjectContext projectContext, BinaryReader reader)
     {
-        foreach (var _ in Enumerable.Range(0, reader.ReadInt32()))
-        {
-            var profile = new ProfileContext();
-            profile.Name = reader.ReadString();
+        var profileIterator = Enumerable.Range(0, reader.ReadInt32())
+            .Select(x =>
+            {
+                var profile = new ProfileContext();
+                profile.Name = reader.ReadString();
 
-            var taskIterator = Enumerable.Range(0, reader.ReadInt32())
-                .Select(x =>
-                {
-                    var task = new ProfileTask();
+                var taskIterator = Enumerable.Range(0, reader.ReadInt32())
+                    .Select(x =>
+                    {
+                        var task = new ProfileTask();
 
-                    // Determine task reference from existing tasks so we retan proper references.
-                    // TODO: Better support this part in the event a task can't be found.
-                    var name = reader.ReadString();
-                    task.Task = projectContext.Tasks.Single(x => x.Name == name);
-                    task.Behaviour = (ProfileTaskErrorBehaviour)reader.ReadInt32();
+                        // Determine task reference from existing tasks so we retan proper references.
+                        // TODO: Better support this part in the event a task can't be found.
+                        var name = reader.ReadString();
+                        task.Task = projectContext.Tasks.Single(x => x.Name == name);
+                        task.Behaviour = (ProfileTaskErrorBehaviour)reader.ReadInt32();
 
-                    return task;
-                });
+                        return task;
+                    });
 
-            profile.Tasks = [.. taskIterator.ToArray()];
-        }
+                profile.Tasks = [.. taskIterator.ToArray()];
+                return profile;
+            });
+
+        projectContext.Profiles = [.. profileIterator];
     }
 
     private void ReadIWads(ProjectContext projectContext, BinaryReader reader)
