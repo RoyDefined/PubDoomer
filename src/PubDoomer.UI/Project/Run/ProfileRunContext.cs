@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Engine.TaskInvokation.Orchestration;
-using PubDoomer.Engine.TaskInvokation.Task;
-using PubDoomer.Engine.Tasks;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 
 namespace PubDoomer.Project.Run;
 

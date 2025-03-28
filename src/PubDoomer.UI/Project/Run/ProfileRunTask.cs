@@ -2,7 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Engine.TaskInvokation.Orchestration;
-using PubDoomer.Engine.TaskInvokation.Task;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Engine.TaskInvokation.Validation;
 using PubDoomer.Project.Tasks;
 

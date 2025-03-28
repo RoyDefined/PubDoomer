@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using PubDoomer.Engine.TaskInvokation.Task;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Engine.TaskInvokation.Validation;
 
 namespace PubDoomer.UI.Editor.Tasks;

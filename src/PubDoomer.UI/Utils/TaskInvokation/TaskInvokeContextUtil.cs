@@ -1,5 +1,6 @@
 ﻿using PubDoomer.Engine.TaskInvokation.Context;
 using PubDoomer.Settings.Merged;
+using PubDoomer.Tasks.AcsVM.Extensions;
 using PubDoomer.Tasks.Compile.Extensions;
 using System;
 using System.Collections.Generic;

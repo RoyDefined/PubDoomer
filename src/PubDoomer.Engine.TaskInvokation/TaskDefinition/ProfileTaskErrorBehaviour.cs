@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace PubDoomer.Engine.TaskInvokation.Task;
+namespace PubDoomer.Engine.TaskInvokation.TaskDefinition;
 
 /// <summary>
 /// The type of behaviour to be given to a task in case of an error.

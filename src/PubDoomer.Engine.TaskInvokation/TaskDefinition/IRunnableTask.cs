@@ -1,6 +1,6 @@
 using PubDoomer.Engine.TaskInvokation.Validation;
 
-namespace PubDoomer.Engine.TaskInvokation.Task;
+namespace PubDoomer.Engine.TaskInvokation.TaskDefinition;
 
 public interface IRunnableTask
 {

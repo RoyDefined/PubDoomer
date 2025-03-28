@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PubDoomer.Tasks.Compile.Utils;
+namespace PubDoomer.Tasks.AcsVM.Utils;
 
 internal static class ThrowHelper
 {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using PubDoomer.Engine.Process;
 using PubDoomer.Engine.TaskInvokation.Context;
-using PubDoomer.Engine.TaskInvokation.Task;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Tasks.Compile.Extensions;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;

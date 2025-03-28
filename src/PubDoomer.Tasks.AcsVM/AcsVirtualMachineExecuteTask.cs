@@ -1,7 +1,7 @@
-using PubDoomer.Engine.TaskInvokation.Task;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Engine.TaskInvokation.Validation;
 
-namespace PubDoomer.Engine.Tasks.AcsVM;
+namespace PubDoomer.Tasks.AcsVM;
 
 public sealed class AcsVirtualMachineExecuteTask : IRunnableTask
 {

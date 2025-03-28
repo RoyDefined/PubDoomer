@@ -20,9 +20,9 @@ using PubDoomer.ViewModels.Dialogues;
 using PubDoomer.Settings.Merged;
 using System.Runtime;
 using PubDoomer.Utils.TaskInvokation;
-using PubDoomer.Engine.TaskInvokation.Task;
 using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.Validation;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 
 namespace PubDoomer.ViewModels.Pages;
 

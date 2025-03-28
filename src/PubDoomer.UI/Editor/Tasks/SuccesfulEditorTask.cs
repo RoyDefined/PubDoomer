@@ -2,8 +2,6 @@ using System;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Avalonia.Controls;
-using CommunityToolkit.Mvvm.ComponentModel;
-using PubDoomer.Engine.Tasks;
 using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.UI.Editor.Tasks;

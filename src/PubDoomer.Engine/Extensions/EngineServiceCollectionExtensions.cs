@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using PubDoomer.Engine.TaskInvokation.Orchestration;
-using PubDoomer.Engine.TaskInvokation.Task;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 
 namespace PubDoomer.Engine.Extensions;
 

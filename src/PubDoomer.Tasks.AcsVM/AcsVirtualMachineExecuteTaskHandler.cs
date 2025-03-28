@@ -1,15 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
 using PubDoomer.Engine.Process;
 using PubDoomer.Engine.TaskInvokation.Context;
-using PubDoomer.Engine.TaskInvokation.Task;
-using PubDoomer.Engine.Tasks;
-using PubDoomer.Tasks.Compile.Extensions;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using PubDoomer.Tasks.AcsVM.Extensions;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 
-namespace PubDoomer.Engine.Tasks.AcsVM;
+namespace PubDoomer.Tasks.AcsVM;
 
 public sealed class AcsVirtualMachineExecuteTaskHandler(
     ILogger<AcsVirtualMachineExecuteTaskHandler> logger,

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PubDoomer.Engine.TaskInvokation.Task;
+namespace PubDoomer.Engine.TaskInvokation.TaskDefinition;
 
 public interface IValidatableTask
 {

@@ -1,5 +1,5 @@
 ﻿using PubDoomer.Engine.TaskInvokation.Context;
-using PubDoomer.Tasks.Compile.Utils;
+using PubDoomer.Tasks.AcsVM.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PubDoomer.Tasks.Compile.Extensions;
+namespace PubDoomer.Tasks.AcsVM.Extensions;
 
 public static class TaskInvokeBagExtensions
 {

@@ -1,4 +1,4 @@
-﻿using PubDoomer.Engine.TaskInvokation.Task;
+﻿using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using System;
 
 namespace PubDoomer.Project.Profile;
