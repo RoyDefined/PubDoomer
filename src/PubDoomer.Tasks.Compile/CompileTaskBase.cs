@@ -36,7 +36,7 @@ public abstract partial class CompileTaskBase : ProjectTaskBase, IValidatableTas
         }
 
         // Check if path contains invalid characters.
-        if (InputFilePath.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+        if (InputFilePath != null && InputFilePath.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
         {
             yield return ValidateResult.FromError("File path contains invalid characters.");
         }

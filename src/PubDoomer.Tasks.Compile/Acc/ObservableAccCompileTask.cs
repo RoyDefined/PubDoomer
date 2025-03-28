@@ -10,8 +10,7 @@ public partial class ObservableAccCompileTask : CompileTaskBase
     private const string TaskName = "Compile (ACC)";
     private const string TaskDescription = "Compiles the ACS file from the given file path using an ACS compiler.";
 
-    private static readonly Type HandlerTypeCached = typeof(AccCompileTaskHandler);
-    [JsonIgnore] public override Type HandlerType => HandlerTypeCached;
+    [JsonIgnore] public override Type HandlerType => typeof(AccCompileTaskHandler);
     [JsonIgnore] public override CompilerType Type => CompilerType.Acc;
     [JsonIgnore] protected override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
 
