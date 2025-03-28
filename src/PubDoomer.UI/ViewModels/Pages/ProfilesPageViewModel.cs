@@ -29,7 +29,7 @@ namespace PubDoomer.ViewModels.Pages;
 public partial class ProfilesPageViewModel : PageViewModel
 {
     private readonly ILogger _logger;
-    private readonly ProjectTaskOrchestrator _projectTaskOrchestrator;
+    private readonly ProjectTaskOrchestrator? _projectTaskOrchestrator;
     private readonly DialogueProvider? _dialogueProvider;
     private readonly WindowNotificationManager? _notificationManager;
     private readonly WindowProvider? _windowProvider;
@@ -53,13 +53,6 @@ public partial class ProfilesPageViewModel : PageViewModel
         SessionSettings = new SessionSettings();
         CurrentProjectProvider = new CurrentProjectProvider();
         Settings = new LocalSettings();
-        
-        // Instantiate the task orchestrator under a basic `Activator.CreateInstance` call.
-        // The tasks used in the designer do not require dependencies.
-        // TODO: Duplicate code in the code editor
-        _projectTaskOrchestrator = new ProjectTaskOrchestrator(
-            NullLogger<ProjectTaskOrchestrator>.Instance,
-            ((type, task, context) => Activator.CreateInstance(type, task, context) as ITaskHandler));
         
         // Immediately set the selected profile so the UI shows the main scenario
         SelectedProfile = CurrentProjectProvider.ProjectContext!.Profiles[0];
@@ -94,8 +87,7 @@ public partial class ProfilesPageViewModel : PageViewModel
     [RelayCommand]
     private async Task ExecuteProfileAsync()
     {
-        // This method runs in the designer because a profile has test tasks.
-        
+        if (AssertInDesignMode()) return;
         Debug.Assert(SelectedRunProfile != null);
         
         _logger.LogDebug("Executing profile {ProfileName}", SelectedRunProfile.Name);
@@ -204,7 +196,7 @@ public partial class ProfilesPageViewModel : PageViewModel
         Errors = new ObservableCollection<TaskValidationCollection>(GetValidationsByType(SelectedRunProfile.Validations, ValidateResultType.Error));
     }
 
-    [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_dialogueProvider))]
+    [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_dialogueProvider), nameof(_projectTaskOrchestrator))]
     private bool AssertInDesignMode()
     {
         return Design.IsDesignMode;

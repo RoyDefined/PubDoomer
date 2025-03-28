@@ -105,7 +105,7 @@ public partial class CodePageViewModel : PageViewModel
     
     // Dependencies
     private readonly ILogger _logger;
-    private readonly ProjectTaskOrchestrator _projectTaskOrchestrator;
+    private readonly ProjectTaskOrchestrator? _projectTaskOrchestrator;
     private readonly DialogueProvider? _dialogueProvider;
     private readonly LocalSettings? _settings;
     
@@ -150,11 +150,6 @@ public partial class CodePageViewModel : PageViewModel
         // Dependencies
         _logger = new NullLogger<CodePageViewModel>();
         CurrentProjectProvider = new CurrentProjectProvider();
-        
-        // TODO: Duplicate code in the profiles page.
-        _projectTaskOrchestrator = new ProjectTaskOrchestrator(
-            NullLogger<ProjectTaskOrchestrator>.Instance,
-            ((type, task, context) => Activator.CreateInstance(type, task, context) as ITaskHandler));
         
         EditorDocument.Text = DesignTimeCode;
         WeakSubscribeToDocumentChanges(EditorDocument);
@@ -264,6 +259,8 @@ public partial class CodePageViewModel : PageViewModel
     /// </summary>
     private async Task RunTasksAsync(params IList<ProfileRunTask> runTasks)
     {
+        if (AssertInDesignMode()) return;
+        
         // Update the invoked tasks.
         InvokedTasks.Clear();
         foreach (var runTask in runTasks)
@@ -320,7 +317,7 @@ public partial class CodePageViewModel : PageViewModel
         }
     }
 
-    [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_settings))]
+    [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_settings), nameof(_projectTaskOrchestrator))]
     private bool AssertInDesignMode()
     {
         return Design.IsDesignMode;
