@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Project.Tasks;
-using static CommunityToolkit.Mvvm.ComponentModel.__Internals.__TaskExtensions.TaskAwaitableWithoutEndValidation;
 
 namespace PubDoomer.Tasks.Compile.GdccAcc;
 
@@ -11,9 +10,9 @@ public partial class ObservableGdccAccCompileTask : CompileTaskBase
     public const string TaskName = "Compile (GDCC-ACC)";
     private const string TaskDescription = "Compiles the ACS file from the given file path using a GDCC-ACC compiler.";
 
-    [JsonIgnore] public override Type HandlerType => typeof(GdccAccCompileTaskHandler);
-    [JsonIgnore] public override CompilerType Type => CompilerType.GdccAcc;
-    [JsonIgnore] public override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
+    public override Type HandlerType => typeof(GdccAccCompileTaskHandler);
+    public override CompilerType Type => CompilerType.GdccAcc;
+    public override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
 
 
     [ObservableProperty] private bool _dontWarnForwardReferences;
@@ -30,8 +29,8 @@ public partial class ObservableGdccAccCompileTask : CompileTaskBase
         DontWarnForwardReferences = dontWarnForwardReferences;
     }
 
-    [JsonIgnore] public override string DisplayName => TaskName;
-    [JsonIgnore] public override string Description => TaskDescription;
+    public override string DisplayName => TaskName;
+    public override string Description => TaskDescription;
 
     public override ObservableGdccAccCompileTask DeepClone()
     {

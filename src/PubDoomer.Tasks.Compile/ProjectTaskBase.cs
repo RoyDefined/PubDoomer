@@ -9,9 +9,6 @@ using PubDoomer.Tasks.Compile.GdccAcc;
 namespace PubDoomer.Project.Tasks;
 
 // TODO: Convert into interface.
-[JsonDerivedType(typeof(ObservableAccCompileTask), "AccCompile")]
-[JsonDerivedType(typeof(ObservableBccCompileTask), "BccCompile")]
-[JsonDerivedType(typeof(ObservableGdccAccCompileTask), "GdccAccCompile")]
 public abstract partial class ProjectTaskBase : ObservableObject, IRunnableTask, ICloneable
 {
     [ObservableProperty] private string? _name;

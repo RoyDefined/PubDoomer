@@ -11,9 +11,9 @@ public partial class ObservableBccCompileTask : CompileTaskBase
     public const string TaskName = "Compile (BCC)";
     private const string TaskDescription = "Compiles the ACS file from the given file path using a BCC compiler.";
 
-    [JsonIgnore] public override Type HandlerType => typeof(BccCompileTaskHandler);
-    [JsonIgnore] public override CompilerType Type => CompilerType.Bcc;
-    [JsonIgnore] public override string[] ExpectedFileExtensions { get; } = [".acs", ".bcs", ".txt"];
+    public override Type HandlerType => typeof(BccCompileTaskHandler);
+    public override CompilerType Type => CompilerType.Bcc;
+    public override string[] ExpectedFileExtensions { get; } = [".acs", ".bcs", ".txt"];
 
     // TODO: Implement additional parameters
     // [ObservableProperty] private bool _accErrorFile;
@@ -36,8 +36,8 @@ public partial class ObservableBccCompileTask : CompileTaskBase
     {
     }
 
-    [JsonIgnore] public override string DisplayName => TaskName;
-    [JsonIgnore] public override string Description => TaskDescription;
+    public override string DisplayName => TaskName;
+    public override string Description => TaskDescription;
 
     public override ObservableBccCompileTask DeepClone()
     {

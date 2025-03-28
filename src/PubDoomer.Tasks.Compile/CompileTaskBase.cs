@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Engine.TaskInvokation.Validation;
 using PubDoomer.Tasks.Compile;
-using static CommunityToolkit.Mvvm.ComponentModel.__Internals.__TaskExtensions.TaskAwaitableWithoutEndValidation;
 
 namespace PubDoomer.Project.Tasks;
 

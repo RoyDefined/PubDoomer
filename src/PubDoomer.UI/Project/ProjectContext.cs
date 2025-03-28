@@ -20,6 +20,8 @@ public partial class ProjectContext : ObservableObject
     // Configurable executions
     [ObservableProperty] private string? _accCompilerExecutableFilePath;
     [ObservableProperty] private string? _bccCompilerExecutableFilePath;
+
+    // TODO: Should be GdccAcc
     [ObservableProperty] private string? _gdccCompilerExecutableFilePath;
     [ObservableProperty] private string? _sladeExecutableFilePath;
     [ObservableProperty] private string? _udbExecutableFilePath;
@@ -29,7 +31,7 @@ public partial class ProjectContext : ObservableObject
     /// Represents the file path that the project is saved under.
     /// If <c>true</c>, the project was not saved yet.
     /// </summary>
-    [ObservableProperty] [property: JsonIgnore]
+    [ObservableProperty]
     private Uri? _filePath;
 
     /// <summary>
