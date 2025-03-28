@@ -33,25 +33,10 @@ public partial class ObservableGdccAccCompileTask : CompileTaskBase
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;
 
-    public override ObservableGdccAccCompileTask ToEngineTaskBase()
-    {
-        Debug.Assert(InputFilePath != null && OutputFilePath != null && Name != null);
-
-        return new ObservableGdccAccCompileTask
-        {
-            Name = Name,
-            InputFilePath = InputFilePath,
-            OutputFilePath = OutputFilePath,
-            GenerateStdOutAndStdErrFiles = GenerateStdOutAndStdErrFiles,
-            DontWarnForwardReferences = DontWarnForwardReferences
-        };
-    }
-
     public override ObservableGdccAccCompileTask DeepClone()
     {
         return new ObservableGdccAccCompileTask(Name, InputFilePath, OutputFilePath, (bool)this.DontWarnForwardReferences);
     }
-
 
     public override void Merge(ProjectTaskBase task)
     {

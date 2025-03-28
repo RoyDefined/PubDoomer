@@ -40,19 +40,6 @@ public partial class ObservableBccCompileTask : CompileTaskBase
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;
 
-    public override ObservableBccCompileTask ToEngineTaskBase()
-    {
-        Debug.Assert(InputFilePath != null && OutputFilePath != null && Name != null);
-
-        return new ObservableBccCompileTask
-        {
-            Name = Name,
-            InputFilePath = InputFilePath,
-            OutputFilePath = OutputFilePath,
-            GenerateStdOutAndStdErrFiles = GenerateStdOutAndStdErrFiles,
-        };
-    }
-
     public override ObservableBccCompileTask DeepClone()
     {
         return new ObservableBccCompileTask(Name, InputFilePath, OutputFilePath);

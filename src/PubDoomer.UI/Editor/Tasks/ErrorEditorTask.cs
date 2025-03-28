@@ -1,16 +1,22 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Avalonia.Controls;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using PubDoomer.Engine.TaskInvokation.Validation;
 using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.UI.Editor.Tasks;
 
 // Represents a task that will always return two errors.
-public partial class ErrorEditorTask : ProjectTaskBase
+public partial class ErrorEditorTask : ProjectTaskBase, IValidatableTask
 {
+    private static readonly Type HandlerTypeCached = typeof(ErrorEditorEngineTaskHandler);
+
     private const string TaskName = "Error Editor Task";
     private const string TaskDescription = "A task that will always return two errors.";
+    public override Type HandlerType => HandlerTypeCached;
 
     public ErrorEditorTask()
     {
@@ -27,15 +33,6 @@ public partial class ErrorEditorTask : ProjectTaskBase
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;
 
-    public override ErrorEditorEngineTask ToEngineTaskBase()
-    {
-        Debug.Assert(Name != null);
-        return new ErrorEditorEngineTask
-        {
-            Name = Name,
-        };
-    }
-
     public override ErrorEditorTask DeepClone()
     {
         throw new NotImplementedException();
@@ -44,5 +41,11 @@ public partial class ErrorEditorTask : ProjectTaskBase
     public override void Merge(ProjectTaskBase task)
     {
         throw new NotImplementedException();
+    }
+
+    public IEnumerable<ValidateResult> Validate()
+    {
+        yield return ValidateResult.FromError("Error number #1");
+        yield return ValidateResult.FromError("Error number #2");
     }
 }

@@ -12,18 +12,18 @@ namespace PubDoomer.Project.Tasks;
 [JsonDerivedType(typeof(ObservableAccCompileTask), "AccCompile")]
 [JsonDerivedType(typeof(ObservableBccCompileTask), "BccCompile")]
 [JsonDerivedType(typeof(ObservableGdccAccCompileTask), "GdccAccCompile")]
-public abstract partial class ProjectTaskBase : ObservableObject, ICloneable
+public abstract partial class ProjectTaskBase : ObservableObject, IRunnableTask, ICloneable
 {
     [ObservableProperty] private string? _name;
     public abstract string DisplayName { get; }
     public abstract string Description { get; }
+    public abstract Type HandlerType { get; }
 
     public object Clone()
     {
         return DeepClone();
     }
 
-    public abstract IRunnableTask ToEngineTaskBase();
     public abstract ProjectTaskBase DeepClone();
     public abstract void Merge(ProjectTaskBase task);
 }

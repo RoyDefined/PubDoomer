@@ -241,10 +241,9 @@ public partial class CodePageViewModel : PageViewModel
         compileTask.OutputFilePath = _temporaryFileOutputPath;
         
         // Set up the task
-        var engineTask = compileTask.ToEngineTaskBase();
         var runTask = new ProfileRunTask(
             ProfileTaskErrorBehaviour.StopOnError,
-            engineTask);
+            compileTask);
 
         return runTask;
     }

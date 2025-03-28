@@ -6,13 +6,12 @@ using PubDoomer.Tasks.Compile;
 
 namespace PubDoomer.Project.Tasks;
 
-public abstract partial class CompileTaskBase : ProjectTaskBase, IRunnableTask, IValidatableTask
+public abstract partial class CompileTaskBase : ProjectTaskBase, IValidatableTask
 {
     [ObservableProperty] private string? _inputFilePath;
     [ObservableProperty] private string? _outputFilePath;
     [ObservableProperty] private bool _generateStdOutAndStdErrFiles;
 
-    public abstract Type HandlerType { get; }
     public abstract CompilerType Type { get; }
     protected abstract string[] ExpectedFileExtensions { get; }
 

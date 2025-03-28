@@ -1,16 +1,23 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Avalonia.Controls;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using PubDoomer.Engine.TaskInvokation.Validation;
 using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.UI.Editor.Tasks;
 
 // Represents a task that will always return two warnings.
-public partial class WarningEditorTask : ProjectTaskBase
+public partial class WarningEditorTask : ProjectTaskBase, IValidatableTask
 {
+    private static readonly Type HandlerTypeCached = typeof(WarningEditorEngineTaskHandler);
+
     private const string TaskName = "Warning Editor Task";
     private const string TaskDescription = "A task that will always return two warning.";
+
+    public override Type HandlerType => HandlerTypeCached;
 
     public WarningEditorTask()
     {
@@ -27,15 +34,6 @@ public partial class WarningEditorTask : ProjectTaskBase
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;
 
-    public override WarningEditorEngineTask ToEngineTaskBase()
-    {
-        Debug.Assert(Name != null);
-        return new WarningEditorEngineTask
-        {
-            Name = Name,
-        };
-    }
-
     public override ErrorEditorTask DeepClone()
     {
         throw new NotImplementedException();
@@ -44,5 +42,11 @@ public partial class WarningEditorTask : ProjectTaskBase
     public override void Merge(ProjectTaskBase task)
     {
         throw new NotImplementedException();
+    }
+
+    public IEnumerable<ValidateResult> Validate()
+    {
+        yield return ValidateResult.FromWarning("Warning number #1");
+        yield return ValidateResult.FromWarning("Warning number #2");
     }
 }

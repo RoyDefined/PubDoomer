@@ -24,8 +24,6 @@ public partial class ProfileTask : ObservableObject
     public ProfileRunTask ToRunnableTask()
     {
         Debug.Assert(Behaviour != null && Task != null);
-
-        var engineTask = Task.ToEngineTaskBase();
-        return new ProfileRunTask(Behaviour.Value, engineTask);
+        return new ProfileRunTask(Behaviour.Value, Task);
     }
 }

@@ -36,20 +36,6 @@ public partial class ObservableAccCompileTask : CompileTaskBase
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;
 
-    public override ObservableAccCompileTask ToEngineTaskBase()
-    {
-        Debug.Assert(InputFilePath != null && OutputFilePath != null && Name != null);
-
-        return new ObservableAccCompileTask
-        {
-            Name = Name,
-            InputFilePath = InputFilePath,
-            OutputFilePath = OutputFilePath,
-            GenerateStdOutAndStdErrFiles = GenerateStdOutAndStdErrFiles,
-            KeepAccErrFile = KeepAccErrFile,
-        };
-    }
-
     public override ObservableAccCompileTask DeepClone()
     {
         return new ObservableAccCompileTask(Name, InputFilePath, OutputFilePath, (bool)this.KeepAccErrFile);

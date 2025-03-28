@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Avalonia.Controls;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.UI.Editor.Tasks;
@@ -9,8 +10,12 @@ namespace PubDoomer.UI.Editor.Tasks;
 // Represents a task that will always complete succesfully.
 public partial class SuccesfulEditorTask : ProjectTaskBase
 {
+    private static readonly Type HandlerTypeCached = typeof(SuccesfulEditorEngineTaskHandler);
+
     private const string TaskName = "Succesful Editor Task";
     private const string TaskDescription = "A task that will always complete.";
+
+    public override Type HandlerType => HandlerTypeCached;
 
     public SuccesfulEditorTask()
     {
@@ -26,15 +31,6 @@ public partial class SuccesfulEditorTask : ProjectTaskBase
 
     [JsonIgnore] public override string DisplayName => TaskName;
     [JsonIgnore] public override string Description => TaskDescription;
-
-    public override SuccesfulEditorEngineTask ToEngineTaskBase()
-    {
-        Debug.Assert(Name != null);
-        return new SuccesfulEditorEngineTask
-        {
-            Name = Name,
-        };
-    }
 
     public override ErrorEditorTask DeepClone()
     {
