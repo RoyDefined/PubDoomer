@@ -5,8 +5,8 @@ using PubDoomer.UI.Editor.Tasks;
 
 namespace PubDoomer.UI.Editor.Tasks;
 
-public sealed class SuccesfulEditorEngineTaskHandler(
-    SuccesfulEditorTask _,
+public sealed class SuccesfulEditorTaskHandler(
+    ObservableSuccesfulEditorTask _,
     TaskInvokeContext __) : ITaskHandler
 {
     public ValueTask<TaskInvokationResult> HandleAsync()
