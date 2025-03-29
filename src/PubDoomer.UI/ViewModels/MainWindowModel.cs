@@ -122,7 +122,7 @@ public partial class MainWindowModel : MainViewModel
         if (!result) return;
 
         CurrentProjectProvider.ProjectContext = vm.Project;
-        WindowNotificationManager?.Show(new Notification("Project created", "The project has been created succesfully.",
+        WindowNotificationManager?.Show(new Notification("Project created", "The project has been created successfully.",
             NotificationType.Success));
     }
 
@@ -233,20 +233,18 @@ public partial class MainWindowModel : MainViewModel
         {
             await _recentProjectsService.LoadRecentProjectsAsync();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Debug.Fail("The recent projects could not be loaded.");
-            await _dialogueProvider.AlertAsync(AlertType.Warning, "The recent projects could not be loaded.");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, $"The recent projects could not be loaded. {ex.Message}");
         }
 
         try
         {
             await _localSettingsService.LoadLocalSettingsAsyncAsync();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Debug.Fail("The local settings could not be loaded.");
-            await _dialogueProvider.AlertAsync(AlertType.Warning, "The local settings could not be loaded.");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, $"The local settings could not be loaded. {ex.Message}");
         }
     }
 
