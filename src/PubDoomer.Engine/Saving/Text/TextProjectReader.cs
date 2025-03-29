@@ -11,15 +11,15 @@ public sealed class TextProjectReader(
     string projectPath, Stream stream) : IProjectReader, IDisposable
 {
     private readonly StreamReader _reader = new(stream);
-    public string ReadString() => _reader.ReadLine() ?? string.Empty;
-    public int ReadInt32() => int.TryParse(_reader.ReadLine(), out var result) ? result : 0;
-    public bool ReadBoolean() => bool.TryParse(_reader.ReadLine(), out var result) && result;
-    public T ReadEnum<T>() where T : struct, Enum => Enum.TryParse<T>(_reader.ReadLine(), out var result) ? result : default;
     public IDisposable BeginBlock()
     {
         _reader.ReadLine();
         return new NoOpDisposable();
     }
+    public string ReadString() => _reader.ReadLine()?.Trim() ?? string.Empty;
+    public int ReadInt32() => int.TryParse(_reader.ReadLine()?.Trim(), out var result) ? result : 0;
+    public bool ReadBoolean() => bool.TryParse(_reader.ReadLine()?.Trim(), out var result) && result;
+    public T ReadEnum<T>() where T : struct, Enum => Enum.TryParse<T>(_reader.ReadLine()?.Trim(), out var result) ? result : default;
     public string? ReadPath()
     {
         var path = _reader.ReadLine()?.Trim();

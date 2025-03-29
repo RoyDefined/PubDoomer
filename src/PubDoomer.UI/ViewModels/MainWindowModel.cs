@@ -31,7 +31,8 @@ namespace PubDoomer.ViewModels;
 public partial class MainWindowModel : MainViewModel
 {
     private const string ProjectBinaryFormatExtension = "pdbproj";
-    
+    private const string ProjectTextFormatExtension = "pdtproj";
+
     private readonly DialogueProvider? _dialogueProvider;
     private readonly ProjectSavingService? _savingService;
     private readonly LocalSettingsService? _localSettingsService;
@@ -127,39 +128,68 @@ public partial class MainWindowModel : MainViewModel
     }
 
     [RelayCommand]
-    private async Task SaveProjectAsync()
+    private async Task SaveBinaryProjectAsync()
+    {
+        await SaveProjectAsync(ProjectReadingWritingType.Binary);
+    }
+
+    [RelayCommand]
+    private async Task SaveTextProjectAsync()
+    {
+        await SaveProjectAsync(ProjectReadingWritingType.Text);
+    }
+
+    [RelayCommand]
+    private async Task SaveBinaryProjectAsAsync()
+    {
+        await SaveProjectAsAsync(ProjectReadingWritingType.Binary);
+    }
+
+    [RelayCommand]
+    private async Task SaveTextProjectAsAsync()
+    {
+        await SaveProjectAsAsync(ProjectReadingWritingType.Text);
+    }
+
+    private async Task SaveProjectAsync(ProjectReadingWritingType type)
     {
         if (AssertInDesignMode()) return;
-        
+
         var projectContext = CurrentProjectProvider.ProjectContext;
         if (projectContext == null)
         {
             return;
         }
-        
+
         // 'Save as' in case of no file path.
         if (projectContext.FilePath == null)
         {
-            await SaveProjectAsAsync();
+            await SaveProjectAsAsync(type);
             return;
         }
 
         // TODO: Allow different formats.
         using var fileStream = File.OpenWrite(projectContext.FilePath);
-        _savingService.SaveProject(projectContext, projectContext.FilePath, fileStream, ProjectReadingWritingType.Binary);
+        _savingService.SaveProject(projectContext, projectContext.FilePath, fileStream, type);
         WindowNotificationManager?.Show(new Notification("Project saved", null, NotificationType.Success));
     }
 
-    [RelayCommand]
-    private async Task SaveProjectAsAsync()
+    private async Task SaveProjectAsAsync(ProjectReadingWritingType type)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
 
+        var extension = type switch
+        {
+            ProjectReadingWritingType.Binary => ProjectBinaryFormatExtension,
+            ProjectReadingWritingType.Text => ProjectTextFormatExtension,
+            _ => throw new ArgumentException($"Project type not found: {type}"),
+        };
+
         var window = _windowProvider.ProvideWindow();
         var storageFile = await window.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            DefaultExtension = ProjectBinaryFormatExtension,
+            DefaultExtension = extension,
             Title = "Save Project"
         });
 
@@ -175,7 +205,7 @@ public partial class MainWindowModel : MainViewModel
 
         // TODO: Allow different formats.
         var writeStream = await storageFile.OpenWriteAsync();
-        _savingService.SaveProject(CurrentProjectProvider.ProjectContext, filePath, writeStream, ProjectReadingWritingType.Binary);
+        _savingService.SaveProject(CurrentProjectProvider.ProjectContext, filePath, writeStream, type);
         WindowNotificationManager?.Show(new Notification("Project saved", null, NotificationType.Success));
         CurrentProjectProvider.ProjectContext.FilePath = filePath;
     }
@@ -191,7 +221,8 @@ public partial class MainWindowModel : MainViewModel
             Title = "Open Project",
             AllowMultiple = false,
             FileTypeFilter = [
-                new FilePickerFileType("PubDoomer data format") { Patterns = [$"*.{ProjectBinaryFormatExtension}"] }
+                new FilePickerFileType("PubDoomer data format") { Patterns = [$"*.{ProjectBinaryFormatExtension}"] },
+                new FilePickerFileType("PubDoomer text format") { Patterns = [$"*.{ProjectTextFormatExtension}"] }
             ]
         });
 
@@ -229,8 +260,15 @@ public partial class MainWindowModel : MainViewModel
         
         try
         {
+            var type = Path.GetExtension(projectPath) switch
+            {
+                $".{ProjectBinaryFormatExtension}" => ProjectReadingWritingType.Binary,
+                $".{ProjectTextFormatExtension}" => ProjectReadingWritingType.Text,
+                _ => throw new ArgumentException($"Project type could not be determined from file '{projectPath}'."),
+            };
+
             // TODO: Allow different formats.
-            var projectContext = _savingService.LoadProject(projectPath, fileStream, ProjectReadingWritingType.Binary);
+            var projectContext = _savingService.LoadProject(projectPath, fileStream, type);
             CurrentProjectProvider.ProjectContext = projectContext;
         }
         catch (Exception ex)

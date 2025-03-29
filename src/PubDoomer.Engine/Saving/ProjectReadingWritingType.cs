@@ -13,4 +13,5 @@ public enum ProjectReadingWritingType
 {
     None,
     Binary,
+    Text,
 }

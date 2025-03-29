@@ -20,6 +20,7 @@ using PubDoomer.Project.Tasks;
 using PubDoomer.Tasks.Compile.Acc;
 using PubDoomer.Tasks.Compile.Bcc;
 using PubDoomer.Tasks.Compile.GdccAcc;
+using static CommunityToolkit.Mvvm.ComponentModel.__Internals.__TaskExtensions.TaskAwaitableWithoutEndValidation;
 
 namespace PubDoomer.Settings.Project;
 
@@ -38,6 +39,7 @@ public sealed class ProjectSavingService
         IProjectWriter writer = writerType switch
         {
             ProjectReadingWritingType.Binary => new BinaryProjectWriter(filePath, stream),
+            ProjectReadingWritingType.Text => new TextProjectWriter(filePath, stream),
             _ => throw new ArgumentException($"Writer not found for type {writerType}."),
         };
 
@@ -71,6 +73,7 @@ public sealed class ProjectSavingService
         IProjectReader reader = readerType switch
         {
             ProjectReadingWritingType.Binary => new BinaryProjectReader(filePath, fileStream),
+            ProjectReadingWritingType.Text => new TextProjectReader(filePath, fileStream),
             _ => throw new ArgumentException($"Reader not found for type {readerType}."),
         };
 
