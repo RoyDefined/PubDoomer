@@ -11,17 +11,15 @@ namespace PubDoomer.Tasks.AcsVM.Extensions;
 
 public static class TaskInvokeBagExtensions
 {
-    internal const string AcsVmExecutableFilePathKey = "AcsVmExecutableFilePath";
-
     public static TaskInvokeBag SetAcsVmExecutableFilePath(this TaskInvokeBag taskInvokeBag, string? filePath)
     {
-        taskInvokeBag[AcsVmExecutableFilePathKey] = filePath;
+        taskInvokeBag[AcsVmTaskStatics.AcsVmExecutableFilePathKey] = filePath;
         return taskInvokeBag;
     }
 
     public static string GetAcsVmExecutableFilePath(this TaskInvokeBag taskInvokeBag)
     {
-        return GetCompilerExecutableFilePathByKey(taskInvokeBag, AcsVmExecutableFilePathKey);
+        return GetCompilerExecutableFilePathByKey(taskInvokeBag, AcsVmTaskStatics.AcsVmExecutableFilePathKey);
     }
 
     private static string GetCompilerExecutableFilePathByKey(TaskInvokeBag taskInvokeBag, string key)

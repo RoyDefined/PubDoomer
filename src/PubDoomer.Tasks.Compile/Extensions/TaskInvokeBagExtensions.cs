@@ -12,41 +12,37 @@ namespace PubDoomer.Tasks.Compile.Extensions;
 
 public static class TaskInvokeBagExtensions
 {
-    internal const string AccCompilerExecutableFilePathKey = "AccCompilerExecutableFilePath";
-    internal const string BccCompilerExecutableFilePathKey = "BccCompilerExecutableFilePath";
-    internal const string GdccAccCompilerExecutableFilePathKey = "GdccAccCompilerExecutableFilePath";
-
     public static TaskInvokeBag SetAccCompilerExecutableFilePath(this TaskInvokeBag taskInvokeBag, string? filePath)
     {
-        taskInvokeBag[AccCompilerExecutableFilePathKey] = filePath;
+        taskInvokeBag[CompileTaskStatics.AccCompilerExecutableFilePathKey] = filePath;
         return taskInvokeBag;
     }
 
     public static string GetAccCompilerExecutableFilePath(this TaskInvokeBag taskInvokeBag)
     {
-        return GetCompilerExecutableFilePathByKey(taskInvokeBag, AccCompilerExecutableFilePathKey);
+        return GetCompilerExecutableFilePathByKey(taskInvokeBag, CompileTaskStatics.AccCompilerExecutableFilePathKey);
     }
 
     public static TaskInvokeBag SetBccCompilerExecutableFilePath(this TaskInvokeBag taskInvokeBag, string? filePath)
     {
-        taskInvokeBag[BccCompilerExecutableFilePathKey] = filePath;
+        taskInvokeBag[CompileTaskStatics.BccCompilerExecutableFilePathKey] = filePath;
         return taskInvokeBag;
     }
 
     public static string GetBccCompilerExecutableFilePath(this TaskInvokeBag taskInvokeBag)
     {
-        return GetCompilerExecutableFilePathByKey(taskInvokeBag, BccCompilerExecutableFilePathKey);
+        return GetCompilerExecutableFilePathByKey(taskInvokeBag, CompileTaskStatics.BccCompilerExecutableFilePathKey);
     }
 
     public static TaskInvokeBag SetGdccAccCompilerExecutableFilePath(this TaskInvokeBag taskInvokeBag, string? filePath)
     {
-        taskInvokeBag[GdccAccCompilerExecutableFilePathKey] = filePath;
+        taskInvokeBag[CompileTaskStatics.GdccAccCompilerExecutableFilePathKey] = filePath;
         return taskInvokeBag;
     }
 
     public static string GetGdccAccCompilerExecutableFilePath(this TaskInvokeBag taskInvokeBag)
     {
-        return GetCompilerExecutableFilePathByKey(taskInvokeBag, GdccAccCompilerExecutableFilePathKey);
+        return GetCompilerExecutableFilePathByKey(taskInvokeBag, CompileTaskStatics.GdccAccCompilerExecutableFilePathKey);
     }
 
     private static string GetCompilerExecutableFilePathByKey(TaskInvokeBag taskInvokeBag, string key)

@@ -15,6 +15,9 @@ using PubDoomer.Project.Archive;
 using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 using PubDoomer.Services;
+using PubDoomer.Tasks.AcsVM.Utils;
+using PubDoomer.Tasks.Compile.Utils;
+using PubDoomer.Utils;
 using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
@@ -23,12 +26,12 @@ public partial class ProjectPageViewModel : PageViewModel
 {
     private static readonly Dictionary<string, string> _typeToMessage = new()
     {
-        ["AccCompiler"] = "Select ACC compiler executable",
-        ["BccCompiler"] = "Select BCC compiler executable",
-        ["GdccCompiler"] = "Select GDCC compiler executable",
-        ["Udb"] = "Select Ultimate Doombuilder executable",
-        ["Slade"] = "Select Slade executable",
-        ["AcsVm"] = "Select ACS VM executable",
+        [CompileTaskStatics.AccCompilerExecutableFilePathKey] = "Select ACC compiler executable",
+        [CompileTaskStatics.BccCompilerExecutableFilePathKey] = "Select BCC compiler executable",
+        [CompileTaskStatics.GdccAccCompilerExecutableFilePathKey] = "Select GDCC compiler executable",
+        [SavingStatics.UdbExecutableFilePathKey] = "Select Ultimate Doombuilder executable",
+        [SavingStatics.SladeExecutableFilePathKey] = "Select Slade executable",
+        [AcsVmTaskStatics.AcsVmExecutableFilePathKey] = "Select ACS VM executable",
     };
 
     private readonly ILogger _logger;
@@ -165,7 +168,7 @@ public partial class ProjectPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private async Task PickFileAsync(string type)
+    private async Task PickFileAsync(string configurationKey)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
@@ -173,38 +176,14 @@ public partial class ProjectPageViewModel : PageViewModel
         var window = _windowProvider.ProvideWindow();
         var filePicker = await window.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = _typeToMessage[type],
+            Title = _typeToMessage[configurationKey],
             AllowMultiple = false
         });
 
         if (filePicker.Count == 0) return;
 
-        // TODO: Simplify this into a dictionary.
-        var filePath = filePicker.First().Path.LocalPath;
-        switch (type)
-        {
-            case "AccCompiler":
-                CurrentProjectProvider.ProjectContext.AccCompilerExecutableFilePath = filePath;
-                break;
-            case "BccCompiler":
-                CurrentProjectProvider.ProjectContext.BccCompilerExecutableFilePath = filePath;
-                break;
-            case "GdccCompiler":
-                CurrentProjectProvider.ProjectContext.GdccCompilerExecutableFilePath = filePath;
-                break;
-            case "Udb":
-                CurrentProjectProvider.ProjectContext.UdbExecutableFilePath = filePath;
-                break;
-            case "Slade":
-                CurrentProjectProvider.ProjectContext.SladeExecutableFilePath = filePath;
-                break;
-            case "AcsVm":
-                CurrentProjectProvider.ProjectContext.AcsVmExecutableFilePath = filePath;
-                break;
-
-            default:
-                throw new UnreachableException();
-        }
+        var filePath = filePicker.First().Path.AbsolutePath;
+        CurrentProjectProvider.ProjectContext.Configurations[configurationKey] = filePath;
     }
 
     [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_dialogueProvider), nameof(_notificationManager))]

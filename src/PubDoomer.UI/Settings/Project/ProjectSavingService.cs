@@ -20,7 +20,6 @@ using PubDoomer.Project.Tasks;
 using PubDoomer.Tasks.Compile.Acc;
 using PubDoomer.Tasks.Compile.Bcc;
 using PubDoomer.Tasks.Compile.GdccAcc;
-using static CommunityToolkit.Mvvm.ComponentModel.__Internals.__TaskExtensions.TaskAwaitableWithoutEndValidation;
 
 namespace PubDoomer.Settings.Project;
 
@@ -105,23 +104,19 @@ public sealed class ProjectSavingService
 
     private void WriteConfiguration(ProjectContext projectContext, IProjectWriter writer)
     {
-        void WriteConfiguration(string name, string? value)
+        void WriteConfiguration(string name, string value)
         {
             writer.Write(name);
-            writer.WritePath(value ?? string.Empty);
+            writer.WritePath($"\"{value}\"");
         }
 
-        // TODO: This will have to be refactored to an actual dictionary. This contains dummy key data for now.
-
         // Number of configuration items.
-        writer.Write(6);
+        writer.Write(projectContext.Configurations.Count);
 
-        WriteConfiguration(nameof(projectContext.AccCompilerExecutableFilePath), projectContext.AccCompilerExecutableFilePath);
-        WriteConfiguration(nameof(projectContext.BccCompilerExecutableFilePath), projectContext.BccCompilerExecutableFilePath);
-        WriteConfiguration(nameof(projectContext.GdccCompilerExecutableFilePath), projectContext.GdccCompilerExecutableFilePath);
-        WriteConfiguration(nameof(projectContext.SladeExecutableFilePath), projectContext.SladeExecutableFilePath);
-        WriteConfiguration(nameof(projectContext.UdbExecutableFilePath), projectContext.UdbExecutableFilePath);
-        WriteConfiguration(nameof(projectContext.AcsVmExecutableFilePath), projectContext.AcsVmExecutableFilePath);
+        foreach (var (key, value) in projectContext.Configurations)
+        {
+            WriteConfiguration(key, value);
+        }
     }
 
     private void WriteTasks(ProjectContext projectContext, IProjectWriter writer)
@@ -196,21 +191,18 @@ public sealed class ProjectSavingService
 
     private void ReadConfiguration(ProjectContext projectContext, IProjectReader reader)
     {
-        string? ReadConfiguration()
+        (string key, string value) ReadConfiguration()
         {
-            _ = reader.ReadString();
-            return reader.ReadPath();
+            return (reader.ReadString(), reader.ReadPath() ?? string.Empty);
         }
 
-        // TODO: This will have to be refactored to an actual dictionary. This contains dummy key data for now.
-        _ = reader.ReadInt32();
+        var configurationIterator = Enumerable.Range(0, reader.ReadInt32())
+            .Select(x => ReadConfiguration());
 
-        projectContext.AccCompilerExecutableFilePath = ReadConfiguration();
-        projectContext.BccCompilerExecutableFilePath = ReadConfiguration();
-        projectContext.GdccCompilerExecutableFilePath = ReadConfiguration();
-        projectContext.SladeExecutableFilePath = ReadConfiguration();
-        projectContext.UdbExecutableFilePath = ReadConfiguration();
-        projectContext.AcsVmExecutableFilePath = ReadConfiguration();
+        foreach(var (key, value) in configurationIterator)
+        {
+            projectContext.Configurations[key] = value;
+        }
     }
 
     private void ReadTasks(ProjectContext projectContext, IProjectReader reader)

@@ -3,6 +3,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:engine="clr-namespace:PubDoomer.Project.Engine"
+             xmlns:compilestatics="clr-namespace:PubDoomer.Tasks.Compile.Utils;assembly=PubDoomer.Tasks.Compile"
+             xmlns:acsvmstatics="clr-namespace:PubDoomer.Tasks.AcsVM.Utils;assembly=PubDoomer.Tasks.AcsVM"
+             xmlns:savingstatics="clr-namespace:PubDoomer.Utils"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="PubDoomer.Views.Pages.ProjectPageView"
              x:DataType="ProjectPageViewModel">
@@ -378,11 +381,11 @@
                                                            TextWrapping="Wrap" />
 
                                                 <StatefulTextbox Grid.Column="1"
-                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.AccCompilerExecutableFilePath}">
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.Configurations[AccCompilerExecutableFilePath]}">
                                                     <StatefulTextbox.AdditionalContent>
                                                         <Button Grid.Column="2"
                                                                 Command="{Binding PickFileCommand}"
-                                                                CommandParameter="AccCompiler"
+                                                                CommandParameter="{x:Static compilestatics:CompileTaskStatics.AccCompilerExecutableFilePathKey}"
                                                                 Classes="Tertiary"
                                                                 Theme="{DynamicResource SolidButton}"
                                                                 Padding="5 0">
@@ -403,11 +406,11 @@
                                                            TextWrapping="Wrap" />
 
                                                 <StatefulTextbox Grid.Column="1"
-                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.BccCompilerExecutableFilePath}">
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.Configurations[BccCompilerExecutableFilePath]}">
                                                     <StatefulTextbox.AdditionalContent>
                                                         <Button Grid.Column="2"
                                                                 Command="{Binding PickFileCommand}"
-                                                                CommandParameter="BccCompiler"
+                                                                CommandParameter="{x:Static compilestatics:CompileTaskStatics.BccCompilerExecutableFilePathKey}"
                                                                 Classes="Tertiary"
                                                                 Theme="{DynamicResource SolidButton}"
                                                                 Padding="5 0">
@@ -428,11 +431,11 @@
                                                            TextWrapping="Wrap" />
 
                                                 <StatefulTextbox Grid.Column="1"
-                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.GdccCompilerExecutableFilePath}">
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.Configurations[GdccAccCompilerExecutableFilePath]}">
                                                     <StatefulTextbox.AdditionalContent>
                                                         <Button Grid.Column="2"
                                                                 Command="{Binding PickFileCommand}"
-                                                                CommandParameter="GdccCompiler"
+                                                                CommandParameter="{x:Static compilestatics:CompileTaskStatics.GdccAccCompilerExecutableFilePathKey}"
                                                                 Classes="Tertiary"
                                                                 Theme="{DynamicResource SolidButton}"
                                                                 Padding="5 0">
@@ -470,11 +473,11 @@
 
 
                                                 <StatefulTextbox Grid.Column="1"
-                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.UdbExecutableFilePath}">
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.Configurations[UdbExecutableFilePath]}">
                                                     <StatefulTextbox.AdditionalContent>
                                                         <Button Grid.Column="2"
                                                                 Command="{Binding PickFileCommand}"
-                                                                CommandParameter="Udb"
+                                                                CommandParameter="{x:Static savingstatics:SavingStatics.UdbExecutableFilePathKey}"
                                                                 Classes="Tertiary"
                                                                 Theme="{DynamicResource SolidButton}"
                                                                 Padding="5 0">
@@ -495,11 +498,11 @@
                                                            TextWrapping="Wrap" />
 
                                                 <StatefulTextbox Grid.Column="1"
-                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.SladeExecutableFilePath}">
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.Configurations[SladeExecutableFilePath]}">
                                                     <StatefulTextbox.AdditionalContent>
                                                         <Button Grid.Column="2"
                                                                 Command="{Binding PickFileCommand}"
-                                                                CommandParameter="Slade"
+                                                                CommandParameter="{x:Static savingstatics:SavingStatics.SladeExecutableFilePathKey}"
                                                                 Classes="Tertiary"
                                                                 Theme="{DynamicResource SolidButton}"
                                                                 Padding="5 0">
@@ -537,11 +540,11 @@
 
 
                                                 <StatefulTextbox Grid.Column="1"
-                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.AcsVmExecutableFilePath}">
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.Configurations[AcsVmExecutableFilePath]}">
                                                     <StatefulTextbox.AdditionalContent>
                                                         <Button Grid.Column="2"
                                                                 Command="{Binding PickFileCommand}"
-                                                                CommandParameter="AcsVm"
+                                                                CommandParameter="{x:Static acsvmstatics:AcsVmTaskStatics.AcsVmExecutableFilePathKey}"
                                                                 Classes="Tertiary"
                                                                 Theme="{DynamicResource SolidButton}"
                                                                 Padding="5 0">

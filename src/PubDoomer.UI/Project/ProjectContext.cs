@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
+using Avalonia.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Project.Archive;
 using PubDoomer.Project.Engine;
@@ -17,15 +18,8 @@ namespace PubDoomer.Project;
 /// </summary>
 public partial class ProjectContext : ObservableObject
 {
-    // Configurable executions
-    [ObservableProperty] private string? _accCompilerExecutableFilePath;
-    [ObservableProperty] private string? _bccCompilerExecutableFilePath;
-
-    // TODO: Should be GdccAcc
-    [ObservableProperty] private string? _gdccCompilerExecutableFilePath;
-    [ObservableProperty] private string? _sladeExecutableFilePath;
-    [ObservableProperty] private string? _udbExecutableFilePath;
-    [ObservableProperty] private string? _acsVmExecutableFilePath;
+    // Configuration for tasks and other features in a project.
+    [ObservableProperty] private AvaloniaDictionary<string, string> _configurations = new();
 
     /// <summary>
     /// Represents the file path that the project is saved under.
