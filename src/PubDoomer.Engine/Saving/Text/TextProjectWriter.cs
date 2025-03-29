@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,8 +14,9 @@ public sealed class TextProjectWriter(
     private int _indentLevel = 0;
     private const string IndentString = "    ";
 
-    public IDisposable BeginBlock()
+    public IDisposable BeginBlock(string name)
     {
+        Write(name);
         _indentLevel++;
         return new IndentBlock(this);
     }

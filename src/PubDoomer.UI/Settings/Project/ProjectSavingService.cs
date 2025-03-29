@@ -49,13 +49,13 @@ public sealed class ProjectSavingService
             WriteConfiguration(projectContext, writer);
 
             // Start with tasks so that we can scaffold these on load first. This allows for references to be passed into the later profiles.
-            WriteTasks(projectContext, writer);
+            using (writer.BeginBlock("Tasks")) WriteTasks(projectContext, writer);
 
-            WriteProfiles(projectContext, writer);
-            WriteIWads(projectContext, writer);
-            WriteArchives(projectContext, writer);
-            WriteEngines(projectContext, writer);
-            WriteMaps(projectContext, writer);
+            using (writer.BeginBlock("Profiles")) WriteProfiles(projectContext, writer);
+            using (writer.BeginBlock("IWads")) WriteIWads(projectContext, writer);
+            using (writer.BeginBlock("Archives")) WriteArchives(projectContext, writer);
+            using (writer.BeginBlock("Engines")) WriteEngines(projectContext, writer);
+            using (writer.BeginBlock("Maps")) WriteMaps(projectContext, writer);
         }
         finally
         {
@@ -81,12 +81,13 @@ public sealed class ProjectSavingService
 
             projectContext.Name = reader.ReadString();
             ReadConfiguration(projectContext, reader);
-            ReadTasks(projectContext, reader);
-            ReadProfiles(projectContext, reader);
-            ReadIWads(projectContext, reader);
-            ReadArchives(projectContext, reader);
-            ReadEngines(projectContext, reader);
-            ReadMaps(projectContext, reader);
+
+            using (reader.BeginBlock()) ReadTasks(projectContext, reader);
+            using (reader.BeginBlock()) ReadProfiles(projectContext, reader);
+            using (reader.BeginBlock()) ReadIWads(projectContext, reader);
+            using (reader.BeginBlock()) ReadArchives(projectContext, reader);
+            using (reader.BeginBlock()) ReadEngines(projectContext, reader);
+            using (reader.BeginBlock()) ReadMaps(projectContext, reader);
 
             return projectContext;
         }

@@ -10,7 +10,7 @@ public sealed class BinaryProjectWriter(
     string projectPath, Stream stream) : IProjectWriter, IDisposable
 {
     private readonly BinaryWriter _writer = new(stream);
-    public IDisposable BeginBlock() => new NoOpDisposable();
+    public IDisposable BeginBlock(string _) => new NoOpDisposable();
     public void Write(string? value) => _writer.Write(value ?? string.Empty);
     public void Write(int? value) => _writer.Write(value ?? 0);
     public void Write(bool? value) => _writer.Write(value ?? false);

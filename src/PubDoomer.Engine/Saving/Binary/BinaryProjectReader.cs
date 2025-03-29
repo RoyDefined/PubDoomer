@@ -11,6 +11,7 @@ public sealed class BinaryProjectReader(
     string projectPath, Stream stream) : IProjectReader, IDisposable
 {
     private readonly BinaryReader _reader = new(stream);
+    public IDisposable BeginBlock() => new NoOpDisposable();
     public string ReadString() => _reader.ReadString();
     public int ReadInt32() => _reader.ReadInt32();
     public bool ReadBoolean() => _reader.ReadBoolean();

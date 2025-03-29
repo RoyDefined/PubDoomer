@@ -11,6 +11,8 @@ namespace PubDoomer.Engine.Saving;
 /// </summary>
 public interface IProjectReader
 {
+    IDisposable BeginBlock();
+
     string ReadString();
     int ReadInt32();
     bool ReadBoolean();

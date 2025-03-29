@@ -11,7 +11,7 @@ namespace PubDoomer.Engine.Saving;
 /// </summary>
 public interface IProjectWriter
 {
-    IDisposable BeginBlock();
+    IDisposable BeginBlock(string name);
 
     void Write(string? value);
     void Write(int? value);
