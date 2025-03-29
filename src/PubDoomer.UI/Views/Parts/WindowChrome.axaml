@@ -67,23 +67,9 @@
                             </MultiBinding>
                         </MenuItem.IsEnabled>
                     </MenuItem>
-                    <MenuItem Header="Save project (JSON)"
-                              IsVisible="{Binding ShowJsonFeatures}"
-                              Command="{Binding SaveProjectJsonCommand}">
-                        <MenuItem.IsEnabled>
-                            <MultiBinding Converter="{StaticResource NullToBoolMultiValueConverter}">
-                                <Binding Path="CurrentProjectProvider.ProjectContext" />
-                                <Binding Path="CurrentProjectProvider.ProjectContext.FilePath" />
-                            </MultiBinding>
-                        </MenuItem.IsEnabled>
-                    </MenuItem>
                     <MenuItem Header="Save project as..."
                               IsVisible="{Binding SessionSettings.EnableEditing}"
                               Command="{Binding SaveProjectAsCommand}"
-                              IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}" />
-                    <MenuItem Header="Save project (JSON) as..."
-                              IsVisible="{Binding ShowJsonFeatures}"
-                              Command="{Binding SaveProjectJsonAsCommand}"
                               IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}" />
                     <Separator />
 

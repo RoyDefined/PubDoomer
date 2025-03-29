@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using PubDoomer.Context;
+using PubDoomer.Engine.Saving;
 using PubDoomer.Factory;
 using PubDoomer.Logging;
 using PubDoomer.Project;
@@ -28,6 +30,8 @@ namespace PubDoomer.ViewModels;
 // This model is specific for the desktop window so it violates the pattern a bit.
 public partial class MainWindowModel : MainViewModel
 {
+    private const string ProjectBinaryFormatExtension = ".pdbproj";
+    
     private readonly DialogueProvider? _dialogueProvider;
     private readonly ProjectSavingService? _savingService;
     private readonly LocalSettingsService? _localSettingsService;
@@ -70,10 +74,6 @@ public partial class MainWindowModel : MainViewModel
         _windowProvider = windowProvider;
         _dialogueProvider = dialogueProvider;
         _recentProjects = recentProjects;
-        
-        // Ensure that `ShowJsonFeatures` updates in the event the session settings get updated in any way.
-        // It relies on the edit mode boolean.
-        SessionSettings.PropertyChanged += (_, _) => OnPropertyChanged(nameof(ShowJsonFeatures));
 
         // Load local data in the background.
         _ = Task.Run(LoadLocalDataAsync);
@@ -81,8 +81,6 @@ public partial class MainWindowModel : MainViewModel
 
     public bool WindowEnlarged => _windowProvider?.TryProvideWindow(out var window) == true
                                   && window.WindowState == WindowState.Maximized;
-
-    public bool ShowJsonFeatures => SessionSettings.EnableEditing && Environment?.IsDevelopment == true;
 
     // Window chrome commands
     [RelayCommand]
@@ -131,37 +129,28 @@ public partial class MainWindowModel : MainViewModel
     [RelayCommand]
     private async Task SaveProjectAsync()
     {
-        await SaveProjectAsync(true);
-    }
-    
-    [RelayCommand]
-    private async Task SaveProjectJsonAsync()
-    {
-        await SaveProjectAsync(false);
-    }
-
-    private async Task SaveProjectAsync(bool encrypt)
-    {
         if (AssertInDesignMode()) return;
-        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        
+        var projectContext = CurrentProjectProvider.ProjectContext;
+        if (projectContext == null)
+        {
+            return;
+        }
+        
+        // 'Save as' in case of no file path.
+        if (projectContext.FilePath == null)
+        {
+            await SaveProjectAsAsync();
+            return;
+        }
 
-        await _savingService.SaveProjectAsync(encrypt);
+        // TODO: Allow different formats.
+        _savingService.SaveProject(projectContext, projectContext.FilePath.ToString(), ProjectReadingWritingType.Binary);
         WindowNotificationManager?.Show(new Notification("Project saved", null, NotificationType.Success));
     }
 
     [RelayCommand]
     private async Task SaveProjectAsAsync()
-    {
-        await SaveProjectAsAsync(true);
-    }
-    
-    [RelayCommand]
-    private async Task SaveProjectJsonAsAsync()
-    {
-        await SaveProjectAsAsync(false);
-    }
-    
-    private async Task SaveProjectAsAsync(bool encrypt)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
@@ -169,17 +158,17 @@ public partial class MainWindowModel : MainViewModel
         var window = _windowProvider.ProvideWindow();
         var storageFile = await window.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            DefaultExtension = encrypt ? "dat" : "json",
+            DefaultExtension = ProjectBinaryFormatExtension,
             Title = "Save Project"
         });
 
         if (storageFile == null) return;
 
-        // Set the new path, which is then used to save the project.
-        CurrentProjectProvider.ProjectContext.FilePath = storageFile.Path;
-
-        await _savingService.SaveProjectAsync(encrypt);
+        // TODO: Allow different formats.
+        _savingService.SaveProject(CurrentProjectProvider.ProjectContext, storageFile.Path.ToString(), ProjectReadingWritingType.Binary);
         WindowNotificationManager?.Show(new Notification("Project saved", null, NotificationType.Success));
+        
+        CurrentProjectProvider.ProjectContext.FilePath = storageFile.Path;
     }
 
     [RelayCommand]
@@ -193,8 +182,7 @@ public partial class MainWindowModel : MainViewModel
             Title = "Open Project",
             AllowMultiple = false,
             FileTypeFilter = [
-                new FilePickerFileType("Binary data") { Patterns = ["*.dat"] },
-                new FilePickerFileType("JSON format") { Patterns = ["*.json"] }
+                new FilePickerFileType("PubDoomer data format") { Patterns = [$"*.{ProjectBinaryFormatExtension}"] }
             ]
         });
 
@@ -214,23 +202,25 @@ public partial class MainWindowModel : MainViewModel
     {
         if (AssertInDesignMode()) return;
 
+        // No project on the given path.
+        // TODO: Remove project from recent projects if it was retrieved from there.
+        if (!File.Exists(projectPath))
+        {
+            await _dialogueProvider.AlertAsync(AlertType.Warning,
+                "Failed to open project",
+                "The project under the given path no longer exists.");
+            return;
+        }
+        
         try
         {
-            await _savingService.LoadProjectOrDefaultAsync(projectPath);
-            
-            // If still null, the project no longer existed, probably.
-            if (CurrentProjectProvider.ProjectContext == null)
-            {
-                await _dialogueProvider.AlertAsync(AlertType.Warning,
-                    "Failed to open project",
-                    "The project under the given path no longer exists.");
-                return;
-            }
+            // TODO: Allow different formats.
+            var projectContext = _savingService.LoadProject(projectPath, ProjectReadingWritingType.Binary);
+            CurrentProjectProvider.ProjectContext = projectContext;
         }
-        catch (JsonException ex)
+        catch (Exception ex)
         {
-            Debug.Fail($"The project could not be loaded. {ex.Message}");
-            await _dialogueProvider.AlertAsync(AlertType.Error, "The project could not be loaded.");
+            await _dialogueProvider.AlertAsync(AlertType.Error, $"The project could not be loaded. {ex.Message}");
         }
     }
 
