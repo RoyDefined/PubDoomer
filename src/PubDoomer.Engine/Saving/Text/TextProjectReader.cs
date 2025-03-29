@@ -7,31 +7,28 @@ using System.Threading.Tasks;
 
 namespace PubDoomer.Engine.Saving.Binary;
 
-public sealed class BinaryProjectReader(
+public sealed class TextProjectReader(
     string projectPath, Stream stream) : IProjectReader, IDisposable
 {
-    private readonly BinaryReader _reader = new(stream);
-    public string ReadString() => _reader.ReadString();
-    public int ReadInt32() => _reader.ReadInt32();
-    public bool ReadBoolean() => _reader.ReadBoolean();
-    public T ReadEnum<T>() where T : struct, Enum => (T)Enum.ToObject(typeof(T), _reader.ReadInt32());
+    private readonly StreamReader _reader = new(stream);
+    public string ReadString() => _reader.ReadLine() ?? string.Empty;
+    public int ReadInt32() => int.TryParse(_reader.ReadLine(), out var result) ? result : 0;
+    public bool ReadBoolean() => bool.TryParse(_reader.ReadLine(), out var result) && result;
+    public T ReadEnum<T>() where T : struct, Enum => Enum.TryParse<T>(_reader.ReadLine(), out var result) ? result : default;
     public string? ReadPath()
     {
-        var path = _reader.ReadString();
+        var path = _reader.ReadLine();
         if (string.IsNullOrWhiteSpace(path))
         {
             return null;
         }
-
         return Path.GetFullPath(path, projectPath);
     }
 
     public void ValidateSignature()
     {
-        var @string = Encoding.UTF8.GetString(
-            _reader.ReadBytes(SavingStatics.BinaryFileSignature.Length));
-
-        if (@string != SavingStatics.BinaryFileSignature)
+        var signature = _reader.ReadLine();
+        if (signature != SavingStatics.TextFileSignature)
         {
             throw new ArgumentException("Signature mismatch. The provided stream might not be a project.");
         }

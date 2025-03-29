@@ -26,6 +26,6 @@ public sealed class BinaryProjectWriter(
         var path = Path.GetRelativePath(projectPath, value);
         Write(path);
     }
-    public void WriteSignature() => _writer.Write(Encoding.UTF8.GetBytes(BinarySavingStatic.BinaryFileSignature));
+    public void WriteSignature() => _writer.Write(Encoding.UTF8.GetBytes(SavingStatics.BinaryFileSignature));
     public void Dispose() => _writer.Dispose();
 }
