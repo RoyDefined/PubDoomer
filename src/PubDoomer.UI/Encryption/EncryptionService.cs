@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PubDoomer.Settings;
+namespace PubDoomer.Encryption;
 
 public sealed class EncryptionService
 {
@@ -12,6 +12,7 @@ public sealed class EncryptionService
 
     public EncryptionService()
     {
+        // TODO: Insert actual key
         using var sha256 = SHA256.Create();
         _key = sha256.ComputeHash(Encoding.UTF8.GetBytes("TODO"));
     }

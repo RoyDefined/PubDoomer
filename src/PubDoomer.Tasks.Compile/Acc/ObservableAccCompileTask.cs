@@ -1,18 +1,19 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Engine.Saving;
 using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.Tasks.Compile.Acc;
 
 public partial class ObservableAccCompileTask : CompileTaskBase
 {
-    private const string TaskName = "Compile (ACC)";
+    public const string TaskName = "Compile (ACC)";
     private const string TaskDescription = "Compiles the ACS file from the given file path using an ACS compiler.";
 
-    [JsonIgnore] public override Type HandlerType => typeof(AccCompileTaskHandler);
-    [JsonIgnore] public override CompilerType Type => CompilerType.Acc;
-    [JsonIgnore] public override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
+    public override Type HandlerType => typeof(AccCompileTaskHandler);
+    public override CompilerType Type => CompilerType.Acc;
+    public override string[] ExpectedFileExtensions { get; } = [".acs", ".txt"];
 
     [ObservableProperty] private bool _keepAccErrFile;
 
@@ -32,8 +33,8 @@ public partial class ObservableAccCompileTask : CompileTaskBase
         KeepAccErrFile = keepAccErrFile;
     }
 
-    [JsonIgnore] public override string DisplayName => TaskName;
-    [JsonIgnore] public override string Description => TaskDescription;
+    public override string DisplayName => TaskName;
+    public override string Description => TaskDescription;
 
     public override ObservableAccCompileTask DeepClone()
     {
@@ -53,5 +54,17 @@ public partial class ObservableAccCompileTask : CompileTaskBase
         OutputFilePath = accCompileTask.OutputFilePath;
         GenerateStdOutAndStdErrFiles = accCompileTask.GenerateStdOutAndStdErrFiles;
         KeepAccErrFile = accCompileTask.KeepAccErrFile;
+    }
+
+    public override void Serialize(IProjectWriter writer)
+    {
+        base.Serialize(writer);
+        writer.Write(KeepAccErrFile);
+    }
+
+    public override void Deserialize(IProjectReader reader)
+    {
+        base.Deserialize(reader);
+        KeepAccErrFile = reader.ReadBoolean();
     }
 }

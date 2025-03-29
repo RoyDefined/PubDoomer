@@ -59,7 +59,7 @@
                     <MenuItem Header="Open project" Command="{Binding LoadProjectCommand}" />
                     <MenuItem Header="Save project"
                               IsVisible="{Binding SessionSettings.EnableEditing}"
-                              Command="{Binding SaveProjectCommand}">
+                              Command="{Binding SaveBinaryProjectCommand}">
                         <MenuItem.IsEnabled>
                             <MultiBinding Converter="{StaticResource NullToBoolMultiValueConverter}">
                                 <Binding Path="CurrentProjectProvider.ProjectContext" />
@@ -67,9 +67,9 @@
                             </MultiBinding>
                         </MenuItem.IsEnabled>
                     </MenuItem>
-                    <MenuItem Header="Save project (JSON)"
-                              IsVisible="{Binding ShowJsonFeatures}"
-                              Command="{Binding SaveProjectJsonCommand}">
+                    <MenuItem Header="Save text project"
+                              IsVisible="{Binding SessionSettings.EnableEditing}"
+                              Command="{Binding SaveTextProjectCommand}">
                         <MenuItem.IsEnabled>
                             <MultiBinding Converter="{StaticResource NullToBoolMultiValueConverter}">
                                 <Binding Path="CurrentProjectProvider.ProjectContext" />
@@ -79,11 +79,11 @@
                     </MenuItem>
                     <MenuItem Header="Save project as..."
                               IsVisible="{Binding SessionSettings.EnableEditing}"
-                              Command="{Binding SaveProjectAsCommand}"
+                              Command="{Binding SaveBinaryProjectAsCommand}"
                               IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}" />
-                    <MenuItem Header="Save project (JSON) as..."
-                              IsVisible="{Binding ShowJsonFeatures}"
-                              Command="{Binding SaveProjectJsonAsCommand}"
+                    <MenuItem Header="Save text project as..."
+                              IsVisible="{Binding SessionSettings.EnableEditing}"
+                              Command="{Binding SaveTextProjectAsCommand}"
                               IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}" />
                     <Separator />
 

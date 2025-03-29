@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Engine.Saving;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Engine.TaskInvokation.Validation;
 using PubDoomer.Tasks.Compile;
@@ -28,4 +29,18 @@ public abstract partial class CompileTaskBase : ProjectTaskBase
     }
 
     public abstract override CompileTaskBase DeepClone();
+
+    public override void Serialize(IProjectWriter writer)
+    {
+        writer.WritePath(InputFilePath ?? string.Empty);
+        writer.WritePath(OutputFilePath ?? string.Empty);
+        writer.Write(GenerateStdOutAndStdErrFiles);
+    }
+
+    public override void Deserialize(IProjectReader reader)
+    {
+        InputFilePath = reader.ReadString();
+        OutputFilePath = reader.ReadString();
+        GenerateStdOutAndStdErrFiles = reader.ReadBoolean();
+    }
 }
