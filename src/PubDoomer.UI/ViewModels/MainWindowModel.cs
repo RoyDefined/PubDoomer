@@ -197,34 +197,40 @@ public partial class MainWindowModel : MainViewModel
 
         if (storageFiles.Count == 0) return;
 
-        await TryLoadProjectPathAsync(storageFiles.Single().Path.AbsolutePath);
+        var file = storageFiles.First();
+        var filePath = file.Path.AbsolutePath;
+        using var fileStream = await file.OpenReadAsync();
+        await TryLoadProjectPathAsync(filePath, fileStream);
         await UpdateRecentProjectsWithCurrentAsync();
     }
 
     [RelayCommand]
     private async Task OpenRecentProjectAsync(string filePath)
     {
-        await TryLoadProjectPathAsync(filePath);
-    }
-
-    private async Task TryLoadProjectPathAsync(string projectPath)
-    {
         if (AssertInDesignMode()) return;
 
         // No project on the given path.
         // TODO: Remove project from recent projects if it was retrieved from there.
-        if (!File.Exists(projectPath))
+        if (!File.Exists(filePath))
         {
             await _dialogueProvider.AlertAsync(AlertType.Warning,
                 "Failed to open project",
                 "The project under the given path no longer exists.");
             return;
         }
+
+        using var fileStream = File.OpenRead(filePath);
+        await TryLoadProjectPathAsync(filePath, fileStream);
+    }
+
+    private async Task TryLoadProjectPathAsync(string projectPath, Stream fileStream)
+    {
+        if (AssertInDesignMode()) return;
         
         try
         {
             // TODO: Allow different formats.
-            var projectContext = _savingService.LoadProject(projectPath, ProjectReadingWritingType.Binary);
+            var projectContext = _savingService.LoadProject(projectPath, fileStream, ProjectReadingWritingType.Binary);
             CurrentProjectProvider.ProjectContext = projectContext;
         }
         catch (Exception ex)

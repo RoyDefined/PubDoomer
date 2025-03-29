@@ -66,13 +66,11 @@ public sealed class ProjectSavingService
         }
     }
 
-    public ProjectContext LoadProject(string path, ProjectReadingWritingType readerType)
+    public ProjectContext LoadProject(string filePath, Stream fileStream, ProjectReadingWritingType readerType)
     {
-        using var fileStream = File.OpenRead(path);
-
         IProjectReader reader = readerType switch
         {
-            ProjectReadingWritingType.Binary => new BinaryProjectReader(path, fileStream),
+            ProjectReadingWritingType.Binary => new BinaryProjectReader(filePath, fileStream),
             _ => throw new ArgumentException($"Reader not found for type {readerType}."),
         };
 
