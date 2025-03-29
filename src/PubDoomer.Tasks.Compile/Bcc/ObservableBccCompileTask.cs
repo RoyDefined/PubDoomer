@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Engine.Saving;
 using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.Tasks.Compile.Bcc;
@@ -58,12 +59,12 @@ public partial class ObservableBccCompileTask : CompileTaskBase
         GenerateStdOutAndStdErrFiles = bccCompileTask.GenerateStdOutAndStdErrFiles;
     }
 
-    public override void Serialize(BinaryWriter writer)
+    public override void Serialize(IProjectWriter writer)
     {
         base.Serialize(writer);
     }
 
-    public override void Deserialize(BinaryReader reader)
+    public override void Deserialize(IProjectReader reader)
     {
         base.Deserialize(reader);
     }

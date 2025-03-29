@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Engine.Saving;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Tasks.Compile.Acc;
 using PubDoomer.Tasks.Compile.Bcc;
@@ -29,10 +30,10 @@ public abstract partial class ProjectTaskBase : ObservableObject, IRunnableTask,
     /// <summary>
     /// Serializes the task into the given writer.
     /// </summary>
-    public abstract void Serialize(BinaryWriter writer);
+    public abstract void Serialize(IProjectWriter writer);
 
     /// <summary>
     /// Deserializes the task into the given reader.
     /// </summary>
-    public abstract void Deserialize(BinaryReader reader);
+    public abstract void Deserialize(IProjectReader reader);
 }

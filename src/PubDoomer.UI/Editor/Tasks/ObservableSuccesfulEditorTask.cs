@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.Json.Serialization;
 using Avalonia.Controls;
+using PubDoomer.Engine.Saving;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Project.Tasks;
 
@@ -43,12 +44,12 @@ public partial class ObservableSuccesfulEditorTask : ProjectTaskBase
         throw new NotImplementedException();
     }
 
-    public override void Serialize(BinaryWriter writer)
+    public override void Serialize(IProjectWriter writer)
     {
         throw new NotImplementedException();
     }
 
-    public override void Deserialize(BinaryReader reader)
+    public override void Deserialize(IProjectReader reader)
     {
         throw new NotImplementedException();
     }

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Engine.Saving;
 using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.Tasks.Compile.Acc;
@@ -55,13 +56,13 @@ public partial class ObservableAccCompileTask : CompileTaskBase
         KeepAccErrFile = accCompileTask.KeepAccErrFile;
     }
 
-    public override void Serialize(BinaryWriter writer)
+    public override void Serialize(IProjectWriter writer)
     {
         base.Serialize(writer);
         writer.Write(KeepAccErrFile);
     }
 
-    public override void Deserialize(BinaryReader reader)
+    public override void Deserialize(IProjectReader reader)
     {
         base.Deserialize(reader);
         KeepAccErrFile = reader.ReadBoolean();

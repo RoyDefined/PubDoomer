@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using PubDoomer.Encryption;
+using PubDoomer.Engine.Saving;
+using PubDoomer.Engine.Saving.Binary;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Project;
 using PubDoomer.Project.Archive;
@@ -82,68 +85,94 @@ public sealed class ProjectSavingService(
         currentProjectProvider.ProjectContext = project;
     }
 
-    public void SaveProject(ProjectContext projectContext, string path)
+    public void SaveProject(ProjectContext projectContext, string path, ProjectReadingWritingType writerType)
     {
         using var fileStream = File.OpenWrite(path);
-        var writer = new BinaryWriter(fileStream);
+        IProjectWriter writer = writerType switch
+        {
+            ProjectReadingWritingType.Binary => new BinaryProjectWriter(path, fileStream),
+            _ => throw new ArgumentException($"Writer not found for type {writerType}."),
+        };
 
-        writer.Write(projectContext.Name ?? string.Empty);
-        WriteConfiguration(projectContext, writer);
+        try
+        {
+            writer.Write(projectContext.Name ?? string.Empty);
+            WriteConfiguration(projectContext, writer);
 
-        // Start with tasks so that we can scaffold these on load first. This allows for references to be passed into the later profiles.
-        WriteTasks(projectContext, writer);
+            // Start with tasks so that we can scaffold these on load first. This allows for references to be passed into the later profiles.
+            WriteTasks(projectContext, writer);
 
-        WriteProfiles(projectContext, writer);
-        WriteIWads(projectContext, writer);
-        WriteArchives(projectContext, writer);
-        WriteEngines(projectContext, writer);
-        WriteMaps(projectContext, writer);
+            WriteProfiles(projectContext, writer);
+            WriteIWads(projectContext, writer);
+            WriteArchives(projectContext, writer);
+            WriteEngines(projectContext, writer);
+            WriteMaps(projectContext, writer);
+        }
+        finally
+        {
+            if (writer is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
     }
 
-    public ProjectContext LoadProjectAsync(string path)
+    public ProjectContext LoadProjectAsync(string path, ProjectReadingWritingType readerType)
     {
         using var fileStream = File.OpenRead(path);
-        var reader = new BinaryReader(fileStream);
 
-        var projectContext = new ProjectContext();
+        IProjectReader reader = readerType switch
+        {
+            ProjectReadingWritingType.Binary => new BinaryProjectReader(path, fileStream),
+            _ => throw new ArgumentException($"Reader not found for type {readerType}."),
+        };
 
-        projectContext.Name = reader.ReadString();
-        ReadConfiguration(projectContext, reader);
-        ReadTasks(projectContext, reader);
-        ReadProfiles(projectContext, reader);
-        ReadIWads(projectContext, reader);
-        ReadArchives(projectContext, reader);
-        ReadEngines(projectContext, reader);
-        ReadMaps(projectContext, reader);
+        try
+        {
+            var projectContext = new ProjectContext();
 
-        return projectContext;
+            projectContext.Name = reader.ReadString();
+            ReadConfiguration(projectContext, reader);
+            ReadTasks(projectContext, reader);
+            ReadProfiles(projectContext, reader);
+            ReadIWads(projectContext, reader);
+            ReadArchives(projectContext, reader);
+            ReadEngines(projectContext, reader);
+            ReadMaps(projectContext, reader);
+
+            return projectContext;
+        }
+        finally
+        {
+            if (reader is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
     }
 
-    private void WriteConfiguration(ProjectContext projectContext, BinaryWriter writer)
+    private void WriteConfiguration(ProjectContext projectContext, IProjectWriter writer)
     {
+        void WriteConfiguration(string name, string? value)
+        {
+            writer.Write(name);
+            writer.WritePath(value ?? string.Empty);
+        }
+
         // TODO: This will have to be refactored to an actual dictionary. This contains dummy key data for now.
-        writer.Write(6); // Number of configuration items.
 
-        writer.Write(nameof(projectContext.AccCompilerExecutableFilePath));
-        writer.Write(projectContext.AccCompilerExecutableFilePath ?? string.Empty);
+        // Number of configuration items.
+        writer.Write(6);
 
-        writer.Write(nameof(projectContext.BccCompilerExecutableFilePath));
-        writer.Write(projectContext.BccCompilerExecutableFilePath ?? string.Empty);
-
-        writer.Write(nameof(projectContext.GdccCompilerExecutableFilePath));
-        writer.Write(projectContext.GdccCompilerExecutableFilePath ?? string.Empty);
-
-        writer.Write(nameof(projectContext.SladeExecutableFilePath));
-        writer.Write(projectContext.SladeExecutableFilePath ?? string.Empty);
-
-        writer.Write(nameof(projectContext.UdbExecutableFilePath));
-        writer.Write(projectContext.UdbExecutableFilePath ?? string.Empty);
-
-        writer.Write(nameof(projectContext.AcsVmExecutableFilePath));
-        writer.Write(projectContext.AcsVmExecutableFilePath ?? string.Empty);
+        WriteConfiguration(nameof(projectContext.AccCompilerExecutableFilePath), projectContext.AccCompilerExecutableFilePath);
+        WriteConfiguration(nameof(projectContext.BccCompilerExecutableFilePath), projectContext.BccCompilerExecutableFilePath);
+        WriteConfiguration(nameof(projectContext.GdccCompilerExecutableFilePath), projectContext.GdccCompilerExecutableFilePath);
+        WriteConfiguration(nameof(projectContext.SladeExecutableFilePath), projectContext.SladeExecutableFilePath);
+        WriteConfiguration(nameof(projectContext.UdbExecutableFilePath), projectContext.UdbExecutableFilePath);
+        WriteConfiguration(nameof(projectContext.AcsVmExecutableFilePath), projectContext.AcsVmExecutableFilePath);
     }
 
-    private void WriteTasks(ProjectContext projectContext, BinaryWriter writer)
+    private void WriteTasks(ProjectContext projectContext, IProjectWriter writer)
     {
         writer.Write(projectContext.Tasks.Count);
         foreach (var task in projectContext.Tasks)
@@ -154,7 +183,7 @@ public sealed class ProjectSavingService(
         }
     }
 
-    private void WriteProfiles(ProjectContext projectContext, BinaryWriter writer)
+    private void WriteProfiles(ProjectContext projectContext, IProjectWriter writer)
     {
         writer.Write(projectContext.Profiles.Count);
         foreach (var profile in projectContext.Profiles)
@@ -170,74 +199,69 @@ public sealed class ProjectSavingService(
         }
     }
 
-    private void WriteIWads(ProjectContext projectContext, BinaryWriter writer)
+    private void WriteIWads(ProjectContext projectContext, IProjectWriter writer)
     {
         writer.Write(projectContext.IWads.Count);
         foreach (var iwad in projectContext.IWads)
         {
             writer.Write(iwad.Name ?? string.Empty);
-            writer.Write(iwad.Path ?? string.Empty);
+            writer.WritePath(iwad.Path ?? string.Empty);
         }
     }
 
-    private void WriteArchives(ProjectContext projectContext, BinaryWriter writer)
+    private void WriteArchives(ProjectContext projectContext, IProjectWriter writer)
     {
         writer.Write(projectContext.Archives.Count);
         foreach (var archive in projectContext.Archives)
         {
             writer.Write(archive.Name ?? string.Empty);
-            writer.Write(archive.Path ?? string.Empty);
+            writer.WritePath(archive.Path ?? string.Empty);
             writer.Write(archive.ExcludeFromTesting);
         }
     }
 
-    private void WriteEngines(ProjectContext projectContext, BinaryWriter writer)
+    private void WriteEngines(ProjectContext projectContext, IProjectWriter writer)
     {
         writer.Write(projectContext.Engines.Count);
         foreach (var engine in projectContext.Engines)
         {
             writer.Write(engine.Name ?? string.Empty);
-            writer.Write(engine.Path ?? string.Empty);
+            writer.WritePath(engine.Path ?? string.Empty);
             writer.Write((int)engine.Type);
         }
     }
 
-    private void WriteMaps(ProjectContext projectContext, BinaryWriter writer)
+    private void WriteMaps(ProjectContext projectContext, IProjectWriter writer)
     {
         writer.Write(projectContext.Maps.Count);
         foreach (var map in projectContext.Maps)
         {
             writer.Write(map.Name ?? string.Empty);
             writer.Write(map.MapLumpName ?? string.Empty);
-            writer.Write(map.Path ?? string.Empty);
+            writer.WritePath(map.Path ?? string.Empty);
         }
     }
 
-    private void ReadConfiguration(ProjectContext projectContext, BinaryReader reader)
+    private void ReadConfiguration(ProjectContext projectContext, IProjectReader reader)
     {
+        string ReadConfiguration()
+        {
+            _ = reader.ReadString();
+            return reader.ReadPath();
+        }
+
         // TODO: This will have to be refactored to an actual dictionary. This contains dummy key data for now.
         _ = reader.ReadInt32();
 
-        _ = reader.ReadString();
-        projectContext.AccCompilerExecutableFilePath = reader.ReadString();
-
-        _ = reader.ReadString();
-        projectContext.BccCompilerExecutableFilePath = reader.ReadString();
-
-        _ = reader.ReadString();
-        projectContext.GdccCompilerExecutableFilePath = reader.ReadString();
-
-        _ = reader.ReadString();
-        projectContext.SladeExecutableFilePath = reader.ReadString();
-
-        _ = reader.ReadString();
-        projectContext.UdbExecutableFilePath = reader.ReadString();
-
-        _ = reader.ReadString();
-        projectContext.AcsVmExecutableFilePath = reader.ReadString();
+        projectContext.AccCompilerExecutableFilePath = ReadConfiguration();
+        projectContext.BccCompilerExecutableFilePath = ReadConfiguration();
+        projectContext.GdccCompilerExecutableFilePath = ReadConfiguration();
+        projectContext.SladeExecutableFilePath = ReadConfiguration();
+        projectContext.UdbExecutableFilePath = ReadConfiguration();
+        projectContext.AcsVmExecutableFilePath = ReadConfiguration();
     }
 
-    private void ReadTasks(ProjectContext projectContext, BinaryReader reader)
+    private void ReadTasks(ProjectContext projectContext, IProjectReader reader)
     {
         var tasksIterator = Enumerable.Range(0, reader.ReadInt32())
             .Select(x =>
@@ -253,7 +277,7 @@ public sealed class ProjectSavingService(
         projectContext.Tasks = [.. tasksIterator];
     }
 
-    private void ReadProfiles(ProjectContext projectContext, BinaryReader reader)
+    private void ReadProfiles(ProjectContext projectContext, IProjectReader reader)
     {
         var profileIterator = Enumerable.Range(0, reader.ReadInt32())
             .Select(x =>
@@ -282,52 +306,52 @@ public sealed class ProjectSavingService(
         projectContext.Profiles = [.. profileIterator];
     }
 
-    private void ReadIWads(ProjectContext projectContext, BinaryReader reader)
+    private void ReadIWads(ProjectContext projectContext, IProjectReader reader)
     {
         var iwadsIterator = Enumerable.Range(0, reader.ReadInt32())
             .Select(x => new IWadContext()
             {
                 Name = reader.ReadString(),
-                Path = reader.ReadString(),
+                Path = reader.ReadPath(),
             });
 
         projectContext.IWads = [.. iwadsIterator];
     }
 
-    private void ReadArchives(ProjectContext projectContext, BinaryReader reader)
+    private void ReadArchives(ProjectContext projectContext, IProjectReader reader)
     {
         var archiveIterator = Enumerable.Range(0, reader.ReadInt32())
             .Select(x => new ArchiveContext()
             {
                 Name = reader.ReadString(),
-                Path = reader.ReadString(),
+                Path = reader.ReadPath(),
                 ExcludeFromTesting = reader.ReadBoolean(),
             });
 
         projectContext.Archives = [.. archiveIterator];
     }
 
-    private void ReadEngines(ProjectContext projectContext, BinaryReader reader)
+    private void ReadEngines(ProjectContext projectContext, IProjectReader reader)
     {
         var engineIterator = Enumerable.Range(0, reader.ReadInt32())
             .Select(x => new EngineContext()
             {
                 Name = reader.ReadString(),
-                Path = reader.ReadString(),
+                Path = reader.ReadPath(),
                 Type = (EngineType)reader.ReadInt32(),
             });
 
         projectContext.Engines = [.. engineIterator];
     }
 
-    private void ReadMaps(ProjectContext projectContext, BinaryReader reader)
+    private void ReadMaps(ProjectContext projectContext, IProjectReader reader)
     {
         var mapIterator = Enumerable.Range(0, reader.ReadInt32())
             .Select(x => new MapContext()
             {
                 Name = reader.ReadString(),
                 MapLumpName = reader.ReadString(),
-                Path = reader.ReadString(),
+                Path = reader.ReadPath(),
             });
 
         projectContext.Maps = [.. mapIterator];

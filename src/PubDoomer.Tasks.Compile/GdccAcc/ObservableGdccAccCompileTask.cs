@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Engine.Saving;
 using PubDoomer.Project.Tasks;
 
 namespace PubDoomer.Tasks.Compile.GdccAcc;
@@ -52,13 +53,13 @@ public partial class ObservableGdccAccCompileTask : CompileTaskBase
         DontWarnForwardReferences = gdccAccCompileTask.DontWarnForwardReferences;
     }
 
-    public override void Serialize(BinaryWriter writer)
+    public override void Serialize(IProjectWriter writer)
     {
         base.Serialize(writer);
         writer.Write(DontWarnForwardReferences);
     }
 
-    public override void Deserialize(BinaryReader reader)
+    public override void Deserialize(IProjectReader reader)
     {
         base.Deserialize(reader);
         DontWarnForwardReferences = reader.ReadBoolean();
