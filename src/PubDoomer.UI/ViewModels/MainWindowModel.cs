@@ -30,7 +30,7 @@ namespace PubDoomer.ViewModels;
 // This model is specific for the desktop window so it violates the pattern a bit.
 public partial class MainWindowModel : MainViewModel
 {
-    private const string ProjectBinaryFormatExtension = ".pdbproj";
+    private const string ProjectBinaryFormatExtension = "pdbproj";
     
     private readonly DialogueProvider? _dialogueProvider;
     private readonly ProjectSavingService? _savingService;
