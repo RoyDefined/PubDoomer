@@ -33,12 +33,11 @@ public sealed class ProjectSavingService
         [ObservableGdccAccCompileTask.TaskName] = new ObservableGdccAccCompileTask(),
     };
 
-    public void SaveProject(ProjectContext projectContext, string path, ProjectReadingWritingType writerType)
+    public void SaveProject(ProjectContext projectContext, string filePath, Stream stream, ProjectReadingWritingType writerType)
     {
-        using var fileStream = File.OpenWrite(path);
         IProjectWriter writer = writerType switch
         {
-            ProjectReadingWritingType.Binary => new BinaryProjectWriter(path, fileStream),
+            ProjectReadingWritingType.Binary => new BinaryProjectWriter(filePath, stream),
             _ => throw new ArgumentException($"Writer not found for type {writerType}."),
         };
 

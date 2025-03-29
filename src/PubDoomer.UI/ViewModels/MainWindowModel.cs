@@ -145,7 +145,8 @@ public partial class MainWindowModel : MainViewModel
         }
 
         // TODO: Allow different formats.
-        _savingService.SaveProject(projectContext, projectContext.FilePath.ToString(), ProjectReadingWritingType.Binary);
+        using var fileStream = File.OpenWrite(projectContext.FilePath);
+        _savingService.SaveProject(projectContext, projectContext.FilePath, fileStream, ProjectReadingWritingType.Binary);
         WindowNotificationManager?.Show(new Notification("Project saved", null, NotificationType.Success));
     }
 
@@ -164,11 +165,19 @@ public partial class MainWindowModel : MainViewModel
 
         if (storageFile == null) return;
 
+        if (storageFile.TryGetLocalPath() is not string filePath)
+        {
+            await _dialogueProvider.AlertAsync(AlertType.Warning,
+                "Failed to use path",
+                "The path to save is not a valid path.");
+            return;
+        }
+
         // TODO: Allow different formats.
-        _savingService.SaveProject(CurrentProjectProvider.ProjectContext, storageFile.Path.ToString(), ProjectReadingWritingType.Binary);
+        var writeStream = await storageFile.OpenWriteAsync();
+        _savingService.SaveProject(CurrentProjectProvider.ProjectContext, filePath, writeStream, ProjectReadingWritingType.Binary);
         WindowNotificationManager?.Show(new Notification("Project saved", null, NotificationType.Success));
-        
-        CurrentProjectProvider.ProjectContext.FilePath = storageFile.Path;
+        CurrentProjectProvider.ProjectContext.FilePath = filePath;
     }
 
     [RelayCommand]
@@ -258,11 +267,11 @@ public partial class MainWindowModel : MainViewModel
         // Remove this project from the recent projects if it exists.
         // Then, add it as the first recent project.
         var recentProject = RecentProjects.SingleOrDefault(x =>
-            x.FilePath.Equals(CurrentProjectProvider.ProjectContext.FilePath.LocalPath, StringComparison.OrdinalIgnoreCase));
+            x.FilePath.Equals(CurrentProjectProvider.ProjectContext.FilePath, StringComparison.OrdinalIgnoreCase));
 
         if (recentProject != null) RecentProjects.Remove(recentProject);
 
-        recentProject = new RecentProject(CurrentProjectProvider.ProjectContext.Name!, CurrentProjectProvider.ProjectContext.FilePath.LocalPath);
+        recentProject = new RecentProject(CurrentProjectProvider.ProjectContext.Name!, CurrentProjectProvider.ProjectContext.FilePath);
         RecentProjects.Insert(0, recentProject);
 
         await _recentProjectsService.SaveRecentProjectsAsync();

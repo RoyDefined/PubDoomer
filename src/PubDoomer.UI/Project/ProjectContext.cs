@@ -32,7 +32,7 @@ public partial class ProjectContext : ObservableObject
     /// If <c>true</c>, the project was not saved yet.
     /// </summary>
     [ObservableProperty]
-    private Uri? _filePath;
+    private string? _filePath;
 
     /// <summary>
     /// A name to give to this project to show in the UI.
