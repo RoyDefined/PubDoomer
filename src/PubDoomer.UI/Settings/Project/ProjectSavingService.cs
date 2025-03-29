@@ -44,6 +44,8 @@ public sealed class ProjectSavingService
 
         try
         {
+            writer.WriteSignature();
+            
             writer.Write(projectContext.Name ?? string.Empty);
             WriteConfiguration(projectContext, writer);
 
@@ -78,6 +80,7 @@ public sealed class ProjectSavingService
         try
         {
             var projectContext = new ProjectContext();
+            reader.ValidateSignature();
 
             projectContext.Name = reader.ReadString();
             ReadConfiguration(projectContext, reader);

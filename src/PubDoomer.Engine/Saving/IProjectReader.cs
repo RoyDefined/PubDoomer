@@ -16,4 +16,5 @@ public interface IProjectReader
     bool ReadBoolean();
     T ReadEnum<T>() where T : struct, Enum;
     string ReadPath();
+    void ValidateSignature();
 }

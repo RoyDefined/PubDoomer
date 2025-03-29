@@ -16,5 +16,6 @@ public sealed class BinaryProjectWriter(
     public void Write(bool? value) => _writer.Write(value ?? false);
     public void WriteEnum<T>(T? value) where T : struct, Enum => _writer.Write(Convert.ToInt32(value));
     public void WritePath(string? value) => Write(Path.GetRelativePath(projectPath, value ?? string.Empty));
+    public void WriteSignature() => _writer.Write(Encoding.UTF8.GetBytes(BinarySavingStatic.BinaryFileSignature));
     public void Dispose() => _writer.Dispose();
 }
