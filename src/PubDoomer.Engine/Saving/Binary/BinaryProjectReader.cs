@@ -15,7 +15,16 @@ public sealed class BinaryProjectReader(
     public int ReadInt32() => _reader.ReadInt32();
     public bool ReadBoolean() => _reader.ReadBoolean();
     public T ReadEnum<T>() where T : struct, Enum => (T)Enum.ToObject(typeof(T), _reader.ReadInt32());
-    public string ReadPath() => Path.GetFullPath(ReadString(), projectPath);
+    public string? ReadPath()
+    {
+        var path = _reader.ReadString();
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        return Path.GetFullPath(path, projectPath);
+    }
 
     public void ValidateSignature()
     {

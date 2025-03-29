@@ -194,7 +194,7 @@ public sealed class ProjectSavingService
 
     private void ReadConfiguration(ProjectContext projectContext, IProjectReader reader)
     {
-        string ReadConfiguration()
+        string? ReadConfiguration()
         {
             _ = reader.ReadString();
             return reader.ReadPath();
