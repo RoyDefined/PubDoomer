@@ -305,6 +305,8 @@ public partial class MainWindowModel : MainViewModel
             };
 
             var projectContext = _savingService.LoadProject(projectPath, fileStream, type);
+
+            projectContext.FilePath = projectPath;
             CurrentProjectProvider.ProjectContext = projectContext;
         }
         catch (Exception ex)
