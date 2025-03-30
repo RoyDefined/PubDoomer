@@ -51,7 +51,7 @@ public partial class ObservableWarningEditorTask : ProjectTaskBase, ITaskValidat
         throw new NotImplementedException();
     }
 
-    public override void Deserialize(IProjectReader reader)
+    public override void Deserialize(IProjectReader reader, ProjectSaveVersion _)
     {
         throw new NotImplementedException();
     }

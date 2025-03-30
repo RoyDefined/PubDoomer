@@ -37,7 +37,7 @@ public abstract partial class CompileTaskBase : ProjectTaskBase
         writer.Write(GenerateStdOutAndStdErrFiles);
     }
 
-    public override void Deserialize(IProjectReader reader)
+    public override void Deserialize(IProjectReader reader, ProjectSaveVersion _)
     {
         InputFilePath = reader.ReadString();
         OutputFilePath = reader.ReadString();

@@ -59,9 +59,9 @@ public partial class ObservableGdccAccCompileTask : CompileTaskBase
         writer.Write(DontWarnForwardReferences);
     }
 
-    public override void Deserialize(IProjectReader reader)
+    public override void Deserialize(IProjectReader reader, ProjectSaveVersion version)
     {
-        base.Deserialize(reader);
+        base.Deserialize(reader, version);
         DontWarnForwardReferences = reader.ReadBoolean();
     }
 }

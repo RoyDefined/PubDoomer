@@ -35,5 +35,5 @@ public abstract partial class ProjectTaskBase : ObservableObject, IRunnableTask,
     /// <summary>
     /// Deserializes the task into the given reader.
     /// </summary>
-    public abstract void Deserialize(IProjectReader reader);
+    public abstract void Deserialize(IProjectReader reader, ProjectSaveVersion version);
 }

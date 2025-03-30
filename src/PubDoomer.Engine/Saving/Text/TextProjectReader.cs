@@ -30,6 +30,16 @@ public sealed class TextProjectReader(
         return Path.GetFullPath(path, projectPath);
     }
 
+    public ProjectSaveVersion ReadVersion()
+    {
+        var line = ReadString();
+        if (!ProjectSaveVersion.TryParse(line, out var version))
+        {
+            throw new FormatException($"Line is not a valid version: {line}");
+        }
+        return version;
+    }
+
     public void ValidateSignature()
     {
         var signature = _reader.ReadLine()?.Trim();

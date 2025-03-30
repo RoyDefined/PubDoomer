@@ -33,6 +33,12 @@ public sealed class ProjectSavingService
         [ObservableGdccAccCompileTask.TaskName] = new ObservableGdccAccCompileTask(),
     };
 
+    /// <summary>
+    /// This is the version written to files.
+    /// <br /> When reading, this version will not be used. Instead it will be conditionally handled.
+    /// </summary>
+    private readonly ProjectSaveVersion _latestSaveVersion = new(0, 1);
+
     public void SaveProject(ProjectContext projectContext, string filePath, Stream stream, ProjectReadingWritingType writerType)
     {
         IProjectWriter writer = writerType switch
@@ -45,6 +51,7 @@ public sealed class ProjectSavingService
         try
         {
             writer.WriteSignature();
+            writer.WriteVersion(_latestSaveVersion);
             
             writer.Write(projectContext.Name ?? string.Empty);
             WriteConfiguration(projectContext, writer);
@@ -80,16 +87,17 @@ public sealed class ProjectSavingService
         {
             var projectContext = new ProjectContext();
             reader.ValidateSignature();
+            var version = reader.ReadVersion();
 
             projectContext.Name = reader.ReadString();
-            ReadConfiguration(projectContext, reader);
+            ReadConfiguration(projectContext, reader, version);
 
-            using (reader.BeginBlock()) ReadTasks(projectContext, reader);
-            using (reader.BeginBlock()) ReadProfiles(projectContext, reader);
-            using (reader.BeginBlock()) ReadIWads(projectContext, reader);
-            using (reader.BeginBlock()) ReadArchives(projectContext, reader);
-            using (reader.BeginBlock()) ReadEngines(projectContext, reader);
-            using (reader.BeginBlock()) ReadMaps(projectContext, reader);
+            using (reader.BeginBlock()) ReadTasks(projectContext, reader, version);
+            using (reader.BeginBlock()) ReadProfiles(projectContext, reader, version);
+            using (reader.BeginBlock()) ReadIWads(projectContext, reader, version);
+            using (reader.BeginBlock()) ReadArchives(projectContext, reader, version);
+            using (reader.BeginBlock()) ReadEngines(projectContext, reader, version);
+            using (reader.BeginBlock()) ReadMaps(projectContext, reader, version);
 
             return projectContext;
         }
@@ -189,7 +197,7 @@ public sealed class ProjectSavingService
         }
     }
 
-    private void ReadConfiguration(ProjectContext projectContext, IProjectReader reader)
+    private void ReadConfiguration(ProjectContext projectContext, IProjectReader reader, ProjectSaveVersion _)
     {
         (string key, string value) ReadConfiguration()
         {
@@ -205,7 +213,7 @@ public sealed class ProjectSavingService
         }
     }
 
-    private void ReadTasks(ProjectContext projectContext, IProjectReader reader)
+    private void ReadTasks(ProjectContext projectContext, IProjectReader reader, ProjectSaveVersion version)
     {
         var tasksIterator = Enumerable.Range(0, reader.ReadInt32())
             .Select(x =>
@@ -214,14 +222,14 @@ public sealed class ProjectSavingService
                 var displayName = reader.ReadString();
                 var task = _projectTaskMap[displayName].DeepClone();
                 task.Name = reader.ReadString();
-                task.Deserialize(reader);
+                task.Deserialize(reader, version);
                 return task;
             });
 
         projectContext.Tasks = [.. tasksIterator];
     }
 
-    private void ReadProfiles(ProjectContext projectContext, IProjectReader reader)
+    private void ReadProfiles(ProjectContext projectContext, IProjectReader reader, ProjectSaveVersion _)
     {
         var profileIterator = Enumerable.Range(0, reader.ReadInt32())
             .Select(x =>
@@ -250,7 +258,7 @@ public sealed class ProjectSavingService
         projectContext.Profiles = [.. profileIterator];
     }
 
-    private void ReadIWads(ProjectContext projectContext, IProjectReader reader)
+    private void ReadIWads(ProjectContext projectContext, IProjectReader reader, ProjectSaveVersion _)
     {
         var iwadsIterator = Enumerable.Range(0, reader.ReadInt32())
             .Select(x => new IWadContext()
@@ -262,7 +270,7 @@ public sealed class ProjectSavingService
         projectContext.IWads = [.. iwadsIterator];
     }
 
-    private void ReadArchives(ProjectContext projectContext, IProjectReader reader)
+    private void ReadArchives(ProjectContext projectContext, IProjectReader reader, ProjectSaveVersion _)
     {
         var archiveIterator = Enumerable.Range(0, reader.ReadInt32())
             .Select(x => new ArchiveContext()
@@ -275,7 +283,7 @@ public sealed class ProjectSavingService
         projectContext.Archives = [.. archiveIterator];
     }
 
-    private void ReadEngines(ProjectContext projectContext, IProjectReader reader)
+    private void ReadEngines(ProjectContext projectContext, IProjectReader reader, ProjectSaveVersion _)
     {
         var engineIterator = Enumerable.Range(0, reader.ReadInt32())
             .Select(x => new EngineContext()
@@ -288,7 +296,7 @@ public sealed class ProjectSavingService
         projectContext.Engines = [.. engineIterator];
     }
 
-    private void ReadMaps(ProjectContext projectContext, IProjectReader reader)
+    private void ReadMaps(ProjectContext projectContext, IProjectReader reader, ProjectSaveVersion _)
     {
         var mapIterator = Enumerable.Range(0, reader.ReadInt32())
             .Select(x => new MapContext()

@@ -27,6 +27,13 @@ public sealed class BinaryProjectReader(
         return Path.GetFullPath(path, projectPath);
     }
 
+    public ProjectSaveVersion ReadVersion()
+    {
+        var major = ReadInt32();
+        var minor = ReadInt32();
+        return new(major, minor);
+    }
+
     public void ValidateSignature()
     {
         var @string = Encoding.UTF8.GetString(
