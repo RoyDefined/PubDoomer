@@ -25,6 +25,7 @@ public sealed class TextProjectWriter(
     public void Write(int? value) => WriteIndented(value?.ToString() ?? "0");
     public void Write(bool? value) => WriteIndented(value?.ToString() ?? "false");
     public void WriteEnum<T>(T? value) where T : struct, Enum => WriteIndented(value?.ToString() ?? string.Empty);
+
     public void WritePath(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -35,6 +36,8 @@ public sealed class TextProjectWriter(
         var path = Path.GetRelativePath(projectPath, value);
         WriteIndented(path);
     }
+
+    public void WriteVersion(ProjectSaveVersion value) => Write(value.ToString());
     public void WriteSignature() => WriteIndented(SavingStatics.TextFileSignature);
     public void Dispose() => _writer.Dispose();
 

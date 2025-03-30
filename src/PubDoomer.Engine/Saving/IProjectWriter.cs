@@ -18,5 +18,6 @@ public interface IProjectWriter
     void Write(bool? value);
     void WriteEnum<T>(T? value) where T : struct, Enum;
     void WritePath(string? value);
+    void WriteVersion(ProjectSaveVersion value);
     void WriteSignature();
 }

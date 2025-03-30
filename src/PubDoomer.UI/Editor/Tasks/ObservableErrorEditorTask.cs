@@ -50,7 +50,7 @@ public partial class ObservableErrorEditorTask : ProjectTaskBase, ITaskValidator
         throw new NotImplementedException();
     }
 
-    public override void Deserialize(IProjectReader reader)
+    public override void Deserialize(IProjectReader reader, ProjectSaveVersion _)
     {
         throw new NotImplementedException();
     }

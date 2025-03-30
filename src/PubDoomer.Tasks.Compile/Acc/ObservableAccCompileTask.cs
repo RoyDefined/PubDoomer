@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -62,9 +63,9 @@ public partial class ObservableAccCompileTask : CompileTaskBase
         writer.Write(KeepAccErrFile);
     }
 
-    public override void Deserialize(IProjectReader reader)
+    public override void Deserialize(IProjectReader reader, ProjectSaveVersion version)
     {
-        base.Deserialize(reader);
+        base.Deserialize(reader, version);
         KeepAccErrFile = reader.ReadBoolean();
     }
 }

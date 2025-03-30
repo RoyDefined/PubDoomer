@@ -64,8 +64,8 @@ public partial class ObservableBccCompileTask : CompileTaskBase
         base.Serialize(writer);
     }
 
-    public override void Deserialize(IProjectReader reader)
+    public override void Deserialize(IProjectReader reader, ProjectSaveVersion version)
     {
-        base.Deserialize(reader);
+        base.Deserialize(reader, version);
     }
 }

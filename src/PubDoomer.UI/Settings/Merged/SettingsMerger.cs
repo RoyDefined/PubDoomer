@@ -7,6 +7,9 @@ using PubDoomer.Project;
 using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 using PubDoomer.Saving;
+using PubDoomer.Tasks.AcsVM.Utils;
+using PubDoomer.Tasks.Compile.Utils;
+using PubDoomer.Utils;
 using PubDoomer.ViewModels.Dialogues;
 using PubDoomer.Views.Dialogues;
 
@@ -24,11 +27,15 @@ public static class SettingsMerger
     /// </summary>
     public static MergedSettings Merge(ProjectContext? projectContext, LocalSettings? localSettings)
     {
-        static string? GetSetting(string? projectContextPath, string? localSettingsPath)
+        string? GetSetting(string key)
         {
-            return !string.IsNullOrWhiteSpace(projectContextPath)
-                ? projectContextPath.Trim()
-                : localSettingsPath?.Trim();
+            return (projectContext?.Configurations.ContainsKey(key),
+                    localSettings?.Configurations.ContainsKey(key)) switch
+            {
+                (true, _) => projectContext.Configurations[key].Trim(),
+                (_, true) => localSettings.Configurations[key].Trim(),
+                (_, _) => null,
+            };
         }
 
         static IEnumerable<IWadContext> MergeIWads(IEnumerable<IWadContext>? projectIwads, IEnumerable<IWadContext>? localIwads)
@@ -47,12 +54,12 @@ public static class SettingsMerger
 
         return new MergedSettings
         {
-            AccCompilerExecutableFilePath = GetSetting(projectContext?.AccCompilerExecutableFilePath, localSettings?.AccCompilerExecutableFilePath),
-            BccCompilerExecutableFilePath = GetSetting(projectContext?.BccCompilerExecutableFilePath, localSettings?.BccCompilerExecutableFilePath),
-            GdccAccCompilerExecutableFilePath = GetSetting(projectContext?.GdccCompilerExecutableFilePath, localSettings?.GdccCompilerExecutableFilePath),
-            UdbExecutableFilePath = GetSetting(projectContext?.UdbExecutableFilePath, localSettings?.UdbExecutableFilePath),
-            SladeExecutableFilePath = GetSetting(projectContext?.SladeExecutableFilePath, localSettings?.SladeExecutableFilePath),
-            AcsVmExecutableFilePath = GetSetting(projectContext?.AcsVmExecutableFilePath, localSettings?.AcsVmExecutableFilePath),
+            AccCompilerExecutableFilePath = GetSetting(CompileTaskStatics.AccCompilerExecutableFilePathKey),
+            BccCompilerExecutableFilePath = GetSetting(CompileTaskStatics.BccCompilerExecutableFilePathKey),
+            GdccAccCompilerExecutableFilePath = GetSetting(CompileTaskStatics.GdccAccCompilerExecutableFilePathKey),
+            UdbExecutableFilePath = GetSetting(SavingStatics.UdbExecutableFilePathKey),
+            SladeExecutableFilePath = GetSetting(SavingStatics.SladeExecutableFilePathKey),
+            AcsVmExecutableFilePath = GetSetting(AcsVmTaskStatics.AcsVmExecutableFilePathKey),
             IWads = MergeIWads(projectContext?.IWads, localSettings?.IWads).ToArray(),
             Engines = MergeEngines(projectContext?.Engines, localSettings?.Engines).ToArray(),
         };

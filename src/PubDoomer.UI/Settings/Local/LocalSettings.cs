@@ -1,20 +1,19 @@
 ﻿using System.Collections.ObjectModel;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
+using PubDoomer.Tasks.AcsVM.Utils;
+using PubDoomer.Tasks.Compile.Utils;
+using PubDoomer.Utils;
 
 namespace PubDoomer.Saving;
 
 public partial class LocalSettings : ObservableObject
 {
     // Configurable executions
-    [ObservableProperty] private string? _accCompilerExecutableFilePath;
-    [ObservableProperty] private string? _bccCompilerExecutableFilePath;
-    [ObservableProperty] private string? _gdccCompilerExecutableFilePath;
-    [ObservableProperty] private string? _sladeExecutableFilePath;
-    [ObservableProperty] private string? _udbExecutableFilePath;
-    [ObservableProperty] private string? _acsVmExecutableFilePath;
+    [ObservableProperty] private AvaloniaDictionary<string, string> _configurations = new();
     
     /// <summary>
     /// Configurable locations of game engines.
@@ -31,12 +30,15 @@ public partial class LocalSettings : ObservableObject
         if (!Design.IsDesignMode) return;
         
         // Add design-time data.
-        AccCompilerExecutableFilePath = "Path/To/ACC.exe";
-        BccCompilerExecutableFilePath = "Path/To/BCC.exe";
-        GdccCompilerExecutableFilePath = "Path/To/GDCC-ACC.exe";
-        SladeExecutableFilePath = "Path/To/Slade.exe";
-        UdbExecutableFilePath = "Path/To/UtimateDoombuilder.exe";
-        AcsVmExecutableFilePath = "Path/To/ACS-VM.exe";
+        Configurations = new()
+        {
+            [CompileTaskStatics.AccCompilerExecutableFilePathKey] = "Path/To/ACC.exe",
+            [CompileTaskStatics.BccCompilerExecutableFilePathKey] = "Path/To/BCC.exe",
+            [CompileTaskStatics.GdccAccCompilerExecutableFilePathKey] = "Path/To/GDCC-ACC.exe",
+            [SavingStatics.SladeExecutableFilePathKey] = "Path/To/Slade.exe",
+            [SavingStatics.UdbExecutableFilePathKey] = "Path/To/UtimateDoombuilder.exe",
+            [AcsVmTaskStatics.AcsVmExecutableFilePathKey] = "Path/To/ACS-VM.exe",
+        };
 
         Engines =
         [
