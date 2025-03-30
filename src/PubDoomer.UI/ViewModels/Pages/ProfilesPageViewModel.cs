@@ -17,15 +17,19 @@ using PubDoomer.Project.Run;
 using PubDoomer.Saving;
 using PubDoomer.Services;
 using PubDoomer.ViewModels.Dialogues;
-using PubDoomer.Engine.Orchestration;
-using PubDoomer.Utils.MergedSettings;
+using PubDoomer.Settings.Merged;
+using System.Runtime;
+using PubDoomer.Utils.TaskInvokation;
+using PubDoomer.Engine.TaskInvokation.Orchestration;
+using PubDoomer.Engine.TaskInvokation.Validation;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 
 namespace PubDoomer.ViewModels.Pages;
 
 public partial class ProfilesPageViewModel : PageViewModel
 {
     private readonly ILogger _logger;
-    private readonly ProjectTaskOrchestrator _projectTaskOrchestrator;
+    private readonly ProjectTaskOrchestrator? _projectTaskOrchestrator;
     private readonly DialogueProvider? _dialogueProvider;
     private readonly WindowNotificationManager? _notificationManager;
     private readonly WindowProvider? _windowProvider;
@@ -49,13 +53,6 @@ public partial class ProfilesPageViewModel : PageViewModel
         SessionSettings = new SessionSettings();
         CurrentProjectProvider = new CurrentProjectProvider();
         Settings = new LocalSettings();
-        
-        // Instantiate the task orchestrator under a basic `Activator.CreateInstance` call.
-        // The tasks used in the designer do not require dependencies.
-        // TODO: Duplicate code in the code editor
-        _projectTaskOrchestrator = new ProjectTaskOrchestrator(
-            NullLogger<ProjectTaskOrchestrator>.Instance,
-            ((type, task, context) => Activator.CreateInstance(type, task, context) as ITaskHandler));
         
         // Immediately set the selected profile so the UI shows the main scenario
         SelectedProfile = CurrentProjectProvider.ProjectContext!.Profiles[0];
@@ -90,58 +87,15 @@ public partial class ProfilesPageViewModel : PageViewModel
     [RelayCommand]
     private async Task ExecuteProfileAsync()
     {
-        // This method runs in the designer because a profile has test tasks.
-        
+        if (AssertInDesignMode()) return;
         Debug.Assert(SelectedRunProfile != null);
         
         _logger.LogDebug("Executing profile {ProfileName}", SelectedRunProfile.Name);
 
-        // Create the context to pass.
-        var context = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
+        var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
+        var context = TaskInvokeContextUtil.BuildContext(settings);
 
-        // TODO: Make use of the status.
-        var stopwatch = Stopwatch.GetTimestamp();
-        SelectedRunProfile.Status = ProfileRunContextStatus.Running;
-
-        // TODO: Merge with the orchestrator.
-        foreach (var runTask in SelectedRunProfile.Tasks)
-        {
-            runTask.Status = ProfileRunTaskStatus.Running;
-
-            var result = await _projectTaskOrchestrator.InvokeTaskAsync(runTask.Task, context);
-            _logger.LogDebug("Task result: {ResultType}, {Result}", result.ResultType, result.ResultMessage);
-
-            runTask.Status = result.ResultType == TaskResultType.Success
-                ? ProfileRunTaskStatus.Success
-                : ProfileRunTaskStatus.Error;
-
-            runTask.ResultMessage = result.ResultMessage;
-            runTask.ResultWarnings = result.Warnings != null ? new ObservableCollection<string>(result.Warnings) : null;
-            runTask.ResultErrors = result.Errors != null ? new ObservableCollection<string>(result.Errors) : null;
-            runTask.Exception = result.Exception;
-            
-            // Check error behaviour.
-            // If there was an error and the behaviour is to quit, then end the task invocation early.
-            if (runTask.Status == ProfileRunTaskStatus.Error)
-            {
-                if (runTask.Behaviour == ProfileTaskErrorBehaviour.StopOnError)
-                {
-                    _logger.LogWarning(runTask.Exception, "Task failure.");
-                    SelectedRunProfile.Status = ProfileRunContextStatus.Error;
-                    break;
-                }
-                else
-                {
-                    _logger.LogWarning(runTask.Exception, "Task failed but is configured to not stop on errors. Execution will continue.");
-                }
-            }
-        }
-
-        SelectedRunProfile.ElapsedTimeMs = (int)Stopwatch.GetElapsedTime(stopwatch).TotalMilliseconds;
-        if (SelectedRunProfile.Status != ProfileRunContextStatus.Error)
-        {
-            SelectedRunProfile.Status = ProfileRunContextStatus.Success;
-        }
+        await _projectTaskOrchestrator.InvokeProfileAsync(SelectedRunProfile, context);
         
         _logger.LogDebug("Finished execution.");
     }
@@ -152,14 +106,13 @@ public partial class ProfilesPageViewModel : PageViewModel
     {
         foreach (var validation in validations)
         {
-            var results = validation.Results.Where(y => y.Type == type);
-            var resultCollection = new Collection<ValidateResult>(results.ToArray());
-            if (resultCollection.Count == 0)
+            var results = validation.Results.Where(y => y.Type == type).ToArray();
+            if (results.Length == 0)
             {
                 continue;
             }
             
-            yield return new TaskValidationCollection(validation.Task, resultCollection);
+            yield return new TaskValidationCollection(validation.Task, results);
         }
     }
 
@@ -225,24 +178,24 @@ public partial class ProfilesPageViewModel : PageViewModel
 
     partial void OnSelectedProfileChanged(ProfileContext? value)
     {
+        if (AssertInDesignMode()) return;
+
         if (value == null)
         {
             return;
         }
 
         SelectedRunProfile = value.ToProfileRunContext();
-        
-        // Validate the profile before running it.
-        // If this results in validation errors, don't continue.
-        // The UI will display the errors.
-        SelectedRunProfile.ValidateContext();
-        Debug.Assert(SelectedRunProfile?.Validations != null);
 
-        Warnings = new ObservableCollection<TaskValidationCollection>(GetValidationsByType(SelectedRunProfile.Validations, ValidateResultType.Warning));
-        Errors = new ObservableCollection<TaskValidationCollection>(GetValidationsByType(SelectedRunProfile.Validations, ValidateResultType.Error));
+        // Validate the profile before running it.
+        // The UI will display the errors.
+        var validations = _projectTaskOrchestrator.ValidateProfile(SelectedRunProfile);
+
+        Warnings = new ObservableCollection<TaskValidationCollection>(GetValidationsByType(validations, ValidateResultType.Warning));
+        Errors = new ObservableCollection<TaskValidationCollection>(GetValidationsByType(validations, ValidateResultType.Error));
     }
 
-    [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_dialogueProvider))]
+    [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_dialogueProvider), nameof(_projectTaskOrchestrator))]
     private bool AssertInDesignMode()
     {
         return Design.IsDesignMode;

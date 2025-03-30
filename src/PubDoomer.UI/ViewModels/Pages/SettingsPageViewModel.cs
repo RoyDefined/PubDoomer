@@ -18,26 +18,32 @@ using PubDoomer.Project.Engine;
 using PubDoomer.Project.IWad;
 using PubDoomer.Saving;
 using PubDoomer.Services;
+using PubDoomer.Settings.Local;
+using PubDoomer.Settings.Project;
+using PubDoomer.Tasks.AcsVM.Utils;
+using PubDoomer.Tasks.Compile.Utils;
+using PubDoomer.Utils;
 using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
 
 // TODO: Save dark mode setting
-// TODO: Use startup behaviour, also save startup behaviour.
+// TODO: Use startup behaviour setting, also save startup behaviour.
 public partial class SettingsPageViewModel : PageViewModel
 {
     private static readonly Dictionary<string, string> _typeToMessage = new()
     {
-        ["AccCompiler"] = "Select ACC compiler executable",
-        ["BccCompiler"] = "Select BCC compiler executable",
-        ["GdccCompiler"] = "Select GDCC compiler executable",
-        ["Udb"] = "Select Ultimate Doombuilder executable",
-        ["Slade"] = "Select Slade executable",
-        ["AcsVm"] = "Select ACS VM executable",
+        [CompileTaskStatics.AccCompilerExecutableFilePathKey] = "Select ACC compiler executable",
+        [CompileTaskStatics.BccCompilerExecutableFilePathKey] = "Select BCC compiler executable",
+        [CompileTaskStatics.GdccAccCompilerExecutableFilePathKey] = "Select GDCC compiler executable",
+        [SavingStatics.UdbExecutableFilePathKey] = "Select Ultimate Doombuilder executable",
+        [SavingStatics.SladeExecutableFilePathKey] = "Select Slade executable",
+        [AcsVmTaskStatics.AcsVmExecutableFilePathKey] = "Select ACS VM executable",
     };
 
     private readonly ILogger _logger;
-    private readonly SavingService? _savingService;
+    private readonly ProjectSavingService? _savingService;
+    private readonly LocalSettingsService? _localSettingsService;
     private readonly WindowProvider? _windowProvider;
     private readonly WindowNotificationManager? _notificationManager;
     private readonly DialogueProvider? _dialogueProvider;
@@ -55,7 +61,8 @@ public partial class SettingsPageViewModel : PageViewModel
         WindowProvider windowProvider,
         WindowNotificationManager notificationManager,
         DialogueProvider dialogueProvider,
-        SavingService savingService,
+        ProjectSavingService savingService,
+        LocalSettingsService localSettingsService,
         LocalSettings settings)
     {
         _logger = logger;
@@ -63,6 +70,7 @@ public partial class SettingsPageViewModel : PageViewModel
         _notificationManager = notificationManager;
         _dialogueProvider = dialogueProvider;
         _savingService = savingService;
+        _localSettingsService = localSettingsService;
 
         Settings = settings;
 
@@ -152,44 +160,21 @@ public partial class SettingsPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private async Task PickFileAsync(string type)
+    private async Task PickFileAsync(string configurationKey)
     {
         if (AssertInDesignMode()) return;
 
         var window = _windowProvider.ProvideWindow();
         var filePicker = await window.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = _typeToMessage[type],
+            Title = _typeToMessage[configurationKey],
             AllowMultiple = false
         });
 
         if (filePicker.Count == 0) return;
 
-        var filePath = filePicker.First().Path.LocalPath;
-        switch (type)
-        {
-            case "AccCompiler":
-                Settings.AccCompilerExecutableFilePath = filePath;
-                break;
-            case "BccCompiler":
-                Settings.BccCompilerExecutableFilePath = filePath;
-                break;
-            case "GdccCompiler":
-                Settings.GdccCompilerExecutableFilePath = filePath;
-                break;
-            case "Udb":
-                Settings.UdbExecutableFilePath = filePath;
-                break;
-            case "Slade":
-                Settings.SladeExecutableFilePath = filePath;
-                break;
-            case "AcsVm":
-                Settings.AcsVmExecutableFilePath = filePath;
-                break;
-
-            default:
-                throw new UnreachableException();
-        }
+        var filePath = filePicker.First().Path.AbsolutePath;
+        Settings.Configurations[configurationKey] = filePath;
     }
 
     [RelayCommand]
@@ -197,12 +182,12 @@ public partial class SettingsPageViewModel : PageViewModel
     {
         if (AssertInDesignMode()) return;
 
-        await _savingService.SaveLocalSettingsAsync();
+        await _localSettingsService.SaveLocalSettingsAsync();
         _notificationManager.Show(new Notification("Settings saved", "The settings have been updated succesfully.",
             NotificationType.Success));
     }
 
-    [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_savingService), nameof(_notificationManager), nameof(_dialogueProvider))]
+    [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_savingService), nameof(_localSettingsService), nameof(_notificationManager), nameof(_dialogueProvider))]
     private bool AssertInDesignMode()
     {
         return Design.IsDesignMode;

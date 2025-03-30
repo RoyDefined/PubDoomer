@@ -17,6 +17,7 @@ public sealed class DialogueProvider(
         [typeof(CreateOrEditProfileWindowViewModel)] = typeof(CreateOrEditProfileWindow),
         [typeof(CreateOrEditProjectWindowViewModel)] = typeof(CreateOrEditProjectWindow),
         [typeof(AddMapsWindowViewModel)] = typeof(AddMapsWindow),
+        [typeof(EditMapWindowViewModel)] = typeof(EditMapWindow),
         [typeof(ConfigureEditMapViewModel)] = typeof(ConfigureEditMapWindow),
         [typeof(ConfigureRunMapViewModel)] = typeof(ConfigureRunMapWindow)
     };

@@ -3,9 +3,12 @@ using System.ComponentModel;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Project;
 using PubDoomer.Project.Profile;
 using PubDoomer.Project.Tasks;
+using PubDoomer.Tasks.Compile.Acc;
+using PubDoomer.Tasks.Compile.Bcc;
 
 namespace PubDoomer.ViewModels.Dialogues;
 
@@ -41,9 +44,9 @@ public partial class CreateOrEditProfileWindowViewModel : ViewModelBase
 
         SubscribeProfileChanges();
 
-        var compileTask1 = new AccCompileTask("Compile Foo project task", "Path/To/Foo.acs", "Path/To/Foo.o");
-        var compileTask2 = new AccCompileTask("Compile Bar project task", "Path/To/Bar.acs", "Path/To/Bar.o");
-        var compileTask3 = new BccCompileTask("Compile Baz BCC project task", "Path/To/Baz.bcs", "Path/To/Baz.o");
+        var compileTask1 = new ObservableAccCompileTask("Compile Foo project task", "Path/To/Foo.acs", "Path/To/Foo.o");
+        var compileTask2 = new ObservableAccCompileTask("Compile Bar project task", "Path/To/Bar.acs", "Path/To/Bar.o");
+        var compileTask3 = new ObservableBccCompileTask("Compile Baz BCC project task", "Path/To/Baz.bcs", "Path/To/Baz.o");
 
         var task1 = new ProfileTask
         {

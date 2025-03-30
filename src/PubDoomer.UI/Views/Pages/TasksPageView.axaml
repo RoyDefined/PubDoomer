@@ -2,7 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:tasks="clr-namespace:PubDoomer.Project.Tasks"
+             xmlns:acc="clr-namespace:PubDoomer.Tasks.Compile.Acc;assembly=PubDoomer.Tasks.Compile"
+             xmlns:bcc="clr-namespace:PubDoomer.Tasks.Compile.Bcc;assembly=PubDoomer.Tasks.Compile"
+             xmlns:gdccAcc="clr-namespace:PubDoomer.Tasks.Compile.GdccAcc;assembly=PubDoomer.Tasks.Compile"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="PubDoomer.Views.Pages.TasksPageView"
              x:DataType="TasksPageViewModel">
@@ -69,7 +71,7 @@
                                             <ContentControl.DataTemplates>
                                                 
                                                 <!-- DataTemplate for CompileTask -->
-                                                <DataTemplate DataType="tasks:AccCompileTask">
+                                                <DataTemplate DataType="acc:ObservableAccCompileTask">
                                                     <StackPanel>
                                                         <TextBlock Text="{Binding InputFilePath, StringFormat='Input: {0}'}"
                                                                    FontSize="12" Foreground="Gray" />
@@ -79,7 +81,7 @@
                                                 </DataTemplate>
                                                 
                                                 <!-- DataTemplate for CompileTask -->
-                                                <DataTemplate DataType="tasks:BccCompileTask">
+                                                <DataTemplate DataType="bcc:ObservableBccCompileTask">
                                                     <StackPanel>
                                                         <TextBlock Text="{Binding InputFilePath, StringFormat='Input: {0}'}"
                                                                    FontSize="12" Foreground="Gray" />
@@ -89,7 +91,7 @@
                                                 </DataTemplate>
                                                 
                                                 <!-- DataTemplate for CompileTask -->
-                                                <DataTemplate DataType="tasks:GdccAccCompileTask">
+                                                <DataTemplate DataType="gdccAcc:ObservableGdccAccCompileTask">
                                                     <StackPanel>
                                                         <TextBlock Text="{Binding InputFilePath, StringFormat='Input: {0}'}"
                                                                    FontSize="12" Foreground="Gray" />

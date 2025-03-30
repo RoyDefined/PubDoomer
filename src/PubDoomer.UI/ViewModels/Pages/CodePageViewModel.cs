@@ -1,33 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Notifications;
-using Avalonia.Platform.Storage;
-using Avalonia.Styling;
+using Avalonia.Utilities;
 using AvaloniaEdit.Document;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using PubDoomer.Engine.Orchestration;
-using PubDoomer.Engine.Static;
-using PubDoomer.Engine.Tasks;
+using PubDoomer.Engine.Abstract;
+using PubDoomer.Engine.TaskInvokation.Orchestration;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Project;
-using PubDoomer.Project.Profile;
 using PubDoomer.Project.Run;
 using PubDoomer.Project.Tasks;
 using PubDoomer.Saving;
 using PubDoomer.Services;
-using PubDoomer.Utils.MergedSettings;
+using PubDoomer.Settings.Merged;
+using PubDoomer.Tasks.AcsVM;
+using PubDoomer.Tasks.Compile;
+using PubDoomer.Tasks.Compile.Acc;
+using PubDoomer.Tasks.Compile.Bcc;
+using PubDoomer.Tasks.Compile.GdccAcc;
+using PubDoomer.Utils.TaskInvokation;
 using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
@@ -35,13 +34,78 @@ namespace PubDoomer.ViewModels.Pages;
 // TODO: Proper syntax highlighting for the code editor. Currently c# but even better would be proper ACS support.
 public partial class CodePageViewModel : PageViewModel
 {
+    /* Code templates to display for design time and the different compilers */
+    private const string DesignTimeCode = BccCode;
+
+    private const string AccCode = """
+        #include "zcommon.acs"
+    
+        script 1 open
+        {
+            // Code goes here.
+            LogMessage("Hello, PubDoomer!");
+        }
+    
+        function void LogMessage(str message)
+        {
+            Print(s:message);
+        }
+        """;
+
+    private const string BccCode = """
+        #import "zcommon.bcs"
+        
+        strict namespace
+        {
+            script "PBOpen" open
+            {
+                // Code goes here.
+                Utils::LogMessage("Hello, PubDoomer!");
+            }
+        }
+        
+        strict namespace Utils
+        {
+            private void LogMessage(str message)
+            {
+                Print(s:message);
+            }
+        }
+        """;
+    
+    
+    private const string GdccAccCode = """
+        #include "zcommon.acs"
+        
+        // Function comes first, or GDCC-ACC will warn us of forward references.
+        function void LogMessage(str message)
+        {
+            Print("Hello, %s:!", message);
+        }
+    
+        script "PBOpen" open
+        {
+            LogMessage("PubDoomer");
+        }
+        """;
+
+    /// <summary>
+    /// Represents mappings of a compiler type to a code template.
+    /// </summary>
+    private static readonly Dictionary<CompilerType, string> CompilerToTemplateMap = new()
+    {
+        [CompilerType.Acc] = AccCode,
+        [CompilerType.Bcc] = BccCode,
+        [CompilerType.GdccAcc] = GdccAccCode,
+    };
+    
     // Paths used for the editor code.
     private readonly string _temporaryFileInputPath = Path.Combine(EngineStatics.TemporaryDirectory, "Editor", "code-editor-file.temp");
     private readonly string _temporaryFileOutputPath = Path.Combine(EngineStatics.TemporaryDirectory, "Editor", "output.o");
     
     // Dependencies
     private readonly ILogger _logger;
-    private readonly ProjectTaskOrchestrator _projectTaskOrchestrator;
+    private readonly ProjectTaskOrchestrator? _projectTaskOrchestrator;
     private readonly DialogueProvider? _dialogueProvider;
     private readonly LocalSettings? _settings;
     
@@ -71,6 +135,12 @@ public partial class CodePageViewModel : PageViewModel
     [ObservableProperty] private ObservableCollection<ProfileRunTask> _invokedTasks = [];
 
     /// <summary>
+    /// If <c>true</c> the code editor was changed since its initial setup.
+    /// <br /> This is used to determine if the code editor should have its template replaced without modifying user code.
+    /// </summary>
+    private bool _codeEditorIsDirty;
+
+    /// <summary>
     /// Design mode view model constructor
     /// </summary>
     public CodePageViewModel()
@@ -81,30 +151,11 @@ public partial class CodePageViewModel : PageViewModel
         _logger = new NullLogger<CodePageViewModel>();
         CurrentProjectProvider = new CurrentProjectProvider();
         
-        // TODO: Duplicate code in the profiles page.
-        _projectTaskOrchestrator = new ProjectTaskOrchestrator(
-            NullLogger<ProjectTaskOrchestrator>.Instance,
-            ((type, task, context) => Activator.CreateInstance(type, task, context) as ITaskHandler));
-        
-        // Some editor code to get started.
-        EditorDocument.Text = """
-            strict namespace
-            {
-                script "PBOpen" open
-                {
-                    LogMessage("Hello, PubDoomer!");
-                }
-            
-                private void LogMessage(str message)
-                {
-                    Print(s:message);
-                }
-            }
-            """;
-        
+        EditorDocument.Text = DesignTimeCode;
+        WeakSubscribeToDocumentChanges(EditorDocument);
         PopulateAvailableCompilerTasks();
     }
-    
+
     /// <summary>
     /// Non-design constructor for this view model.
     /// </summary>
@@ -122,11 +173,8 @@ public partial class CodePageViewModel : PageViewModel
         _dialogueProvider = dialogueProvider;
         _settings = settings;
         
-        // Some editor code to get started.
-        EditorDocument.Text = """
-            // Code goes here.
-            """;
-        
+        EditorDocument.Text = AccCode;
+        WeakSubscribeToDocumentChanges(EditorDocument);
         PopulateAvailableCompilerTasks();
     }
     
@@ -188,10 +236,9 @@ public partial class CodePageViewModel : PageViewModel
         compileTask.OutputFilePath = _temporaryFileOutputPath;
         
         // Set up the task
-        var engineTask = compileTask.ToEngineTaskBase();
         var runTask = new ProfileRunTask(
             ProfileTaskErrorBehaviour.StopOnError,
-            engineTask);
+            compileTask);
 
         return runTask;
     }
@@ -212,47 +259,34 @@ public partial class CodePageViewModel : PageViewModel
     /// </summary>
     private async Task RunTasksAsync(params IList<ProfileRunTask> runTasks)
     {
+        if (AssertInDesignMode()) return;
+        
         // Update the invoked tasks.
         InvokedTasks.Clear();
         foreach (var runTask in runTasks)
         {
             InvokedTasks.Add(runTask);
         }
-        
-        var context = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, _settings);
 
-        // TODO: Merge with the orchestrator.
-        foreach (var runTask in runTasks)
-        {
-            runTask.Status = ProfileRunTaskStatus.Running;
+        // Set up profile and context
+        var profile = new ProfileRunContext("Code editor run profile", runTasks);
+        var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, _settings);
+        var context = TaskInvokeContextUtil.BuildContext(settings);
 
-            var result = await _projectTaskOrchestrator.InvokeTaskAsync(runTask.Task, context);
-            _logger.LogDebug("Task result: {ResultType}, {Result}", result.ResultType, result.ResultMessage);
+        // TODO: Make use of the profile.
+        await _projectTaskOrchestrator.InvokeProfileAsync(profile, context);
+    }
+    
+    private void WeakSubscribeToDocumentChanges(TextDocument editorDocument)
+    {
+        WeakEventHandlerManager.Subscribe<TextDocument, EventArgs, CodePageViewModel>(
+            editorDocument, nameof(TextDocument.TextChanged), OnTextDocumentTextChanged);
+    }
 
-            runTask.Status = result.ResultType == TaskResultType.Success
-                ? ProfileRunTaskStatus.Success
-                : ProfileRunTaskStatus.Error;
-
-            runTask.ResultMessage = result.ResultMessage;
-            runTask.ResultWarnings = result.Warnings != null ? new ObservableCollection<string>(result.Warnings) : null;
-            runTask.ResultErrors = result.Errors != null ? new ObservableCollection<string>(result.Errors) : null;
-            runTask.Exception = result.Exception;
-            
-            // Check error behaviour.
-            // If there was an error and the behaviour is to quit, then end the task invokation early.
-            if (runTask.Status == ProfileRunTaskStatus.Error)
-            {
-                if (runTask.Behaviour == ProfileTaskErrorBehaviour.StopOnError)
-                {
-                    _logger.LogWarning(runTask.Exception, "Task failure.");
-                    break;
-                }
-                else
-                {
-                    _logger.LogWarning(runTask.Exception, "Task failed but is configured to not stop on errors. Execution will continue.");
-                }
-            }
-        }
+    private void OnTextDocumentTextChanged(object? _, EventArgs __)
+    {
+        // Unconditionally set as dirty.
+        _codeEditorIsDirty = true;
     }
 
     private void PopulateAvailableCompilerTasks()
@@ -266,12 +300,24 @@ public partial class CodePageViewModel : PageViewModel
         };
 
         const string taskName = "Compiler";
-        AvailableCompilerTasks.Add(new AccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
-        AvailableCompilerTasks.Add(new BccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
-        AvailableCompilerTasks.Add(new GdccAccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
+        AvailableCompilerTasks.Add(new ObservableAccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
+        AvailableCompilerTasks.Add(new ObservableBccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
+        AvailableCompilerTasks.Add(new ObservableGdccAccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
     }
 
-    [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_settings))]
+    partial void OnSelectedCompilationTaskChanged(CompileTaskBase? value)
+    {
+        if (value == null) return;
+        
+        // Replace the code with a new template unless dirty.
+        if (!_codeEditorIsDirty)
+        {
+            EditorDocument.Text = CompilerToTemplateMap[value.Type];
+            _codeEditorIsDirty = false;
+        }
+    }
+
+    [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_settings), nameof(_projectTaskOrchestrator))]
     private bool AssertInDesignMode()
     {
         return Design.IsDesignMode;

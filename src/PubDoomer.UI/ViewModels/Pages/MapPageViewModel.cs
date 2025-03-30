@@ -19,8 +19,8 @@ using PubDoomer.Project.IWad;
 using PubDoomer.Project.Maps;
 using PubDoomer.Saving;
 using PubDoomer.Services;
+using PubDoomer.Settings.Merged;
 using PubDoomer.Utils;
-using PubDoomer.Utils.MergedSettings;
 using PubDoomer.ViewModels.Dialogues;
 using PubDoomer.Views.Dialogues;
 
@@ -95,7 +95,7 @@ public partial class MapPageViewModel : PageViewModel
     }
     
     [RelayCommand]
-    private async Task RunMapAsync(MapContext map)
+    private async Task ExecuteRunMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
@@ -106,7 +106,7 @@ public partial class MapPageViewModel : PageViewModel
         // If not, we open the dialogue to configure it and end this method.
         if (SelectedEngineRunConfiguration == null || SelectedIWad == null)
         {
-            await ConfigureRunMapAsync(map);
+            await ConfigureExecuteRunMapAsync(map);
             return;
         }
         
@@ -114,7 +114,7 @@ public partial class MapPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private async Task ConfigureRunMapAsync(MapContext map)
+    private async Task ConfigureExecuteRunMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
@@ -156,7 +156,7 @@ public partial class MapPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private async Task EditMapAsync(MapContext map)
+    private async Task ExecuteEditMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
@@ -175,7 +175,7 @@ public partial class MapPageViewModel : PageViewModel
         // If not, we open the dialogue to configure it and end this method.
         if (SelectedIWad == null || SelectedConfiguration == null)
         {
-            await ConfigureEditMapAsync(map);
+            await ConfigureExecuteEditMapAsync(map);
             return;
         }
         
@@ -183,7 +183,7 @@ public partial class MapPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private async Task ConfigureEditMapAsync(MapContext map)
+    private async Task ConfigureExecuteEditMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
@@ -241,6 +241,49 @@ public partial class MapPageViewModel : PageViewModel
             await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Ultimate DoomBuilder",
                 $"An error occurred while opening Ultimate DoomBuilder. Please check your configuration. Error: {ex.Message}");
         }
+    }
+    
+    [RelayCommand]
+    private async Task EditMapAsync(MapContext context)
+    {
+        if (AssertInDesignMode()) return;
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+
+        var vm = new EditMapWindowViewModel(context.DeepClone());
+        var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
+        if (!result) return;
+
+        var index = CurrentProjectProvider.ProjectContext.Maps.IndexOf(context);
+        CurrentProjectProvider.ProjectContext.Maps[index] = vm.MapContext;
+        _notificationManager?.Show(new Notification("Map edited", "The map has been edited successfully.",
+            NotificationType.Success));
+    }
+    
+    [RelayCommand]
+    private async Task DeleteMapAsync(MapContext context)
+    {
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        
+        // In design mode we delete without a prompt.
+        if (AssertInDesignMode())
+        {
+            CurrentProjectProvider.ProjectContext.Maps.Remove(context);
+            return;
+        }
+
+        var result = await _dialogueProvider.PromptAsync(
+            AlertType.Warning,
+            "Delete map",
+            "Are you sure you want to delete this map?",
+            "The map will be deleted and you will have to recreate it.",
+            new InformationalWindowButton(AlertType.None, "Cancel"),
+            new InformationalWindowButton(AlertType.Error, "Delete"));
+
+        if (!result) return;
+
+        CurrentProjectProvider.ProjectContext.Maps.Remove(context);
+        _notificationManager?.Show(new Notification("Map deleted", "The map has been deleted.",
+            NotificationType.Success));
     }
 
     [MemberNotNullWhen(false, nameof(_dialogueProvider), nameof(_windowProvider), nameof(_notificationManager), nameof(_mergedSettings))]

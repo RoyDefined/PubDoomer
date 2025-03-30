@@ -12,6 +12,10 @@ using PubDoomer.Project.Maps;
 using PubDoomer.Project.Profile;
 using PubDoomer.Project.Tasks;
 using PubDoomer.UI.Editor.Tasks;
+using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using PubDoomer.Tasks.AcsVM.Utils;
+using PubDoomer.Tasks.Compile.Utils;
+using PubDoomer.Utils;
 
 namespace PubDoomer.Project;
 
@@ -27,9 +31,9 @@ public partial class CurrentProjectProvider : ObservableObject
         if (!Design.IsDesignMode) return;
         
         // Add a dummy project in design mode.
-        var successTask = new SuccesfulEditorTask("Successful task :)");
-        var warningTask = new WarningEditorTask("Warning task :l");
-        var errorTask = new ErrorEditorTask("Error task :(");
+        var successTask = new ObservableSuccesfulEditorTask("Successful task :)");
+        var warningTask = new ObservableWarningEditorTask("Warning task :l");
+        var errorTask = new ObservableErrorEditorTask("Error task :(");
 
         var successProfileTask = new ProfileTask
         {
@@ -52,12 +56,15 @@ public partial class CurrentProjectProvider : ObservableObject
         ProjectContext = new ProjectContext
         {
             Name = "Project Foo",
-            AccCompilerExecutableFilePath = "Path/To/ACC.exe",
-            BccCompilerExecutableFilePath = "Path/To/BCC.exe",
-            GdccCompilerExecutableFilePath = "Path/To/GDCC-ACC.exe",
-            SladeExecutableFilePath = "Path/To/Slade.exe",
-            UdbExecutableFilePath = "Path/To/UtimateDoombuilder.exe",
-            AcsVmExecutableFilePath = "Path/To/ACS-VM.exe",
+            Configurations =
+            {
+                [CompileTaskStatics.AccCompilerExecutableFilePathKey] = "Path/To/ACC.exe",
+                [CompileTaskStatics.BccCompilerExecutableFilePathKey] = "Path/To/BCC.exe",
+                [CompileTaskStatics.GdccAccCompilerExecutableFilePathKey] = "Path/To/GDCC-ACC.exe",
+                [SavingStatics.SladeExecutableFilePathKey] = "Path/To/Slade.exe",
+                [SavingStatics.UdbExecutableFilePathKey] = "Path/To/UtimateDoombuilder.exe",
+                [AcsVmTaskStatics.AcsVmExecutableFilePathKey] = "Path/To/ACS-VM.exe",
+            },
             Engines = 
             [
                 new EngineContext()

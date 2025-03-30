@@ -22,12 +22,19 @@ public partial class ConfigureRunMapViewModel : PageViewModel
     /// <summary>
     /// Maps the engine types to a configuration type.
     /// </summary>
-    private static Dictionary<EngineType, Type> _engineTypeToConfigurationMap = new()
+    private static readonly Dictionary<EngineType, Type> EngineTypeToConfigurationMap = new()
     {
         [EngineType.Zdoom] = typeof(ZdoomEngineRunConfiguration),
         [EngineType.GzDoom] = typeof(GzDoomEngineRunConfiguration),
         [EngineType.Zandronum] = typeof(ZandronumEngineRunConfiguration),
     };
+    
+    /// <summary>
+    /// Caches engine configurations for specific engine contexts, to be reused should the user return to a previously
+    /// created instance. Also maintains the state.
+    /// <br /> This dictionary is static so the states are also persisted, should this view model be removed.
+    /// </summary>
+    private static readonly Dictionary<EngineContext, EngineRunConfiguration> EngineRunContextCache = new();
     
     // Dependencies
     private readonly DialogueProvider? _dialogueProvider;
@@ -120,19 +127,24 @@ public partial class ConfigureRunMapViewModel : PageViewModel
             return;
         }
         
-        // TODO: Get cached instance.
-        
-        // Create the configuration instance.
-        if (!_engineTypeToConfigurationMap.TryGetValue(value.Type, out var configuration))
+        // Get cached instance if this context was previously selected.
+        if (!EngineRunContextCache.TryGetValue(value, out var engineRunConfiguration))
         {
-            Debug.Fail($"Could not find configuration for '{value.Type}'.");
-            return;
-        }
+            // Create the configuration instance.
+            if (!EngineTypeToConfigurationMap.TryGetValue(value.Type, out var configurationType))
+            {
+                Debug.Fail($"Could not find configuration for '{value.Type}'.");
+                return;
+            }
 
-        if (Activator.CreateInstance(configuration) is not EngineRunConfiguration engineRunConfiguration)
-        {
-            Debug.Fail($"Could not create configuration for '{value.Type}'.");
-            return;
+            if (Activator.CreateInstance(configurationType) is not EngineRunConfiguration createdEngineInstance)
+            {
+                Debug.Fail($"Could not create configuration for '{value.Type}'.");
+                return;
+            }
+
+            EngineRunContextCache.Add(value, createdEngineInstance);
+            engineRunConfiguration = createdEngineInstance;
         }
 
         engineRunConfiguration.Context = value;

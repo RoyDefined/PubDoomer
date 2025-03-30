@@ -13,6 +13,9 @@ using CommunityToolkit.Mvvm.Input;
 using PubDoomer.Objects;
 using PubDoomer.Project.Tasks;
 using PubDoomer.Services;
+using PubDoomer.Tasks.Compile.Acc;
+using PubDoomer.Tasks.Compile.Bcc;
+using PubDoomer.Tasks.Compile.GdccAcc;
 
 namespace PubDoomer.ViewModels.Dialogues;
 
@@ -34,9 +37,9 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
     // The available task types.
     [ObservableProperty] private ObservableCollection<ProjectTaskBase> _availableTaskTypes =
     [
-        new AccCompileTask(),
-        new BccCompileTask(),
-        new GdccAccCompileTask()
+        new ObservableAccCompileTask(),
+        new ObservableBccCompileTask(),
+        new ObservableGdccAccCompileTask()
     ];
 
     [ObservableProperty] private string _createOrEditButtonText;
@@ -89,9 +92,9 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
 
     public bool FormIsValid => CurrentTask switch
     {
-        AccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
-        BccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
-        GdccAccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
+        ObservableAccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
+        ObservableBccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
+        ObservableGdccAccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
         _ => false
     };
 

@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Project;
 using PubDoomer.Project.IWad;
 using PubDoomer.Saving;
+using PubDoomer.Utils;
 using PubDoomer.ViewModels.Pages;
 
 namespace PubDoomer.ViewModels.Dialogues;
@@ -47,7 +48,7 @@ public partial class ConfigureEditMapViewModel : PageViewModel
         if (!Design.IsDesignMode) throw new InvalidOperationException();
 
         // Design-time data.
-        _udbExecutableFilePath = new LocalSettings().UdbExecutableFilePath!;
+        _udbExecutableFilePath = new LocalSettings().Configurations[SavingStatics.UdbExecutableFilePathKey]!;
         SelectableIWads = new CurrentProjectProvider().ProjectContext!.IWads;
         SelectableConfigurations =
         [

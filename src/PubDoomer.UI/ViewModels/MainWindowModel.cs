@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -13,11 +14,15 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using PubDoomer.Context;
+using PubDoomer.Engine.Saving;
 using PubDoomer.Factory;
 using PubDoomer.Logging;
 using PubDoomer.Project;
 using PubDoomer.Saving;
 using PubDoomer.Services;
+using PubDoomer.Settings.Local;
+using PubDoomer.Settings.Project;
+using PubDoomer.Settings.Recent;
 using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels;
@@ -25,8 +30,13 @@ namespace PubDoomer.ViewModels;
 // This model is specific for the desktop window so it violates the pattern a bit.
 public partial class MainWindowModel : MainViewModel
 {
+    private const string ProjectBinaryFormatExtension = "pdbproj";
+    private const string ProjectTextFormatExtension = "pdtproj";
+
     private readonly DialogueProvider? _dialogueProvider;
-    private readonly SavingService? _savingService;
+    private readonly ProjectSavingService? _savingService;
+    private readonly LocalSettingsService? _localSettingsService;
+    private readonly RecentProjectsService? _recentProjectsService;
     private readonly WindowProvider? _windowProvider;
 
     [ObservableProperty] private RecentProjectCollection _recentProjects;
@@ -51,19 +61,20 @@ public partial class MainWindowModel : MainViewModel
         PageViewModelFactory pageViewModelFactory,
         WindowNotificationManager windowNotificationManager,
         RecentProjectCollection recentProjects,
-        SavingService savingService,
+        ProjectSavingService savingService,
+        LocalSettingsService localSettingsService,
+        RecentProjectsService recentProjectsService,
         WindowProvider windowProvider,
         DialogueProvider dialogueProvider)
         : base(logger, logEmitter, environment, sessionSettings, currentProjectProvider, pageViewModelFactory, windowNotificationManager)
     {
         _savingService = savingService;
+        _localSettingsService = localSettingsService;
+        _recentProjectsService = recentProjectsService;
+
         _windowProvider = windowProvider;
         _dialogueProvider = dialogueProvider;
         _recentProjects = recentProjects;
-        
-        // Ensure that `ShowJsonFeatures` updates in the event the session settings get updated in any way.
-        // It relies on the edit mode boolean.
-        SessionSettings.PropertyChanged += (_, _) => OnPropertyChanged(nameof(ShowJsonFeatures));
 
         // Load local data in the background.
         _ = Task.Run(LoadLocalDataAsync);
@@ -71,8 +82,6 @@ public partial class MainWindowModel : MainViewModel
 
     public bool WindowEnlarged => _windowProvider?.TryProvideWindow(out var window) == true
                                   && window.WindowState == WindowState.Maximized;
-
-    public bool ShowJsonFeatures => SessionSettings.EnableEditing && Environment?.IsDevelopment == true;
 
     // Window chrome commands
     [RelayCommand]
@@ -114,62 +123,91 @@ public partial class MainWindowModel : MainViewModel
         if (!result) return;
 
         CurrentProjectProvider.ProjectContext = vm.Project;
-        WindowNotificationManager?.Show(new Notification("Project created", "The project has been created succesfully.",
+        WindowNotificationManager?.Show(new Notification("Project created", "The project has been created successfully.",
             NotificationType.Success));
     }
 
     [RelayCommand]
-    private async Task SaveProjectAsync()
+    private async Task SaveBinaryProjectAsync()
     {
-        await SaveProjectAsync(true);
-    }
-    
-    [RelayCommand]
-    private async Task SaveProjectJsonAsync()
-    {
-        await SaveProjectAsync(false);
+        await SaveProjectAsync(ProjectReadingWritingType.Binary);
     }
 
-    private async Task SaveProjectAsync(bool encrypt)
+    [RelayCommand]
+    private async Task SaveTextProjectAsync()
+    {
+        await SaveProjectAsync(ProjectReadingWritingType.Text);
+    }
+
+    [RelayCommand]
+    private async Task SaveBinaryProjectAsAsync()
+    {
+        await SaveProjectAsAsync(ProjectReadingWritingType.Binary);
+    }
+
+    [RelayCommand]
+    private async Task SaveTextProjectAsAsync()
+    {
+        await SaveProjectAsAsync(ProjectReadingWritingType.Text);
+    }
+
+    private async Task SaveProjectAsync(ProjectReadingWritingType type)
     {
         if (AssertInDesignMode()) return;
-        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
 
-        await _savingService.SaveProjectAsync(encrypt);
+        var projectContext = CurrentProjectProvider.ProjectContext;
+        if (projectContext == null)
+        {
+            return;
+        }
+
+        // 'Save as' in case of no file path.
+        if (projectContext.FilePath == null)
+        {
+            await SaveProjectAsAsync(type);
+            return;
+        }
+
+        // TODO: Allow different formats.
+        using var fileStream = File.OpenWrite(projectContext.FilePath);
+        _savingService.SaveProject(projectContext, projectContext.FilePath, fileStream, type);
         WindowNotificationManager?.Show(new Notification("Project saved", null, NotificationType.Success));
     }
 
-    [RelayCommand]
-    private async Task SaveProjectAsAsync()
-    {
-        await SaveProjectAsAsync(true);
-    }
-    
-    [RelayCommand]
-    private async Task SaveProjectJsonAsAsync()
-    {
-        await SaveProjectAsAsync(false);
-    }
-    
-    private async Task SaveProjectAsAsync(bool encrypt)
+    private async Task SaveProjectAsAsync(ProjectReadingWritingType type)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+
+        var extension = type switch
+        {
+            ProjectReadingWritingType.Binary => ProjectBinaryFormatExtension,
+            ProjectReadingWritingType.Text => ProjectTextFormatExtension,
+            _ => throw new ArgumentException($"Project type not found: {type}"),
+        };
 
         var window = _windowProvider.ProvideWindow();
         var storageFile = await window.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            DefaultExtension = encrypt ? "dat" : "json",
+            DefaultExtension = extension,
             Title = "Save Project"
         });
 
         if (storageFile == null) return;
 
-        // Set the new path, which is then used to save the project.
-        CurrentProjectProvider.ProjectContext.FilePath = storageFile.Path;
+        if (storageFile.TryGetLocalPath() is not string filePath)
+        {
+            await _dialogueProvider.AlertAsync(AlertType.Warning,
+                "Failed to use path",
+                "The path to save is not a valid path.");
+            return;
+        }
 
-        await _savingService.SaveProjectAsync(encrypt);
+        // TODO: Allow different formats.
+        var writeStream = await storageFile.OpenWriteAsync();
+        _savingService.SaveProject(CurrentProjectProvider.ProjectContext, filePath, writeStream, type);
         WindowNotificationManager?.Show(new Notification("Project saved", null, NotificationType.Success));
+        CurrentProjectProvider.ProjectContext.FilePath = filePath;
     }
 
     [RelayCommand]
@@ -183,44 +221,59 @@ public partial class MainWindowModel : MainViewModel
             Title = "Open Project",
             AllowMultiple = false,
             FileTypeFilter = [
-                new FilePickerFileType("Binary data") { Patterns = ["*.dat"] },
-                new FilePickerFileType("JSON format") { Patterns = ["*.json"] }
+                new FilePickerFileType("PubDoomer data format") { Patterns = [$"*.{ProjectBinaryFormatExtension}"] },
+                new FilePickerFileType("PubDoomer text format") { Patterns = [$"*.{ProjectTextFormatExtension}"] }
             ]
         });
 
         if (storageFiles.Count == 0) return;
 
-        await TryLoadProjectPathAsync(storageFiles.Single().Path.AbsolutePath);
+        var file = storageFiles.First();
+        var filePath = file.Path.AbsolutePath;
+        using var fileStream = await file.OpenReadAsync();
+        await TryLoadProjectPathAsync(filePath, fileStream);
         await UpdateRecentProjectsWithCurrentAsync();
     }
 
     [RelayCommand]
     private async Task OpenRecentProjectAsync(string filePath)
     {
-        await TryLoadProjectPathAsync(filePath);
-    }
-
-    private async Task TryLoadProjectPathAsync(string projectPath)
-    {
         if (AssertInDesignMode()) return;
 
+        // No project on the given path.
+        // TODO: Remove project from recent projects if it was retrieved from there.
+        if (!File.Exists(filePath))
+        {
+            await _dialogueProvider.AlertAsync(AlertType.Warning,
+                "Failed to open project",
+                "The project under the given path no longer exists.");
+            return;
+        }
+
+        using var fileStream = File.OpenRead(filePath);
+        await TryLoadProjectPathAsync(filePath, fileStream);
+    }
+
+    private async Task TryLoadProjectPathAsync(string projectPath, Stream fileStream)
+    {
+        if (AssertInDesignMode()) return;
+        
         try
         {
-            await _savingService.LoadProjectOrDefaultAsync(projectPath);
-            
-            // If still null, the project no longer existed, probably.
-            if (CurrentProjectProvider.ProjectContext == null)
+            var type = Path.GetExtension(projectPath) switch
             {
-                await _dialogueProvider.AlertAsync(AlertType.Warning,
-                    "Failed to open project",
-                    "The project under the given path no longer exists.");
-                return;
-            }
+                $".{ProjectBinaryFormatExtension}" => ProjectReadingWritingType.Binary,
+                $".{ProjectTextFormatExtension}" => ProjectReadingWritingType.Text,
+                _ => throw new ArgumentException($"Project type could not be determined from file '{projectPath}'."),
+            };
+
+            // TODO: Allow different formats.
+            var projectContext = _savingService.LoadProject(projectPath, fileStream, type);
+            CurrentProjectProvider.ProjectContext = projectContext;
         }
-        catch (JsonException ex)
+        catch (Exception ex)
         {
-            Debug.Fail($"The project could not be loaded. {ex.Message}");
-            await _dialogueProvider.AlertAsync(AlertType.Error, "The project could not be loaded.");
+            await _dialogueProvider.AlertAsync(AlertType.Error, $"The project could not be loaded. {ex.Message}");
         }
     }
 
@@ -231,22 +284,20 @@ public partial class MainWindowModel : MainViewModel
 
         try
         {
-            await _savingService.LoadRecentProjectsAsync();
+            await _recentProjectsService.LoadRecentProjectsAsync();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Debug.Fail("The recent projects could not be loaded.");
-            await _dialogueProvider.AlertAsync(AlertType.Warning, "The recent projects could not be loaded.");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, $"The recent projects could not be loaded. {ex.Message}");
         }
 
         try
         {
-            await _savingService.LoadLocalSettingsAsyncAsync();
+            await _localSettingsService.LoadLocalSettingsAsyncAsync();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Debug.Fail("The local settings could not be loaded.");
-            await _dialogueProvider.AlertAsync(AlertType.Warning, "The local settings could not be loaded.");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, $"The local settings could not be loaded. {ex.Message}");
         }
     }
 
@@ -260,17 +311,17 @@ public partial class MainWindowModel : MainViewModel
         // Remove this project from the recent projects if it exists.
         // Then, add it as the first recent project.
         var recentProject = RecentProjects.SingleOrDefault(x =>
-            x.FilePath.Equals(CurrentProjectProvider.ProjectContext.FilePath.LocalPath, StringComparison.OrdinalIgnoreCase));
+            x.FilePath.Equals(CurrentProjectProvider.ProjectContext.FilePath, StringComparison.OrdinalIgnoreCase));
 
         if (recentProject != null) RecentProjects.Remove(recentProject);
 
-        recentProject = new RecentProject(CurrentProjectProvider.ProjectContext.Name!, CurrentProjectProvider.ProjectContext.FilePath.LocalPath);
+        recentProject = new RecentProject(CurrentProjectProvider.ProjectContext.Name!, CurrentProjectProvider.ProjectContext.FilePath);
         RecentProjects.Insert(0, recentProject);
 
-        await _savingService.SaveRecentProjectsAsync();
+        await _recentProjectsService.SaveRecentProjectsAsync();
     }
 
-    [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_savingService), nameof(_dialogueProvider))]
+    [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_savingService), nameof(_localSettingsService), nameof(_recentProjectsService), nameof(_dialogueProvider))]
     private bool AssertInDesignMode()
     {
         return Design.IsDesignMode;
