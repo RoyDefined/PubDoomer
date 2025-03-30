@@ -41,10 +41,13 @@ public sealed class ProjectSavingService
 
     public void SaveProject(ProjectContext projectContext, string filePath, Stream stream, ProjectReadingWritingType writerType)
     {
+        var projectPath = Path.GetDirectoryName(filePath)
+            ?? throw new ArgumentException($"Failed to determine directory from filepath: {filePath}");
+
         IProjectWriter writer = writerType switch
         {
-            ProjectReadingWritingType.Binary => new BinaryProjectWriter(filePath, stream),
-            ProjectReadingWritingType.Text => new TextProjectWriter(filePath, stream),
+            ProjectReadingWritingType.Binary => new BinaryProjectWriter(projectPath, stream),
+            ProjectReadingWritingType.Text => new TextProjectWriter(projectPath, stream),
             _ => throw new ArgumentException($"Writer not found for type {writerType}."),
         };
 
@@ -76,10 +79,13 @@ public sealed class ProjectSavingService
 
     public ProjectContext LoadProject(string filePath, Stream fileStream, ProjectReadingWritingType readerType)
     {
+        var projectPath = Path.GetDirectoryName(filePath)
+            ?? throw new ArgumentException($"Failed to determine directory from filepath: {filePath}");
+
         IProjectReader reader = readerType switch
         {
-            ProjectReadingWritingType.Binary => new BinaryProjectReader(filePath, fileStream),
-            ProjectReadingWritingType.Text => new TextProjectReader(filePath, fileStream),
+            ProjectReadingWritingType.Binary => new BinaryProjectReader(projectPath, fileStream),
+            ProjectReadingWritingType.Text => new TextProjectReader(projectPath, fileStream),
             _ => throw new ArgumentException($"Reader not found for type {readerType}."),
         };
 
@@ -115,7 +121,7 @@ public sealed class ProjectSavingService
         void WriteConfiguration(string name, string value)
         {
             writer.Write(name);
-            writer.WritePath($"\"{value}\"");
+            writer.WritePath(value);
         }
 
         // Number of configuration items.
