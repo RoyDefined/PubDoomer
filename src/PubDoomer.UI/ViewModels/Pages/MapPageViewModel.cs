@@ -149,7 +149,7 @@ public partial class MapPageViewModel : PageViewModel
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to open Ultimate DoomBuilder");
+            _logger.LogError(ex, "Failed to open Ultimate DoomBuilder.");
             await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Ultimate DoomBuilder",
                 $"An error occurred while opening Ultimate DoomBuilder. Please check your configuration. Error: {ex.Message}");
         }
@@ -161,7 +161,7 @@ public partial class MapPageViewModel : PageViewModel
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         
-        _logger.LogDebug("Opening map '{MapName}' using Ultimate DoomBuilder configured at path '{UdbPath}'.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
+        _logger.LogDebug("Opening map {MapName} using Ultimate DoomBuilder configured at path {UdbPath}.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
         
         // Path to UDB must exist.
         if (_mergedSettings.UdbExecutableFilePath == null)
@@ -188,7 +188,7 @@ public partial class MapPageViewModel : PageViewModel
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         
-        _logger.LogDebug("Configuring to edit map '{MapName}' using Ultimate DoomBuilder configured at path '{UdbPath}'.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
+        _logger.LogDebug("Configuring to edit map {MapName} using Ultimate DoomBuilder configured at path {UdbPath}.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
         
         // Path to UDB must exist.
         if (_mergedSettings.UdbExecutableFilePath == null)
@@ -204,8 +204,9 @@ public partial class MapPageViewModel : PageViewModel
         {
             _selectableConfigurations ??= MapEditUtil.GetConfigurations(_mergedSettings.UdbExecutableFilePath).ToArray();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to retrieve configurations.");
             await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to retrieve configurations",
                 "Failed to retrieve eligible configurations for Ultimate DoomBuilder. Make sure the configured path is valid and contains a '/Configurations' folder with configurations.");
             return;
@@ -237,7 +238,7 @@ public partial class MapPageViewModel : PageViewModel
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to open Ultimate DoomBuilder");
+            _logger.LogError(ex, "Failed to open Ultimate DoomBuilder.");
             await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Ultimate DoomBuilder",
                 $"An error occurred while opening Ultimate DoomBuilder. Please check your configuration. Error: {ex.Message}");
         }
@@ -249,7 +250,7 @@ public partial class MapPageViewModel : PageViewModel
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         
-        _logger.LogDebug("Opening map '{MapName}' using Slade configured at path '{UdbPath}'.", map.Name, _mergedSettings.SladeExecutableFilePath ?? "N/A");
+        _logger.LogDebug("Opening map {MapName} using Slade configured at path {UdbPath}.", map.Name, _mergedSettings.SladeExecutableFilePath ?? "N/A");
         
         // Path to UDB must exist.
         if (_mergedSettings.SladeExecutableFilePath == null)
@@ -267,7 +268,7 @@ public partial class MapPageViewModel : PageViewModel
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to open Slade");
+            _logger.LogError(ex, "Failed to open Slade.");
             await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Slade",
                 $"An error occurred while opening Slade. Please check your configuration. Error: {ex.Message}");
         }
