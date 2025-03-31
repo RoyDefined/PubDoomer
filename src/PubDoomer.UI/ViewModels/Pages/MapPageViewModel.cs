@@ -244,6 +244,36 @@ public partial class MapPageViewModel : PageViewModel
     }
     
     [RelayCommand]
+    private async Task EditSladeMapAsync(MapContext map)
+    {
+        if (AssertInDesignMode()) return;
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        
+        _logger.LogDebug("Opening map '{MapName}' using Slade configured at path '{UdbPath}'.", map.Name, _mergedSettings.SladeExecutableFilePath ?? "N/A");
+        
+        // Path to UDB must exist.
+        if (_mergedSettings.SladeExecutableFilePath == null)
+        {
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Missing configuration",
+                "The path to Slade is not configured. You must either configure the path in the project settings, or your local settings.");
+            return;
+        }
+        
+        // Launch Slade with the map.
+        // Any exceptions are displayed in a window.
+        try
+        {
+            MapEditUtil.StartSlade(_mergedSettings.SladeExecutableFilePath, map);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to open Slade");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Slade",
+                $"An error occurred while opening Slade. Please check your configuration. Error: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
     private async Task EditMapAsync(MapContext context)
     {
         if (AssertInDesignMode()) return;

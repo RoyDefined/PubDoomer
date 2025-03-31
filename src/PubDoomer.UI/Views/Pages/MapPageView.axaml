@@ -168,6 +168,25 @@
                                             </SplitButton.Flyout>
                                         </SplitButton>
                                         
+                                        <!--
+                                            Open the map in Ultimate Doombuilder.
+                                            This split button has a dropdown allowing for editing the parameters before opening the application.
+                                        -->
+                                        <Button Theme="{DynamicResource SolidButton}"
+                                                Classes="Secondary"
+                                                Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).EditSladeMapCommand}"
+                                                CommandParameter="{Binding}">
+                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                <Image Source="/Assets/editor-slade.png"
+                                                       Width="16"
+                                                       Height="16"
+                                                       VerticalAlignment="Center"
+                                                       HorizontalAlignment="Left"/>
+                                                <TextBlock Text="Edit"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                        
                                         <Button Theme="{DynamicResource SolidButton}"
                                                 Classes="Warning"
                                                 Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).EditMapCommand}"
