@@ -95,7 +95,7 @@ public partial class MapPageViewModel : PageViewModel
     }
     
     [RelayCommand]
-    private async Task ExecuteRunMapAsync(MapContext map)
+    private async Task RunMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
@@ -106,7 +106,7 @@ public partial class MapPageViewModel : PageViewModel
         // If not, we open the dialogue to configure it and end this method.
         if (SelectedEngineRunConfiguration == null || SelectedIWad == null)
         {
-            await ConfigureExecuteRunMapAsync(map);
+            await ConfigureRunMapAsync(map);
             return;
         }
         
@@ -114,7 +114,7 @@ public partial class MapPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private async Task ConfigureExecuteRunMapAsync(MapContext map)
+    private async Task ConfigureRunMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
@@ -156,7 +156,7 @@ public partial class MapPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private async Task ExecuteEditMapAsync(MapContext map)
+    private async Task EditUdbMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
@@ -175,7 +175,7 @@ public partial class MapPageViewModel : PageViewModel
         // If not, we open the dialogue to configure it and end this method.
         if (SelectedIWad == null || SelectedConfiguration == null)
         {
-            await ConfigureExecuteEditMapAsync(map);
+            await ConfigureEditUdbMapAsync(map);
             return;
         }
         
@@ -183,7 +183,7 @@ public partial class MapPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private async Task ConfigureExecuteEditMapAsync(MapContext map)
+    private async Task ConfigureEditUdbMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
