@@ -101,7 +101,7 @@
           <DependentUpon>CodePageView.axaml</DependentUpon>
           <SubType>Code</SubType>
         </Compile>
-        <Compile Update="Views\Pages\MapPageView.axaml.cs">
+        <Compile Update="Views\Pages\MapsAndArchivesPageView.axaml.cs">
           <DependentUpon>RunMapPageView.axaml</DependentUpon>
           <SubType>Code</SubType>
         </Compile>

@@ -26,7 +26,7 @@ using PubDoomer.Views.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
 
-public partial class MapPageViewModel : PageViewModel
+public partial class MapsAndArchivesPageViewModel : PageViewModel
 {
     private readonly ILogger _logger;
     private readonly DialogueProvider? _dialogueProvider;
@@ -40,7 +40,7 @@ public partial class MapPageViewModel : PageViewModel
 
     private string[]? _selectableConfigurations;
 
-    public MapPageViewModel()
+    public MapsAndArchivesPageViewModel()
     {
         if (!Design.IsDesignMode) throw new InvalidOperationException();
 
@@ -49,8 +49,8 @@ public partial class MapPageViewModel : PageViewModel
         SessionSettings = new SessionSettings();
     }
 
-    public MapPageViewModel(
-        ILogger<MapPageViewModel> logger,
+    public MapsAndArchivesPageViewModel(
+        ILogger<MapsAndArchivesPageViewModel> logger,
         CurrentProjectProvider currentProjectProvider,
         SessionSettings sessionSettings,
         LocalSettings localSettings,

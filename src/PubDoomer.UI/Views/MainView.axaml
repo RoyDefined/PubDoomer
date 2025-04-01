@@ -93,13 +93,13 @@
                                 </StackPanel>
                             </Button>
                             
-                            <!-- Maps. Will be disabled if no project is selected -->
+                            <!-- Maps and archives. Will be disabled if no project is selected -->
                             <Button Classes="Tertiary"
                                     Theme="{DynamicResource OutlineButton}"
                                     HorizontalAlignment="Stretch"
                                     IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
                                     Command="{Binding OpenPageCommand}"
-                                    CommandParameter="Maps">
+                                    CommandParameter="MapsAndArchives">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                     
                                     <!-- Multiple icons on top of eachother -->
@@ -131,7 +131,7 @@
                                     
                                     <Label Classes="Tertiary"
                                            Theme="{StaticResource TitleLabel}"
-                                           Content="Maps"
+                                           Content="Maps &amp; Archives"
                                            VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
