@@ -68,12 +68,13 @@ internal static class MapEditUtil
             .OfType<string>();
     }
 
-    internal static void StartSlade(string filePath, MapContext map)
+    internal static void StartSlade(string filePath, IEnumerable<string> paths)
     {
+        var arguments = string.Join(" ", paths.Select(x => $"\"{x}\""));
         var processStartInfo = new ProcessStartInfo
         {
             FileName = filePath,
-            Arguments = map.Path,
+            Arguments = arguments,
             UseShellExecute = false,
         };
 

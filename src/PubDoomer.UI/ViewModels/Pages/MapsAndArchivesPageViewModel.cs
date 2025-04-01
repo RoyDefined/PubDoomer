@@ -248,9 +248,27 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
     private async Task EditSladeMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
+        _logger.LogDebug("Opening map {MapName} using Slade configured at path {UdbPath}.", map.Name, _mergedSettings.SladeExecutableFilePath ?? "N/A");
+        await EditSladeMapCoreAsync(map.Path!);
+    }
+    
+    [RelayCommand]
+    private async Task EditSladeMapWithArchivesAsync(MapContext map)
+    {
+        if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         
-        _logger.LogDebug("Opening map {MapName} using Slade configured at path {UdbPath}.", map.Name, _mergedSettings.SladeExecutableFilePath ?? "N/A");
+        _logger.LogDebug("Opening map {MapName} using Slade + Archives configured at path {UdbPath}.", map.Name, _mergedSettings.SladeExecutableFilePath ?? "N/A");
+        
+        // We do archives first so that these are loaded first in Slade.
+        var archivePaths = CurrentProjectProvider.ProjectContext.Archives.Select(x => x.Path!);
+        var paths = archivePaths.Append(map.Path!);
+        await EditSladeMapCoreAsync(paths);
+    }
+
+    private async Task EditSladeMapCoreAsync(params IEnumerable<string> paths)
+    {
+        if (AssertInDesignMode()) return;
         
         // Path to UDB must exist.
         if (_mergedSettings.SladeExecutableFilePath == null)
@@ -260,11 +278,11 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
             return;
         }
         
-        // Launch Slade with the map.
+        // Launch Slade with all paths specified.
         // Any exceptions are displayed in a window.
         try
         {
-            MapEditUtil.StartSlade(_mergedSettings.SladeExecutableFilePath, map);
+            MapEditUtil.StartSlade(_mergedSettings.SladeExecutableFilePath, paths);
         }
         catch (Exception ex)
         {

@@ -172,20 +172,40 @@
                                             Open the map in Ultimate Doombuilder.
                                             This split button has a dropdown allowing for editing the parameters before opening the application.
                                         -->
-                                        <Button Theme="{DynamicResource SolidButton}"
-                                                Classes="Secondary"
-                                                Command="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).EditSladeMapCommand}"
-                                                CommandParameter="{Binding}">
-                                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                                <Image Source="/Assets/editor-slade.png"
-                                                       Width="16"
-                                                       Height="16"
-                                                       VerticalAlignment="Center"
-                                                       HorizontalAlignment="Left"/>
-                                                <TextBlock Text="Edit"
-                                                           VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </Button>
+                                        <SplitButton Theme="{DynamicResource SolidSplitButton}"
+                                                     Classes="Secondary"
+                                                     Command="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).EditSladeMapCommand}"
+                                                     CommandParameter="{Binding}">
+                                            <SplitButton.Content>
+                                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                                    <Image Source="/Assets/editor-slade.png"
+                                                           Width="16"
+                                                           Height="16"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Left"/>
+                                                    <TextBlock Text="Edit"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </SplitButton.Content>
+                                            
+                                            <SplitButton.Flyout>
+                                                <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                                    
+                                                    <!-- Configure and edit opens a separate dialogue. -->
+                                                    <MenuItem Header="Edit + Archives"
+                                                              Command="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).EditSladeMapWithArchivesCommand}"
+                                                              CommandParameter="{Binding}">
+                                                        <MenuItem.Icon>
+                                                            <Image Source="/Assets/editor-slade.png"
+                                                                   Width="16"
+                                                                   Height="16"
+                                                                   VerticalAlignment="Center"
+                                                                   HorizontalAlignment="Left"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                </MenuFlyout>
+                                            </SplitButton.Flyout>
+                                        </SplitButton>
                                         
                                         <Button Theme="{DynamicResource SolidButton}"
                                                 Classes="Warning"
