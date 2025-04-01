@@ -34,7 +34,7 @@
 
         <SplitView IsPaneOpen="{Binding SideBarOpened}"
                    DisplayMode="CompactInline"
-                   OpenPaneLength="160">
+                   OpenPaneLength="180">
 
             <!-- Sidebar -->
             <SplitView.Pane>
@@ -52,12 +52,12 @@
                                           Theme="{StaticResource InnerPathIcon}"
                                           HorizontalAlignment="Center"
                                           Classes="ExtraLarge"
-                                          Data="{StaticResource SemiIconArrowRight}" />
+                                          Data="{StaticResource SemiIconChevronRight}" />
                                 <PathIcon IsVisible="{Binding SideBarOpened}"
                                           Theme="{StaticResource InnerPathIcon}"
                                           HorizontalAlignment="Center"
                                           Classes="ExtraLarge"
-                                          Data="{StaticResource SemiIconArrowLeft}" />
+                                          Data="{StaticResource SemiIconChevronLeft}" />
                             </Grid>
                         </Button>
                     </Border>
@@ -67,12 +67,13 @@
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled"
                                   Margin="5 0 5 0">
-                        <StackPanel Spacing="20">
+                        <StackPanel Spacing="10" HorizontalAlignment="Left">
 
                             <!-- Profiles. Will be disabled if no project is selected or when there are no tasks. -->
                             <Button Classes="Success"
                                     Theme="{DynamicResource SolidButton}"
                                     HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
                                     Command="{Binding OpenPageCommand}"
                                     CommandParameter="Profiles">
                                 <Button.IsEnabled>
@@ -81,9 +82,8 @@
                                         <Binding Path="CurrentProjectProvider.ProjectContext.Tasks" />
                                     </MultiBinding>
                                 </Button.IsEnabled>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
                                     <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                              HorizontalAlignment="Left"
                                               Classes="ExtraLarge"
                                               Margin="-5 0 10 0"
                                               Data="{StaticResource SemiIconBeaker}" />
@@ -96,8 +96,9 @@
                             <!-- Maps and archives. Will be disabled if no project is selected -->
                             <Button Classes="Tertiary"
                                     Theme="{DynamicResource OutlineButton}"
-                                    HorizontalAlignment="Stretch"
                                     IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
                                     Command="{Binding OpenPageCommand}"
                                     CommandParameter="MapsAndArchives">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
@@ -105,7 +106,6 @@
                                     <!-- Multiple icons on top of eachother -->
                                     <Grid Width="24" Height="24">
                                         <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                                  HorizontalAlignment="Center"
                                                   VerticalAlignment="Center"
                                                   Width="20"
                                                   Height="20"
@@ -139,14 +139,14 @@
                             <!-- Tasks. Will be disabled if no project is selected. -->
                             <Button Classes="Tertiary"
                                     Theme="{DynamicResource OutlineButton}"
-                                    HorizontalAlignment="Stretch"
                                     IsVisible="{Binding SessionSettings.EnableEditing}"
                                     IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
                                     Command="{Binding OpenPageCommand}"
                                     CommandParameter="Tasks">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                     <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                              HorizontalAlignment="Left"
                                               Classes="ExtraLarge"
                                               Margin="-5 0 10 0"
                                               Data="{StaticResource SemiIconBolt}" />
@@ -160,14 +160,14 @@
                             <!-- Project. Will be disabled if no project is selected. -->
                             <Button Classes="Tertiary"
                                     Theme="{DynamicResource OutlineButton}"
-                                    HorizontalAlignment="Stretch"
                                     IsVisible="{Binding SessionSettings.EnableEditing}"
                                     IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
                                     Command="{Binding OpenPageCommand}"
                                     CommandParameter="Project">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                     <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                              HorizontalAlignment="Left"
                                               Classes="ExtraLarge"
                                               Margin="-5 0 10 0"
                                               Data="{StaticResource SemiIconBox}" />
@@ -182,11 +182,11 @@
                             <Button Classes="Tertiary"
                                     Theme="{DynamicResource OutlineButton}"
                                     HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left"
                                     Command="{Binding OpenPageCommand}"
                                     CommandParameter="Code">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                     <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                              HorizontalAlignment="Left"
                                               Classes="ExtraLarge"
                                               Margin="-5 0 10 0"
                                               Data="{StaticResource SemiIconCode}" />
