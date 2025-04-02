@@ -121,5 +121,13 @@
           <DependentUpon>EditMapWindow.axaml</DependentUpon>
           <SubType>Code</SubType>
         </Compile>
+        <Compile Update="Views\Pages\MapsAndArchivesTabs\MapsControl.axaml.cs">
+          <DependentUpon>MapsAndArchivesPageView.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Pages\MapsAndArchivesTabs\ArchivesControl.axaml.cs">
+          <DependentUpon>Archives.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
     </ItemGroup>
 </Project>

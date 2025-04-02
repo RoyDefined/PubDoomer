@@ -248,8 +248,9 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
     private async Task EditSladeMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
+        
         _logger.LogDebug("Opening map {MapName} using Slade configured at path {UdbPath}.", map.Name, _mergedSettings.SladeExecutableFilePath ?? "N/A");
-        await EditSladeMapCoreAsync(map.Path!);
+        await StartSladeAsync(map.Path!);
     }
     
     [RelayCommand]
@@ -263,10 +264,19 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
         // We do archives first so that these are loaded first in Slade.
         var archivePaths = CurrentProjectProvider.ProjectContext.Archives.Select(x => x.Path!);
         var paths = archivePaths.Append(map.Path!);
-        await EditSladeMapCoreAsync(paths);
+        await StartSladeAsync(paths);
+    }
+    
+    [RelayCommand]
+    private async Task EditSladeArchiveAsync(ArchiveContext archive)
+    {
+        if (AssertInDesignMode()) return;
+        
+        _logger.LogDebug("Opening archive {ArchiveName} using Slade configured at path {UdbPath}.", archive.Name, _mergedSettings.SladeExecutableFilePath ?? "N/A");
+        await StartSladeAsync(archive.Path!);
     }
 
-    private async Task EditSladeMapCoreAsync(params IEnumerable<string> paths)
+    private async Task StartSladeAsync(params IEnumerable<string> paths)
     {
         if (AssertInDesignMode()) return;
         
