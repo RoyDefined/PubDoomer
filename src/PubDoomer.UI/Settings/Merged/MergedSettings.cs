@@ -11,6 +11,9 @@ public sealed class MergedSettings
     public required string? AccCompilerExecutableFilePath { get; init; }
     public required string? BccCompilerExecutableFilePath { get; init; }
     public required string? GdccAccCompilerExecutableFilePath { get; init; }
+    public required string? GdccCcCompilerExecutableFilePath { get; init; }
+    public required string? GdccMakeLibCompilerExecutableFilePath { get; init; }
+    public required string? GdccLdCompilerExecutableFilePath { get; init; }
     public required string? AcsVmExecutableFilePath { get; init; }
     public required string? UdbExecutableFilePath { get; init; }
     public required string? SladeExecutableFilePath { get; init; }

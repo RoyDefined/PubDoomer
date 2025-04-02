@@ -39,7 +39,8 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
     [
         new ObservableAccCompileTask(),
         new ObservableBccCompileTask(),
-        new ObservableGdccAccCompileTask()
+        new ObservableGdccAccCompileTask(),
+        new ObservableGdccCcCompileTask()
     ];
 
     [ObservableProperty] private string _createOrEditButtonText;
@@ -95,6 +96,7 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         ObservableAccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
         ObservableBccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
         ObservableGdccAccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
+        ObservableGdccCcCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
         _ => false
     };
 

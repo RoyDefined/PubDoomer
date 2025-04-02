@@ -32,6 +32,7 @@ using PubDoomer.ViewModels.Dialogues;
 namespace PubDoomer.ViewModels.Pages;
 
 // TODO: Proper syntax highlighting for the code editor. Currently c# but even better would be proper ACS support.
+// TODO: Support GDCC-CC
 public partial class CodePageViewModel : PageViewModel
 {
     /* Code templates to display for design time and the different compilers */

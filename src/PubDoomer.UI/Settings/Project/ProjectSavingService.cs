@@ -31,6 +31,7 @@ public sealed class ProjectSavingService
         [ObservableAccCompileTask.TaskName] = new ObservableAccCompileTask(),
         [ObservableBccCompileTask.TaskName] = new ObservableBccCompileTask(),
         [ObservableGdccAccCompileTask.TaskName] = new ObservableGdccAccCompileTask(),
+        [ObservableGdccCcCompileTask.TaskName] = new ObservableGdccCcCompileTask(),
     };
 
     /// <summary>
