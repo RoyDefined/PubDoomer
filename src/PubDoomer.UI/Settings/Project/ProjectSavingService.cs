@@ -20,6 +20,7 @@ using PubDoomer.Project.Tasks;
 using PubDoomer.Tasks.Compile.Acc;
 using PubDoomer.Tasks.Compile.Bcc;
 using PubDoomer.Tasks.Compile.GdccAcc;
+using PubDoomer.Tasks.Compile.GdccCc;
 
 namespace PubDoomer.Settings.Project;
 

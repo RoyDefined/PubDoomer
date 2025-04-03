@@ -4,7 +4,7 @@ using PubDoomer.Engine.TaskInvokation.Process;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Tasks.Compile.Extensions;
 
-namespace PubDoomer.Tasks.Compile.GdccAcc;
+namespace PubDoomer.Tasks.Compile.GdccCc;
 
 public sealed class GdccCcCompileTaskHandler(
     ILogger<GdccCcCompileTaskHandler> logger,

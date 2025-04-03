@@ -1,11 +1,11 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
-using PubDoomer.Engine.Compile;
 using PubDoomer.Engine.Saving;
 using PubDoomer.Project.Tasks;
+using PubDoomer.Tasks.Compile.GdccCc;
 
-namespace PubDoomer.Tasks.Compile.GdccAcc;
+namespace PubDoomer.Tasks.Compile.GdccCc;
 
 public partial class ObservableGdccCcCompileTask : CompileTaskBase
 {
