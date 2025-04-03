@@ -26,61 +26,103 @@ public sealed class GdccCcCompileTaskHandler(
         var gdccMakeLibPath = context.ContextBag.GetGdccMakeLibCompilerExecutableFilePath();
         var gdccLdPath = context.ContextBag.GetGdccLdCompilerExecutableFilePath();
 
-        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of GDCC-CC executable: {GdccCcExecutablePath}. Location of GDCC-MakeLib executable: {GdccMakeLibExecutablePath}. Location of GDCC-LD executable: {GdccLdExecutablePath}", nameof(GdccCcCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, gdccCcPath, gdccMakeLibPath, gdccLdPath);
+        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}.", nameof(GdccCcCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath);
 
         var libcOutputPath = Path.Combine(EngineStatics.TemporaryDirectory, "Gdcc-cc", "libGDCC.ir");
         var compiledOutputPath = Path.Combine(EngineStatics.TemporaryDirectory, "Gdcc-cc", "file.ir");
+        Directory.CreateDirectory(Path.Combine(EngineStatics.TemporaryDirectory, "Gdcc-cc"));
 
         // Compile libc, unless explicitly specified not to.
-        await CompileLibcAsync(gdccMakeLibPath, libcOutputPath);
+        if (!taskInfo.DontBuildLibGdcc)
+        {
+            logger.LogDebug("Compiling libc. Location of GDCC-MakeLib executable: {GdccMakeLibExecutablePath}.", gdccMakeLibPath);
+            var makeLibResult = await CompileLibcAsync(gdccMakeLibPath, libcOutputPath);
+
+            if (makeLibResult != 0)
+            {
+                return TaskInvokationResult.FromError("Compilation failed, process exit code was not 0.", null, null);
+            }
+        }
 
         // Compile the input files.
-        await CompileAsync(gdccCcPath, libcOutputPath);
+        logger.LogDebug("Compiling. Location of GDCC-CC executable: {GdccCcExecutablePath}.", gdccCcPath);
+        var compileResult = await CompileAsync(gdccCcPath, compiledOutputPath);
+
+        if (compileResult != 0)
+        {
+            return TaskInvokationResult.FromError("Compilation failed, process exit code was not 0.", null, null);
+        }
 
         // Link the files.
-        await LinkAsync(gdccLdPath, libcOutputPath, compiledOutputPath);
+        logger.LogDebug("Linking. Location of GDCC-LD executable: {GdccLdExecutablePath}", gdccLdPath);
+        var linkResult = await LinkAsync(gdccLdPath, libcOutputPath, compiledOutputPath);
+
+        if (linkResult != 0)
+        {
+            return TaskInvokationResult.FromError("Compilation failed, process exit code was not 0.", null, null);
+        }
 
         logger.LogDebug("GDCC-CC compilation and linking completed successfully.");
         return TaskInvokationResult.FromSuccess();
     }
 
-    private async Task CompileAsync(string gdccCcPath, string libcOutputPath)
+    private async Task<int> CompileLibcAsync(string gdccMakeLibPath, string libcOutputPath)
     {
-        var args = BuildCompileArgs(libcOutputPath);
-        var processStartInfo = new ProcessStartInfo
-        {
-            FileName = gdccCcPath,
-            Arguments = string.Join(" ", args),
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-        var makeLibProcess = new SystemProcess { StartInfo = processStartInfo };
-        makeLibProcess.Start();
-        await makeLibProcess.WaitForExitAsync();
-    }
-
-    private async Task CompileLibcAsync(string gdccMakeLibPath, string libcOutputPath)
-    {
-        if (taskInfo.DontBuildLibGdcc)
-        {
-            return;
-        }
-
         var args = BuildMakeLibArgs(libcOutputPath);
         var processStartInfo = new ProcessStartInfo
         {
             FileName = gdccMakeLibPath,
             Arguments = string.Join(" ", args),
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
         };
 
         using var process = new SystemProcess { StartInfo = processStartInfo };
         process.Start();
+
+        var stdout = await process.StandardOutput.ReadToEndAsync();
+        var stderr = await process.StandardError.ReadToEndAsync();
+
         await process.WaitForExitAsync();
+
+        logger.LogDebug("GDCC-MakeLib stdout: {StdOut}", stdout);
+        logger.LogDebug("GDCC-MakeLib stderr: {StdErr}", stderr);
+        logger.LogDebug("Process exit code: {ExitCode}.", process.ExitCode);
+
+        return process.ExitCode;
     }
 
-    private async Task LinkAsync(string gdccLdPath, string libcOutputPath, string compiledOutputPath)
+    private async Task<int> CompileAsync(string gdccCcPath, string compiledOutputPath)
+    {
+        var args = BuildCompileArgs(compiledOutputPath);
+        var processStartInfo = new ProcessStartInfo
+        {
+            FileName = gdccCcPath,
+            Arguments = string.Join(" ", args),
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+
+        using var process = new SystemProcess { StartInfo = processStartInfo };
+        process.Start();
+
+        var stdout = await process.StandardOutput.ReadToEndAsync();
+        var stderr = await process.StandardError.ReadToEndAsync();
+
+        await process.WaitForExitAsync();
+
+        logger.LogDebug("GDCC-CC stdout: {StdOut}", stdout);
+        logger.LogDebug("GDCC-CC stderr: {StdErr}", stderr);
+        logger.LogDebug("Process exit code: {ExitCode}.", process.ExitCode);
+
+        return process.ExitCode;
+    }
+
+    private async Task<int> LinkAsync(string gdccLdPath, string libcOutputPath, string compiledOutputPath)
     {
         var args = BuildLinkArgs(libcOutputPath, compiledOutputPath);
         var processStartInfo = new ProcessStartInfo
@@ -88,18 +130,31 @@ public sealed class GdccCcCompileTaskHandler(
             FileName = gdccLdPath,
             Arguments = string.Join(" ", args),
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
         };
 
         using var process = new SystemProcess { StartInfo = processStartInfo };
         process.Start();
+
+        var stdout = await process.StandardOutput.ReadToEndAsync();
+        var stderr = await process.StandardError.ReadToEndAsync();
+
         await process.WaitForExitAsync();
+
+        logger.LogDebug("GDCC-LD stdout: {StdOut}", stdout);
+        logger.LogDebug("GDCC-LD stderr: {StdErr}", stderr);
+        logger.LogDebug("Process exit code: {ExitCode}.", process.ExitCode);
+
+        return process.ExitCode;
     }
 
     private IEnumerable<string> BuildMakeLibArgs(string libcOutputPath)
     {
         yield return $"-co {libcOutputPath}";
-        yield return $"libGDCC";
+        yield return "libGDCC";
+        yield return "libc";
 
         if (taskInfo.TargetEngine != TargetEngineType.None)
         {
@@ -107,9 +162,9 @@ public sealed class GdccCcCompileTaskHandler(
         }
     }
 
-    private IEnumerable<string> BuildCompileArgs(string libcOutputPath)
+    private IEnumerable<string> BuildCompileArgs(string compiledOutputPath)
     {
-        yield return $"-co file.ir";
+        yield return $"-co {compiledOutputPath}";
         yield return taskInfo.InputFilePath!;
 
         if (taskInfo.TargetEngine != TargetEngineType.None)
