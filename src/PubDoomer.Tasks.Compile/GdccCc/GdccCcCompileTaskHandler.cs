@@ -22,6 +22,13 @@ public sealed class GdccCcCompileTaskHandler(
 
     public async ValueTask<TaskInvokationResult> HandleAsync()
     {
+        // Validate target engine
+        if (taskInfo.TargetEngine == TargetEngineType.None)
+        {
+            // TODO: Warn of missing engine.
+            taskInfo.TargetEngine = TargetEngineType.Zandronum;
+        }
+
         var gdccCcPath = context.ContextBag.GetGdccCcCompilerExecutableFilePath();
         var gdccMakeLibPath = context.ContextBag.GetGdccMakeLibCompilerExecutableFilePath();
         var gdccLdPath = context.ContextBag.GetGdccLdCompilerExecutableFilePath();
@@ -155,22 +162,14 @@ public sealed class GdccCcCompileTaskHandler(
         yield return $"-co {libcOutputPath}";
         yield return "libGDCC";
         yield return "libc";
-
-        if (taskInfo.TargetEngine != TargetEngineType.None)
-        {
-            yield return $"--target-engine {taskInfo.TargetEngine}";
-        }
+        yield return $"--target-engine {taskInfo.TargetEngine}";
     }
 
     private IEnumerable<string> BuildCompileArgs(string compiledOutputPath)
     {
         yield return $"-co {compiledOutputPath}";
         yield return taskInfo.InputFilePath!;
-
-        if (taskInfo.TargetEngine != TargetEngineType.None)
-        {
-            yield return $"--target-engine {taskInfo.TargetEngine}";
-        }
+        yield return $"--target-engine {taskInfo.TargetEngine}";
     }
 
     private IEnumerable<string> BuildLinkArgs(string libcOutputPath, string compiledOutputPath)
@@ -178,10 +177,6 @@ public sealed class GdccCcCompileTaskHandler(
         yield return $"-o {taskInfo.OutputFilePath}";
         yield return libcOutputPath;
         yield return compiledOutputPath;
-
-        if (taskInfo.TargetEngine != TargetEngineType.None)
-        {
-            yield return $"--target-engine {taskInfo.TargetEngine}";
-        }
+        yield return $"--target-engine {taskInfo.TargetEngine}";
     }
 }
