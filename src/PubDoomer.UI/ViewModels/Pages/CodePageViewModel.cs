@@ -92,7 +92,7 @@ public partial class CodePageViewModel : PageViewModel
     private const string GdccCcCode = """
         #include <stdio.h>
         
-        static void LogMessage(char *message)
+        static void LogMessage(const char *message)
         {
             printf("%s\n", message);
         }
