@@ -280,7 +280,7 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
     {
         if (AssertInDesignMode()) return;
         
-        // Path to UDB must exist.
+        // Path to Slade must exist.
         if (_mergedSettings.SladeExecutableFilePath == null)
         {
             await _dialogueProvider.AlertAsync(AlertType.Warning, "Missing configuration",
