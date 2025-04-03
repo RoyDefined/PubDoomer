@@ -28,7 +28,7 @@ public partial class ProjectPageViewModel : PageViewModel
     {
         [CompileTaskStatics.AccCompilerExecutableFilePathKey] = "Select ACC compiler executable",
         [CompileTaskStatics.BccCompilerExecutableFilePathKey] = "Select BCC compiler executable",
-        [CompileTaskStatics.GdccAccCompilerExecutableFilePathKey] = "Select GDCC compiler executable",
+        [CompileTaskStatics.GdccAccCompilerExecutableFilePathKey] = "Select GDCC-ACC compiler executable",
         [SavingStatics.UdbExecutableFilePathKey] = "Select Ultimate Doombuilder executable",
         [SavingStatics.SladeExecutableFilePathKey] = "Select Slade executable",
         [AcsVmTaskStatics.AcsVmExecutableFilePathKey] = "Select ACS VM executable",

@@ -422,12 +422,12 @@
                                                 </StatefulTextbox>
                                             </Grid>
 
-                                            <!-- GDCC compiler -->
+                                            <!-- GDCC-ACC compiler -->
                                             <Grid ColumnDefinitions="115, *">
 
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"
-                                                           Text="GDCC compiler"
+                                                           Text="GDCC-ACC compiler"
                                                            TextWrapping="Wrap" />
 
                                                 <StatefulTextbox Grid.Column="1"
