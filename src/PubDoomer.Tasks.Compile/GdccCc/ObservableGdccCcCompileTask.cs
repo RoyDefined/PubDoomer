@@ -17,7 +17,16 @@ public partial class ObservableGdccCcCompileTask : CompileTaskBase
     public override string[] ExpectedFileExtensions { get; } = [".c", ".txt"];
 
     [ObservableProperty] private TargetEngineType _targetEngine;
-    [ObservableProperty] private bool _dontBuildLibGdcc;
+    
+    /// <summary>
+    /// If <c>true</c>, build and link libc with the compiled file.
+    /// </summary>
+    [ObservableProperty] private bool _linkLibc;
+    
+    /// <summary>
+    /// If <c>true</c>, build and link libGDCC with the compiled file.
+    /// </summary>
+    [ObservableProperty] private bool _linkLibGdcc;
 
     // TODO: Implement additional parameters.
 
@@ -25,11 +34,14 @@ public partial class ObservableGdccCcCompileTask : CompileTaskBase
     {
     }
 
-    public ObservableGdccCcCompileTask(string? name, string? inputFilePath, string? outputFilePath, TargetEngineType targetEngine = TargetEngineType.None, bool dontBuildLibGdcc = false)
+    public ObservableGdccCcCompileTask(
+        string? name, string? inputFilePath, string? outputFilePath, TargetEngineType targetEngine = TargetEngineType.None,
+        bool linkLibc = true, bool linkLibGdcc = true)
         : base(name, inputFilePath, outputFilePath)
     {
         TargetEngine = targetEngine;
-        _dontBuildLibGdcc = dontBuildLibGdcc;
+        LinkLibc = linkLibc;
+        LinkLibGdcc = linkLibGdcc;
     }
 
     public override string DisplayName => TaskName;
@@ -37,7 +49,9 @@ public partial class ObservableGdccCcCompileTask : CompileTaskBase
 
     public override ObservableGdccCcCompileTask DeepClone()
     {
-        return new ObservableGdccCcCompileTask(Name, InputFilePath, OutputFilePath, TargetEngine, DontBuildLibGdcc);
+        return new ObservableGdccCcCompileTask(
+            Name, InputFilePath, OutputFilePath, TargetEngine,
+            LinkLibc, LinkLibGdcc);
     }
 
     public override void Merge(ProjectTaskBase task)
@@ -53,20 +67,23 @@ public partial class ObservableGdccCcCompileTask : CompileTaskBase
         OutputFilePath = gdccCcCompileTask.OutputFilePath;
         GenerateStdOutAndStdErrFiles = gdccCcCompileTask.GenerateStdOutAndStdErrFiles;
         TargetEngine = gdccCcCompileTask.TargetEngine;
-        DontBuildLibGdcc = gdccCcCompileTask.DontBuildLibGdcc;
+        LinkLibc = gdccCcCompileTask.LinkLibc;
+        LinkLibGdcc = gdccCcCompileTask.LinkLibGdcc;
     }
 
     public override void Serialize(IProjectWriter writer)
     {
         base.Serialize(writer);
         writer.WriteEnum<TargetEngineType>(TargetEngine);
-        writer.Write(DontBuildLibGdcc);
+        writer.Write(LinkLibc);
+        writer.Write(LinkLibGdcc);
     }
 
     public override void Deserialize(IProjectReader reader, ProjectSaveVersion version)
     {
         base.Deserialize(reader, version);
         TargetEngine = reader.ReadEnum<TargetEngineType>();
-        DontBuildLibGdcc = reader.ReadBoolean();
+        LinkLibc = reader.ReadBoolean();
+        LinkLibGdcc = reader.ReadBoolean();
     }
 }

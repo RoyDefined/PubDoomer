@@ -14,6 +14,10 @@ public sealed class GdccCcCompileTaskHandler(
     ObservableGdccCcCompileTask taskInfo,
     TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
 {
+    private static string _tempDirectory = Path.Combine(EngineStatics.TemporaryDirectory, "Gdcc-cc");
+    private static string _makeLibOutputPath = Path.Combine(_tempDirectory, "makelibfile.ir");
+    private static string _compiledOutputPath = Path.Combine(_tempDirectory, "file.ir");
+        
     private const string CompileResultWarningPrefix = "WARNING: ";
     private const string CompileResultErrorPrefix = "ERROR: ";
 
@@ -28,6 +32,8 @@ public sealed class GdccCcCompileTaskHandler(
             // TODO: Warn of missing engine.
             taskInfo.TargetEngine = TargetEngineType.Zandronum;
         }
+        
+        Directory.CreateDirectory(_tempDirectory);
 
         var gdccCcPath = context.ContextBag.GetGdccCcCompilerExecutableFilePath();
         var gdccMakeLibPath = context.ContextBag.GetGdccMakeLibCompilerExecutableFilePath();
@@ -35,15 +41,12 @@ public sealed class GdccCcCompileTaskHandler(
 
         logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}.", nameof(GdccCcCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath);
 
-        var libcOutputPath = Path.Combine(EngineStatics.TemporaryDirectory, "Gdcc-cc", "libGDCC.ir");
-        var compiledOutputPath = Path.Combine(EngineStatics.TemporaryDirectory, "Gdcc-cc", "file.ir");
-        Directory.CreateDirectory(Path.Combine(EngineStatics.TemporaryDirectory, "Gdcc-cc"));
-
-        // Compile libc, unless explicitly specified not to.
-        if (!taskInfo.DontBuildLibGdcc)
+        // Compile libc and/or libGDCC, unless explicitly specified not to.
+        // This setting is merged as to call the process once with both parameters.
+        if (taskInfo.LinkLibc || taskInfo.LinkLibGdcc)
         {
-            logger.LogDebug("Compiling libc. Location of GDCC-MakeLib executable: {GdccMakeLibExecutablePath}.", gdccMakeLibPath);
-            var makeLibResult = await CompileLibcAsync(gdccMakeLibPath, libcOutputPath);
+            logger.LogDebug("Compiling libc and/or libGDCC. Location of GDCC-MakeLib executable: {GdccMakeLibExecutablePath}. Compile Libc: {CompileLibc}. Compile LibGDCC: {CompileLibGdcc}.", gdccMakeLibPath, taskInfo.LinkLibc, taskInfo.LinkLibGdcc);
+            var makeLibResult = await MakeLibAsync(gdccMakeLibPath);
 
             if (makeLibResult != 0)
             {
@@ -53,7 +56,7 @@ public sealed class GdccCcCompileTaskHandler(
 
         // Compile the input files.
         logger.LogDebug("Compiling. Location of GDCC-CC executable: {GdccCcExecutablePath}.", gdccCcPath);
-        var compileResult = await CompileAsync(gdccCcPath, compiledOutputPath);
+        var compileResult = await CompileAsync(gdccCcPath);
 
         if (compileResult != 0)
         {
@@ -62,7 +65,7 @@ public sealed class GdccCcCompileTaskHandler(
 
         // Link the files.
         logger.LogDebug("Linking. Location of GDCC-LD executable: {GdccLdExecutablePath}", gdccLdPath);
-        var linkResult = await LinkAsync(gdccLdPath, libcOutputPath, compiledOutputPath);
+        var linkResult = await LinkAsync(gdccLdPath);
 
         if (linkResult != 0)
         {
@@ -73,9 +76,9 @@ public sealed class GdccCcCompileTaskHandler(
         return TaskInvokationResult.FromSuccess();
     }
 
-    private async Task<int> CompileLibcAsync(string gdccMakeLibPath, string libcOutputPath)
+    private async Task<int> MakeLibAsync(string gdccMakeLibPath)
     {
-        var args = BuildMakeLibArgs(libcOutputPath);
+        var args = BuildMakeLibArgs();
         var processStartInfo = new ProcessStartInfo
         {
             FileName = gdccMakeLibPath,
@@ -101,9 +104,9 @@ public sealed class GdccCcCompileTaskHandler(
         return process.ExitCode;
     }
 
-    private async Task<int> CompileAsync(string gdccCcPath, string compiledOutputPath)
+    private async Task<int> CompileAsync(string gdccCcPath)
     {
-        var args = BuildCompileArgs(compiledOutputPath);
+        var args = BuildCompileArgs();
         var processStartInfo = new ProcessStartInfo
         {
             FileName = gdccCcPath,
@@ -129,9 +132,9 @@ public sealed class GdccCcCompileTaskHandler(
         return process.ExitCode;
     }
 
-    private async Task<int> LinkAsync(string gdccLdPath, string libcOutputPath, string compiledOutputPath)
+    private async Task<int> LinkAsync(string gdccLdPath)
     {
-        var args = BuildLinkArgs(libcOutputPath, compiledOutputPath);
+        var args = BuildLinkArgs();
         var processStartInfo = new ProcessStartInfo
         {
             FileName = gdccLdPath,
@@ -157,26 +160,30 @@ public sealed class GdccCcCompileTaskHandler(
         return process.ExitCode;
     }
 
-    private IEnumerable<string> BuildMakeLibArgs(string libcOutputPath)
+    private IEnumerable<string> BuildMakeLibArgs()
     {
-        yield return $"-co {libcOutputPath}";
-        yield return "libGDCC";
-        yield return "libc";
+        yield return $"-co {_makeLibOutputPath}";
+        
+        if (taskInfo.LinkLibc) yield return "libc";
+        if (taskInfo.LinkLibGdcc) yield return "libGDCC";
+        
         yield return $"--target-engine {taskInfo.TargetEngine}";
     }
 
-    private IEnumerable<string> BuildCompileArgs(string compiledOutputPath)
+    private IEnumerable<string> BuildCompileArgs()
     {
-        yield return $"-co {compiledOutputPath}";
+        yield return $"-co {_compiledOutputPath}";
         yield return taskInfo.InputFilePath!;
         yield return $"--target-engine {taskInfo.TargetEngine}";
     }
 
-    private IEnumerable<string> BuildLinkArgs(string libcOutputPath, string compiledOutputPath)
+    private IEnumerable<string> BuildLinkArgs()
     {
         yield return $"-o {taskInfo.OutputFilePath}";
-        yield return libcOutputPath;
-        yield return compiledOutputPath;
+        
+        if (taskInfo.LinkLibc || taskInfo.LinkLibGdcc) yield return _makeLibOutputPath;
+        
+        yield return _compiledOutputPath;
         yield return $"--target-engine {taskInfo.TargetEngine}";
     }
 }
