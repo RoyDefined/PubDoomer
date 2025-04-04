@@ -5,6 +5,7 @@
         xmlns:acc="clr-namespace:PubDoomer.Tasks.Compile.Acc;assembly=PubDoomer.Tasks.Compile"
         xmlns:bcc="clr-namespace:PubDoomer.Tasks.Compile.Bcc;assembly=PubDoomer.Tasks.Compile"
         xmlns:gdccAcc="clr-namespace:PubDoomer.Tasks.Compile.GdccAcc;assembly=PubDoomer.Tasks.Compile"
+        xmlns:gdccCc="clr-namespace:PubDoomer.Tasks.Compile.GdccCc;assembly=PubDoomer.Tasks.Compile"
         mc:Ignorable="d"
         x:Class="PubDoomer.Views.Dialogues.CreateOrEditTaskWindow"
         Title="{Binding WindowTitle}"
@@ -217,7 +218,7 @@
                         </StackPanel>
                     </DataTemplate>
                     
-                    <!-- DataTemplate for GdccCompileTask -->
+                    <!-- DataTemplate for GdccAccCompileTask -->
                     <DataTemplate DataType="{x:Type gdccAcc:ObservableGdccAccCompileTask}">
                         <StackPanel Spacing="10">
                             
@@ -286,6 +287,114 @@
                                 <CheckBox Content="Don't warn about forward references."
                                           IsChecked="{Binding DontWarnForwardReferences}" />
 
+                                
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for GdccCcCompileTask -->
+                    <DataTemplate DataType="{x:Type gdccCc:ObservableGdccCcCompileTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Input path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Input Path:"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding InputFilePath}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <Button.CommandParameter>
+                                            <TaskCreateDialogueFilePickerType CompilerType="gdccacc" FileType="input" />
+                                        </Button.CommandParameter>
+                                        
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Output path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Output Path:"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding OutputFilePath}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <Button.CommandParameter>
+                                            <TaskCreateDialogueFilePickerType CompilerType="gdccacc" FileType="output" />
+                                        </Button.CommandParameter>
+                                        
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            
+                            <StackPanel Spacing="8">
+                                
+                                <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
+                                <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
+                                          IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
+                                
+                                <StackPanel Spacing="2">
+                                    
+                                    <!-- If `true`, build and link libc. -->
+                                    <CheckBox Content="Build and link libc."
+                                              IsChecked="{Binding LinkLibc}" />
+                                
+                                    <!-- Additional clarification regarding building and linking libc. -->
+                                    <TextBlock Classes="Tertiary"
+                                               FontSize="10"
+                                               Margin="25 0 0 0"
+                                               HorizontalAlignment="Stretch"
+                                               TextWrapping="Wrap"
+                                               Text="If disabled this will mean the task skips building and linking libc, the C standard library. None of the C standard functions will be callable with this disabled." />
+                                </StackPanel>
+
+                                
+                                <StackPanel Spacing="2">
+                                    
+                                    <!-- If `true`, build and link libGDCC. -->
+                                    <CheckBox Content="Build and link libGDCC."
+                                              IsChecked="{Binding LinkLibGdcc}" />
+                                
+                                    <!-- Additional clarification regarding building and linking libGDCC. -->
+                                    <TextBlock Classes="Tertiary"
+                                               FontSize="10"
+                                               Margin="25 0 0 0"
+                                               HorizontalAlignment="Stretch"
+                                               TextWrapping="Wrap"
+                                               Text="If disabled this will mean the task skips building and linking libGDCC, the memory allocator backend. libc won't fully work without a memory allocator, so this option is mainly for alternate allocators like safe-malloc or disabling both libraries." />
+                                </StackPanel>
+                                
+                                <!-- Additional clarification regarding the libc and libGDCC options. -->
+                                <TextBlock Classes="Warning"
+                                           FontSize="10"
+                                           Margin="25 0 0 0"
+                                           HorizontalAlignment="Stretch"
+                                           TextWrapping="Wrap"
+                                           Text="Do not disable linking and building libc or libGDCC unless you know what you're doing." />
                                 
                             </StackPanel>
                         </StackPanel>
