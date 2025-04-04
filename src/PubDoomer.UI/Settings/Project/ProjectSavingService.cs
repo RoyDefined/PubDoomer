@@ -20,6 +20,7 @@ using PubDoomer.Project.Tasks;
 using PubDoomer.Tasks.Compile.Acc;
 using PubDoomer.Tasks.Compile.Bcc;
 using PubDoomer.Tasks.Compile.GdccAcc;
+using PubDoomer.Tasks.Compile.GdccCc;
 
 namespace PubDoomer.Settings.Project;
 
@@ -31,6 +32,7 @@ public sealed class ProjectSavingService
         [ObservableAccCompileTask.TaskName] = new ObservableAccCompileTask(),
         [ObservableBccCompileTask.TaskName] = new ObservableBccCompileTask(),
         [ObservableGdccAccCompileTask.TaskName] = new ObservableGdccAccCompileTask(),
+        [ObservableGdccCcCompileTask.TaskName] = new ObservableGdccCcCompileTask(),
     };
 
     /// <summary>

@@ -8,5 +8,6 @@ public enum CompilerType
     Unknown,
     Acc,
     Bcc,
-    GdccAcc
+    GdccAcc,
+    GdccCc,
 }
