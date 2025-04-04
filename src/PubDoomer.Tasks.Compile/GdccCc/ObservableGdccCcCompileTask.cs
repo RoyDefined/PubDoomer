@@ -21,12 +21,12 @@ public partial class ObservableGdccCcCompileTask : CompileTaskBase
     /// <summary>
     /// If <c>true</c>, build and link libc with the compiled file.
     /// </summary>
-    [ObservableProperty] private bool _linkLibc;
+    [ObservableProperty] private bool _linkLibc = true;
     
     /// <summary>
     /// If <c>true</c>, build and link libGDCC with the compiled file.
     /// </summary>
-    [ObservableProperty] private bool _linkLibGdcc;
+    [ObservableProperty] private bool _linkLibGdcc = true;
 
     // TODO: Implement additional parameters.
 
