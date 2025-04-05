@@ -21,6 +21,12 @@ public sealed class GdccAccCompileTaskHandler(
         var path = context.ContextBag.GetGdccAccCompilerExecutableFilePath();
         logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of GDCC-ACC executable: {GdccAccExecutablePath}", nameof(GdccAccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
 
+        // Verify the task has a name.
+        if (taskInfo.Name == null)
+        {
+            return TaskInvokationResult.FromError("Task is missing a name.");
+        }
+
         // Create streams for stdout and stderr.
         using var stdOutStream = new MemoryStream();
         using var stdErrStream = new MemoryStream();

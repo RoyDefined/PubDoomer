@@ -18,6 +18,12 @@ public sealed class BccCompileTaskHandler(
         var path = context.ContextBag.GetBccCompilerExecutableFilePath();
         logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of BCC executable: {BccExecutablePath}", nameof(BccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
 
+        // Verify the task has a name.
+        if (taskInfo.Name == null)
+        {
+            return TaskInvokationResult.FromError("Task is missing a name.");
+        }
+
         // Create streams for stdout and stderr.
         using var stdOutStream = new MemoryStream();
         using var stdErrStream = new MemoryStream();

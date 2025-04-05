@@ -23,6 +23,12 @@ public sealed class AccCompileTaskHandler(
         var path = context.ContextBag.GetAccCompilerExecutableFilePath();
         logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of ACC executable: {AccExecutablePath}", nameof(AccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
 
+        // Verify the task has a name.
+        if (taskInfo.Name == null)
+        {
+            return TaskInvokationResult.FromError("Task is missing a name.");
+        }
+
         // Check for existing 'acs.err' file.
         // If found, move this file because otherwise the compiler gets rid of it.
         if (File.Exists(_errorFilePath))
