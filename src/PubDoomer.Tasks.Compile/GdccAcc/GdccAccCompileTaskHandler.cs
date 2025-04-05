@@ -1,53 +1,57 @@
 ﻿using Microsoft.Extensions.Logging;
 using PubDoomer.Engine.TaskInvokation.Context;
-using PubDoomer.Engine.TaskInvokation.Process;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Tasks.Compile.Extensions;
+using PubDoomer.Tasks.Compile.Utils;
+using System.Diagnostics;
+using SystemProcess = System.Diagnostics.Process;
 
 namespace PubDoomer.Tasks.Compile.GdccAcc;
 
 public sealed class GdccAccCompileTaskHandler(
     ILogger<GdccAccCompileTaskHandler> logger,
     ObservableGdccAccCompileTask taskInfo,
-    TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
+    TaskInvokeContext context) : ITaskHandler
 {
     private const string CompileResultWarningPrefix = "WARNING: ";
     private const string CompileResultErrorPrefix = "ERROR: ";
-
-    protected override string StdOutFileName => "stdout_gdccacc.txt";
-    protected override string StdErrFileName => "stderr_gdccacc.txt";
 
     public async ValueTask<TaskInvokationResult> HandleAsync()
     {
         var path = context.ContextBag.GetGdccAccCompilerExecutableFilePath();
         logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of GDCC-ACC executable: {GdccAccExecutablePath}", nameof(GdccAccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
 
-        // Create streams for stdout and stderr if configured.
-        // The stderr stream is always created, as this gives us access to compile warnings and errors when they occured.
-        using var stdOutStream = taskInfo.GenerateStdOutAndStdErrFiles ? new MemoryStream() : null;
+        // Create streams for stdout and stderr.
+        using var stdOutStream = new MemoryStream();
         using var stdErrStream = new MemoryStream();
 
-        var result = await StartProcessAsync(
-            new ProcessInvokeContext(path, BuildArguments(), stdOutStream, stdErrStream));
-        
+        bool succeeded;
+        try
+        {
+            succeeded = await StartProcessAsync(path, BuildArguments(), stdOutStream, stdErrStream);
+        }
+
         // Premature exception was thrown, not related to compilation.
         // TODO: Continue if possible and check if we also have compiler errors, should the process have executed succesfully?
-        if (result.Exception != null)
+        catch (Exception ex)
         {
-            return TaskInvokationResult.FromError($"Compilation failed due to an error", null, result.Exception);
+            return TaskInvokationResult.FromError("Code execution failed due to an error", null, ex);
         }
 
         // Write stdout and stderr if configured.
-        if (stdOutStream != null) await WriteStdOutToFileAsync(stdOutStream);
-        if (taskInfo.GenerateStdOutAndStdErrFiles) await WriteStdErrToFileAsync(stdErrStream);
+        if (taskInfo.GenerateStdOutAndStdErrFiles)
+        {
+            await TaskHelper.WriteToFileAsync(stdOutStream, taskInfo.Name, "stdout.txt");
+            await TaskHelper.WriteToFileAsync(stdErrStream, taskInfo.Name, "stderr.txt");
+        }
 
         // Process the error stream and filter out just the warnings.
         // Should the compiler have an error, we additionally filter out the errors.
         var results = await ProcessErrStreamAsync(stdErrStream);
         var warnings = results.Where(x => x.Type == GdccCompileResultType.Warning).Select(x => x.Message).ToArray();
-        
+
         // The compiler returned an error.
-        if (result.HasCompilerError)
+        if (!succeeded)
         {
             var errors = results.Where(x => x.Type == GdccCompileResultType.Error).Select(x => x.Message).ToArray();
 
@@ -74,6 +78,32 @@ public sealed class GdccAccCompileTaskHandler(
         {
             yield return "--no-warn-forward-reference";
         }
+    }
+
+    private async Task<bool> StartProcessAsync(string path, IEnumerable<string> arguments, MemoryStream stdOutStream, MemoryStream stdErrStream)
+    {
+        logger.LogDebug("calling process.");
+
+        var processStartInfo = new ProcessStartInfo
+        {
+            FileName = path,
+            Arguments = string.Join(" ", arguments),
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        using var process = new SystemProcess { StartInfo = processStartInfo };
+        process.Start();
+
+        // Additional task to output stdout and stderr.
+        var outputTask = process.StandardOutput.BaseStream.CopyToAsync(stdOutStream);
+        var errorTask = process.StandardError.BaseStream.CopyToAsync(stdErrStream);
+        await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
+
+        logger.LogDebug("Process exit code: {ExitCode}", process.ExitCode);
+        return process.ExitCode == 0;
     }
 
     private async Task<GdccCompileResult[]> ProcessErrStreamAsync(Stream stream)

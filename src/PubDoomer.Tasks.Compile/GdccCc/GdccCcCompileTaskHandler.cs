@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using PubDoomer.Engine.TaskInvokation.Context;
-using PubDoomer.Engine.TaskInvokation.Process;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Tasks.Compile.Extensions;
 using System.Diagnostics;
@@ -12,17 +11,11 @@ namespace PubDoomer.Tasks.Compile.GdccCc;
 public sealed class GdccCcCompileTaskHandler(
     ILogger<GdccCcCompileTaskHandler> logger,
     ObservableGdccCcCompileTask taskInfo,
-    TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
+    TaskInvokeContext context) : ITaskHandler
 {
     private static string _tempDirectory = Path.Combine(EngineStatics.TemporaryDirectory, "Gdcc-cc");
     private static string _makeLibOutputPath = Path.Combine(_tempDirectory, "makelibfile.ir");
     private static string _compiledOutputPath = Path.Combine(_tempDirectory, "file.ir");
-        
-    private const string CompileResultWarningPrefix = "WARNING: ";
-    private const string CompileResultErrorPrefix = "ERROR: ";
-
-    protected override string StdOutFileName => "stdout_gdcc-cc.txt";
-    protected override string StdErrFileName => "stderr_gdcc-cc.txt";
 
     public async ValueTask<TaskInvokationResult> HandleAsync()
     {
