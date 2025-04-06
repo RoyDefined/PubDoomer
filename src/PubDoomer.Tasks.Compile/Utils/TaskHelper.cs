@@ -29,34 +29,41 @@ internal static class TaskHelper
             CreateNoWindow = true
         };
 
-        using var process = new Process { StartInfo = processStartInfo };
+        var process = new Process { StartInfo = processStartInfo };
         process.Start();
 
         // Additional task to output stdout and stderr.
         var stdoutReaderTask = Task.Run(async () =>
         {
             using var reader = process.StandardOutput;
+            await using var writer = new StreamWriter(stdOutStream, leaveOpen: true);
             while (!reader.EndOfStream)
             {
                 var line = await reader.ReadLineAsync();
-                if (line != null) onStdOutLine(line);
+                if (line != null)
+                {
+                    onStdOutLine(line);
+                    await writer.WriteLineAsync(line);
+                }
             }
         });
 
         var stderrReaderTask = Task.Run(async () =>
         {
             using var reader = process.StandardError;
+            await using var writer = new StreamWriter(stdErrStream, leaveOpen: true);
             while (!reader.EndOfStream)
             {
                 var line = await reader.ReadLineAsync();
-                if (line != null) onStdErrLine(line);
+                if (line != null)
+                {
+                    onStdErrLine(line);
+                    await writer.WriteLineAsync(line);
+                }
             }
         });
 
         await Task.WhenAll(stdoutReaderTask, stderrReaderTask, process.WaitForExitAsync());
-        await process.StandardOutput.BaseStream.CopyToAsync(stdOutStream);
-        await process.StandardError.BaseStream.CopyToAsync(stdErrStream);
-
         return process.ExitCode == 0;
     }
 
