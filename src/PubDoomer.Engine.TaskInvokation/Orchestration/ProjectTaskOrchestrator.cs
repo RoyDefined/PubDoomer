@@ -64,13 +64,13 @@ public sealed class ProjectTaskOrchestrator(
             {
                 if (runTask.Behaviour == ProfileTaskErrorBehaviour.StopOnError)
                 {
-                    logger.LogWarning(runTask.Exception, "Task failure.");
                     profile.Status = ProfileRunContextStatus.Error;
+                    logger.LogWarning("Task failure. Profile is configured to stop.");
                     break;
                 }
                 else
                 {
-                    logger.LogWarning(runTask.Exception, "Task failed but is configured to not stop on errors. Execution will continue.");
+                    logger.LogWarning("Task failed but is configured to not stop on errors. Execution will continue.");
                 }
             }
         }

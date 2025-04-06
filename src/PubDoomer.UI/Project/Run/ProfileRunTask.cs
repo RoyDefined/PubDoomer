@@ -20,10 +20,6 @@ public partial class ProfileRunTask : ObservableObject, IInvokableTask
     [ObservableProperty] private ObservableCollection<ValidateResult>? _validations;
 
     [ObservableProperty] private ProfileRunTaskStatus _status;
-    [ObservableProperty] private string? _resultMessage;
-    [ObservableProperty] private ObservableCollection<string>? _resultWarnings;
-    [ObservableProperty] private ObservableCollection<string>? _resultErrors;
-    [ObservableProperty] private Exception? _exception;
 
     public ObservableCollection<TaskOutputResult> TaskOutput { get; set; } = new();
 
