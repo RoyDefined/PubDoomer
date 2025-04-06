@@ -1,28 +1,57 @@
 ﻿using Microsoft.Extensions.Logging;
 using PubDoomer.Engine.TaskInvokation.Context;
-using PubDoomer.Engine.TaskInvokation.Process;
+using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using PubDoomer.Engine.TaskInvokation.Utils;
 using PubDoomer.Tasks.Compile.Extensions;
+using PubDoomer.Tasks.Compile.Utils;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using System.Threading.Channels;
 
 namespace PubDoomer.Tasks.Compile.Acc;
 
-public sealed class AccCompileTaskHandler(
-    ILogger<AccCompileTaskHandler> logger,
-    ObservableAccCompileTask taskInfo,
-    TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
+public sealed class AccCompileTaskHandler : ITaskHandler
 {
-    private readonly string _errorFilePath = Path.Combine(Path.GetDirectoryName(taskInfo.InputFilePath)!, "acs.err");
-    private readonly CompositeFormat _errorFileRenamePathTemplate = CompositeFormat.Parse(Path.Combine(Path.GetDirectoryName(taskInfo.InputFilePath)!, "acs.err.backup{0}"));
-    
-    protected override string StdOutFileName => "stdout_acc.txt";
-    protected override string StdErrFileName => "stderr_acc.txt";
+    private readonly ILogger _logger;
+    private readonly IInvokableTask _taskContext;
+    private readonly TaskInvokeContext _invokeContext;
 
-    public async ValueTask<TaskInvokationResult> HandleAsync()
+    private readonly ObservableAccCompileTask _task;
+
+    private readonly string _errorFilePath;
+    private readonly CompositeFormat _errorFileRenamePathTemplate;
+
+    public AccCompileTaskHandler(
+        ILogger<AccCompileTaskHandler> logger, IInvokableTask taskContext, TaskInvokeContext invokeContext)
     {
-        var path = context.ContextBag.GetAccCompilerExecutableFilePath();
-        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of ACC executable: {AccExecutablePath}", nameof(AccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
+        if (taskContext.Task is not ObservableAccCompileTask task)
+        {
+            throw new ArgumentException($"The given task is not a {nameof(ObservableAccCompileTask)}.");
+        }
+
+        _logger = logger;
+        _taskContext = taskContext;
+        _invokeContext = invokeContext;
+
+        _task = task;
+
+        _errorFilePath = Path.Combine(Path.GetDirectoryName(task.InputFilePath)!, "acs.err");
+        _errorFileRenamePathTemplate = CompositeFormat.Parse(Path.Combine(Path.GetDirectoryName(task.InputFilePath)!, "acs.err.backup{0}"));
+    }
+
+    public async ValueTask<bool> HandleAsync()
+    {
+        var path = _invokeContext.ContextBag.GetAccCompilerExecutableFilePath();
+        _logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of ACC executable: {AccExecutablePath}", nameof(AccCompileTaskHandler), _task.InputFilePath, _task.OutputFilePath, path);
+
+        // Verify the task has a name.
+        if (_task.Name == null)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Task is missing a name."));
+            return false;
+        }
 
         // Check for existing 'acs.err' file.
         // If found, move this file because otherwise the compiler gets rid of it.
@@ -31,45 +60,67 @@ public sealed class AccCompileTaskHandler(
             File.Move(_errorFilePath, GetValidBackupPath());
         }
 
-        // Create streams for stdout and stderr if configured.
-        // The stderr stream is optional unlike BCC for example, because compiler error details can be fetched from 'acs.err' instead.
-        using var stdOutStream = taskInfo.GenerateStdOutAndStdErrFiles ? new MemoryStream() : null;
-        using var stdErrStream = taskInfo.GenerateStdOutAndStdErrFiles ? new MemoryStream() : null;
+        using var stdOutStream = new MemoryStream();
+        using var stdErrStream = new MemoryStream();
 
-        var result = await StartProcessAsync(
-            new ProcessInvokeContext(path, BuildArguments(), stdOutStream, stdErrStream));
+        bool succeeded;
+        try
+        {
+            succeeded = await TaskHelper.RunProcessAsync(
+                path,
+                BuildArguments(),
+                stdOutStream,
+                stdErrStream,
+                HandleStdout,
+                HandleStdErr);
+        }
 
         // Premature exception was thrown, not related to compilation.
-        // TODO: Continue if possible and check if we also have compiler errors, should the process have executed succesfully?
-        if (result.Exception != null)
+        catch (Exception ex)
         {
-            return TaskInvokationResult.FromError($"Compilation failed due to an error", null, result.Exception);
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Code execution failed due to an error.", ex));
+            return false;
         }
 
         // Write stdout and stderr if configured.
-        if (stdOutStream != null) await WriteStdOutToFileAsync(stdOutStream);
-        if (stdErrStream != null) await WriteStdErrToFileAsync(stdErrStream);
-
-        // The compiler returned an error.
-        if (result.HasCompilerError)
+        if (_task.GenerateStdOutAndStdErrFiles)
         {
-            // Check for `acs.err`. Otherwise give a generic error.
-            var compileResult = await HandleAccErrAsync();
-            if (compileResult == null)
-            {
-                return TaskInvokationResult.FromError("Compilation failed for unknown reason.");
-            }
-
-            return TaskInvokationResult.FromError($"Compilation failed", compileResult);
+            await TaskHelper.WriteToFileAsync(stdOutStream, _task.Name, "stdout.txt");
+            await TaskHelper.WriteToFileAsync(stdErrStream, _task.Name, "stderr.txt");
         }
 
-        return TaskInvokationResult.FromSuccess();
+        // Check for `acs.err`. Return anything from there as an error.
+        var compileResult = await HandleAccErrAsync();
+        if (compileResult != null)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError(compileResult));
+        }
+
+        // The compiler failed.
+        if (!succeeded)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError($"Compilation failed."));
+            return false;
+        }
+
+        return true;
+    }
+
+    private void HandleStdout(string line)
+    {
+        // We do not use the stdout because ACC logs a lot of unneeded messages.
+    }
+
+    private void HandleStdErr(string line)
+    {
+        // We do not use the stderr because ACC logs a lot of unneeded messages.
+        // Intead we parse the 'acs.err' file that comes with errors.
     }
 
     private IEnumerable<string> BuildArguments()
     {
-        yield return $"\"{taskInfo.InputFilePath}\"";
-        yield return $"\"{taskInfo.OutputFilePath}\"";
+        yield return $"\"{_task.InputFilePath}\"";
+        yield return $"\"{_task.OutputFilePath}\"";
     }
 
     private string GetValidBackupPath()
@@ -99,9 +150,9 @@ public sealed class AccCompileTaskHandler(
         }
 
         // If the error file should not be kept then remove the 'acs.err' file.
-        if (!taskInfo.KeepAccErrFile)
+        if (!_task.KeepAccErrFile)
         {
-            logger.LogDebug("Remove 'acs.err' file as configured.");
+            _logger.LogDebug("Remove 'acs.err' file as configured.");
             File.Delete(_errorFilePath);
         }
 

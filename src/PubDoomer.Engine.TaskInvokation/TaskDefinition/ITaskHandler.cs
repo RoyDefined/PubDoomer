@@ -2,5 +2,5 @@
 
 public interface ITaskHandler
 {
-    ValueTask<TaskInvokationResult> HandleAsync();
+    ValueTask<bool> HandleAsync();
 }

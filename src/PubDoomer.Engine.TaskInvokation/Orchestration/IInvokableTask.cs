@@ -10,8 +10,5 @@ public interface IInvokableTask
     ProfileTaskErrorBehaviour Behaviour { get; set; }
 
     ProfileRunTaskStatus Status { get; set; }
-    string? ResultMessage { get; set; }
-    ObservableCollection<string>? ResultWarnings { get; set; }
-    ObservableCollection<string>? ResultErrors { get; set; }
-    Exception? Exception { get; set; }
+    ObservableCollection<TaskOutputResult> TaskOutput { get; set; }
 }

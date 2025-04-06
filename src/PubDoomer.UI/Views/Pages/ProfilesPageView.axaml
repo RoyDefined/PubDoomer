@@ -298,15 +298,8 @@
                                                             ContentTemplate="{StaticResource ProfileRunTaskStatusTemplateSelector}" />
                                         </Grid>
 
-                                        <!-- The result message -->
-                                        <TextBlock Text="{Binding ResultMessage}"
-                                                   Classes="Secondary"
-                                                   Theme="{StaticResource TextBlockTheme}"
-                                                   FontSize="12"
-                                                   IsVisible="{Binding ResultMessage, Converter={StaticResource NullToBoolConverter}}" />
-
-                                        <!-- Warnings -->
-                                        <ItemsControl ItemsSource="{Binding ResultWarnings}">
+                                        <!-- Task output -->
+                                        <ItemsControl ItemsSource="{Binding TaskOutput}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
                                                     <StackPanel Spacing="2" />
@@ -314,37 +307,46 @@
                                             </ItemsControl.ItemsPanel>
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding}"
-                                                               Classes="Warning"
-                                                               Theme="{StaticResource TextBlockTheme}"
-                                                               FontSize="10" />
+                                                    <StackPanel>
+                                                        
+                                                        <!-- Regular message -->
+                                                        <TextBlock Text="{Binding Message}"
+                                                                   IsVisible="{Binding Type, Converter={StaticResource EnumMatchConverter}, ConverterParameter=Message}"
+                                                                   FontSize="10"
+                                                                   Theme="{StaticResource TextBlockTheme}" />
+                                                    
+                                                        <!-- Success message -->
+                                                        <TextBlock Text="{Binding Message}"
+                                                                   IsVisible="{Binding Type, Converter={StaticResource EnumMatchConverter}, ConverterParameter=Success}"
+                                                                   FontSize="10"
+                                                                   Theme="{StaticResource TextBlockTheme}"
+                                                                   Classes="Success"/>
+                                                    
+                                                        <!-- Warning message -->
+                                                        <TextBlock Text="{Binding Message}"
+                                                                   IsVisible="{Binding Type, Converter={StaticResource EnumMatchConverter}, ConverterParameter=Warning}"
+                                                                   FontSize="10"
+                                                                   Theme="{StaticResource TextBlockTheme}"
+                                                                   Classes="Warning"/>
+                                                    
+                                                        <!-- Error message -->
+                                                        <TextBlock Text="{Binding Message}"
+                                                                   IsVisible="{Binding Type, Converter={StaticResource EnumMatchConverter}, ConverterParameter=Error}"
+                                                                   FontSize="10"
+                                                                   Theme="{StaticResource TextBlockTheme}"
+                                                                   Classes="Danger"/>
+                                                    
+                                                        <!-- Exception details -->
+                                                        <TextBlock Text="{Binding Exception}"
+                                                                   IsVisible="{Binding Exception, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}"
+                                                                   FontSize="10"
+                                                                   Theme="{StaticResource TextBlockTheme}"
+                                                                   Classes="Danger"/>
+                                                        
+                                                    </StackPanel>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
-
-                                        <!-- Errors -->
-                                        <ItemsControl ItemsSource="{Binding ResultErrors}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Spacing="2" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding}"
-                                                               Classes="Danger"
-                                                               Theme="{StaticResource TextBlockTheme}"
-                                                               FontSize="10" />
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                        
-                                        <!-- Exception message if set -->
-                                        <TextBlock Text="{Binding Exception.Message}"
-                                                   Classes="Danger"
-                                                   Theme="{StaticResource TextBlockTheme}"
-                                                   FontSize="10"
-                                                   IsVisible="{Binding Exception, Converter={StaticResource NullToBoolConverter}}" />
                                     </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

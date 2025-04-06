@@ -1,118 +1,137 @@
 ﻿using Microsoft.Extensions.Logging;
 using PubDoomer.Engine.TaskInvokation.Context;
-using PubDoomer.Engine.TaskInvokation.Process;
+using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using PubDoomer.Engine.TaskInvokation.Utils;
 using PubDoomer.Tasks.Compile.Extensions;
+using System.Text.RegularExpressions;
 
 namespace PubDoomer.Tasks.Compile.GdccAcc;
 
-public sealed class GdccAccCompileTaskHandler(
-    ILogger<GdccAccCompileTaskHandler> logger,
-    ObservableGdccAccCompileTask taskInfo,
-    TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
+public sealed partial class GdccAccCompileTaskHandler : ITaskHandler
 {
-    private const string CompileResultWarningPrefix = "WARNING: ";
-    private const string CompileResultErrorPrefix = "ERROR: ";
+    private readonly ILogger _logger;
+    private readonly IInvokableTask _taskContext;
+    private readonly TaskInvokeContext _invokeContext;
+    private readonly ObservableGdccAccCompileTask _task;
 
-    protected override string StdOutFileName => "stdout_gdccacc.txt";
-    protected override string StdErrFileName => "stderr_gdccacc.txt";
+    // Match pattern like: "warning:...path with spaces...:14:18:message here"
+    [GeneratedRegex(@"^(warning|error):\s*(.*?):(\d+):(\d+):\s*(.+)$", RegexOptions.IgnoreCase)]
+    private static partial Regex StdErrMessageMatcher();
 
-    public async ValueTask<TaskInvokationResult> HandleAsync()
+    public GdccAccCompileTaskHandler(
+        ILogger<GdccAccCompileTaskHandler> logger, IInvokableTask taskContext, TaskInvokeContext invokeContext)
     {
-        var path = context.ContextBag.GetGdccAccCompilerExecutableFilePath();
-        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of GDCC-ACC executable: {GdccAccExecutablePath}", nameof(GdccAccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
+        if (taskContext.Task is not ObservableGdccAccCompileTask task)
+        {
+            throw new ArgumentException($"The given task is not a {nameof(ObservableGdccAccCompileTask)}.");
+        }
 
-        // Create streams for stdout and stderr if configured.
-        // The stderr stream is always created, as this gives us access to compile warnings and errors when they occured.
-        using var stdOutStream = taskInfo.GenerateStdOutAndStdErrFiles ? new MemoryStream() : null;
+        _logger = logger;
+        _taskContext = taskContext;
+        _invokeContext = invokeContext;
+        _task = task;
+    }
+
+    public async ValueTask<bool> HandleAsync()
+    {
+        var path = _invokeContext.ContextBag.GetGdccAccCompilerExecutableFilePath();
+        _logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of GDCC-ACC executable: {GdccAccExecutablePath}", nameof(GdccAccCompileTaskHandler), _task.InputFilePath, _task.OutputFilePath, path);
+
+        // Verify the task has a name.
+        if (_task.Name == null)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Task is missing a name."));
+            return false;
+        }
+
+        using var stdOutStream = new MemoryStream();
         using var stdErrStream = new MemoryStream();
 
-        var result = await StartProcessAsync(
-            new ProcessInvokeContext(path, BuildArguments(), stdOutStream, stdErrStream));
-        
-        // Premature exception was thrown, not related to compilation.
-        // TODO: Continue if possible and check if we also have compiler errors, should the process have executed succesfully?
-        if (result.Exception != null)
+        bool succeeded;
+        try
         {
-            return TaskInvokationResult.FromError($"Compilation failed due to an error", null, result.Exception);
+
+            succeeded = await TaskHelper.RunProcessAsync(
+                path,
+                BuildArguments(),
+                stdOutStream,
+                stdErrStream,
+                HandleStdout,
+                HandleStdErr);
+        }
+
+        // Premature exception was thrown, not related to compilation.
+        catch (Exception ex)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Code execution failed due to an error", ex));
+            return false;
         }
 
         // Write stdout and stderr if configured.
-        if (stdOutStream != null) await WriteStdOutToFileAsync(stdOutStream);
-        if (taskInfo.GenerateStdOutAndStdErrFiles) await WriteStdErrToFileAsync(stdErrStream);
-
-        // Process the error stream and filter out just the warnings.
-        // Should the compiler have an error, we additionally filter out the errors.
-        var results = await ProcessErrStreamAsync(stdErrStream);
-        var warnings = results.Where(x => x.Type == GdccCompileResultType.Warning).Select(x => x.Message).ToArray();
-        
-        // The compiler returned an error.
-        if (result.HasCompilerError)
+        if (_task.GenerateStdOutAndStdErrFiles)
         {
-            var errors = results.Where(x => x.Type == GdccCompileResultType.Error).Select(x => x.Message).ToArray();
-
-            if (errors.Length == 0)
-            {
-                return TaskInvokationResult.FromErrors("Compilation failed for unknown reason.", warnings);
-            }
-
-            return TaskInvokationResult.FromErrors($"Compilation failed", warnings, errors);
+            await TaskHelper.WriteToFileAsync(stdOutStream, _task.Name, "stdout.txt");
+            await TaskHelper.WriteToFileAsync(stdErrStream, _task.Name, "stderr.txt");
         }
 
-        var message = warnings.Length != 0
-            ? $"Compiled succesfully with {warnings.Length} warning{(warnings.Length == 1 ? string.Empty : "s")}."
-            : "Compiled succesfully.";
-        return TaskInvokationResult.FromSuccess(message, warnings);
+        // The compiler returned an error.
+        if (!succeeded)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Compilation failed"));
+            return false;
+        }
+
+        return true;
     }
 
     private IEnumerable<string> BuildArguments()
     {
-        yield return $"\"{taskInfo.InputFilePath}\"";
-        yield return $"-o \"{taskInfo.OutputFilePath}\"";
+        yield return $"\"{_task.InputFilePath}\"";
+        yield return $"-o \"{_task.OutputFilePath}\"";
 
-        if (taskInfo.DontWarnForwardReferences)
+        if (_task.DontWarnForwardReferences)
         {
             yield return "--no-warn-forward-reference";
         }
     }
 
-    private async Task<GdccCompileResult[]> ProcessErrStreamAsync(Stream stream)
+    private void HandleStdout(string line)
     {
-        var results = new List<GdccCompileResult>();
-
-        await foreach (var result in ReadErrStreamAsync(stream))
-        {
-            results.Add(result);
-        }
-
-        return results.ToArray();
+        _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage(line));
     }
 
-    private async IAsyncEnumerable<GdccCompileResult> ReadErrStreamAsync(Stream stream)
+    private void HandleStdErr(string line)
     {
-        using var reader = new StreamReader(stream);
-        _ = stream.Seek(0, SeekOrigin.Begin);
-
-        string? line;
-        while ((line = await reader.ReadLineAsync()) != null)
+        var result = ParseLine(line);
+        if (result == null)
         {
-            var result = ParseLine(line);
-            if (result == null)
-            {
-                logger.LogWarning("Encountered an invalid line in compile results: '{Line}'", line);
-                continue;
-            }
-
-            yield return result.Value;
+            _logger.LogWarning("Encountered an invalid line in compile results: '{Line}'", line);
+            return;
         }
+        _taskContext.TaskOutput.Add(result);
     }
 
-    private static GdccCompileResult? ParseLine(string line)
+    private static TaskOutputResult? ParseLine(string line)
     {
-        return line switch
+        // Using regex we determine the formatting of the message.
+        // Notably it always contains 'warning: ' or 'error: '
+
+        if (string.IsNullOrWhiteSpace(line))
+            return null;
+
+        var match = StdErrMessageMatcher().Match(line);
+        if (!match.Success)
+            return null;
+
+        // Note the regex is build to also parse the code line and character, though it is currently unused.
+        var type = match.Groups[1].Value.ToLowerInvariant();
+        var message = match.Groups[5].Value.Trim();
+
+        return type switch
         {
-            { } when line.StartsWith(CompileResultWarningPrefix) => new GdccCompileResult(GdccCompileResultType.Warning, line[CompileResultWarningPrefix.Length..]),
-            { } when line.StartsWith(CompileResultErrorPrefix) => new GdccCompileResult(GdccCompileResultType.Error, line[CompileResultErrorPrefix.Length..]),
+            "warning" => TaskOutputResult.CreateWarning(message),
+            "error" => TaskOutputResult.CreateError(message),
             _ => null
         };
     }
