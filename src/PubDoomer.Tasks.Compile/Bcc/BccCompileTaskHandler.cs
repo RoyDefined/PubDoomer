@@ -2,11 +2,8 @@
 using PubDoomer.Engine.TaskInvokation.Context;
 using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using PubDoomer.Engine.TaskInvokation.Utils;
 using PubDoomer.Tasks.Compile.Extensions;
-using PubDoomer.Tasks.Compile.Utils;
-using System.Diagnostics;
-using System.Text;
-using SystemProcess = System.Diagnostics.Process;
 
 namespace PubDoomer.Tasks.Compile.Bcc;
 
@@ -49,7 +46,13 @@ public sealed class BccCompileTaskHandler : ITaskHandler
         bool succeeded;
         try
         {
-            succeeded = await StartProcessAsync(path, BuildArguments(), stdOutStream, stdErrStream);
+            succeeded = await TaskHelper.RunProcessAsync(
+                path,
+                BuildArguments(),
+                stdOutStream,
+                stdErrStream,
+                HandleStdout,
+                HandleStdErr);
         }
 
         // Premature exception was thrown, not related to compilation.
@@ -67,18 +70,10 @@ public sealed class BccCompileTaskHandler : ITaskHandler
             await TaskHelper.WriteToFileAsync(stdErrStream, _task.Name, "stderr.txt");
         }
 
-        // The compiler returned an error.
+        // The compiler failed.
         if (!succeeded)
         {
-            // Check stderr for content, which means compilation failed.
-            var compileResult = await HandleCompileErrorAsync(stdErrStream);
-            if (compileResult == null)
-            {
-                _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Compilation failed for unknown reason."));
-                return false;
-            }
-
-            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError($"Compilation failed. {compileResult}"));
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Compilation failed."));
             return false;
         }
 
@@ -91,48 +86,13 @@ public sealed class BccCompileTaskHandler : ITaskHandler
         yield return $"\"{_task.OutputFilePath}\"";
     }
 
-    private async Task<bool> StartProcessAsync(string path, IEnumerable<string> arguments, MemoryStream stdOutStream, MemoryStream stdErrStream)
+    private void HandleStdout(string line)
     {
-        _logger.LogDebug("calling process.");
-
-        var processStartInfo = new ProcessStartInfo
-        {
-            FileName = path,
-            Arguments = string.Join(" ", arguments),
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        using var process = new SystemProcess { StartInfo = processStartInfo };
-        process.Start();
-
-        // Additional task to output stdout and stderr.
-        var outputTask = process.StandardOutput.BaseStream.CopyToAsync(stdOutStream);
-        var errorTask = process.StandardError.BaseStream.CopyToAsync(stdErrStream);
-        await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
-
-        _logger.LogDebug("Process exit code: {ExitCode}", process.ExitCode);
-        return process.ExitCode == 0;
+        _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage(line));
     }
 
-    private async ValueTask<string?> HandleCompileErrorAsync(Stream stream)
+    private void HandleStdErr(string line)
     {
-        _ = stream.Seek(0, SeekOrigin.Begin);
-
-        string content;
-        using (var reader = new StreamReader(stream))
-        {
-            content = await reader.ReadToEndAsync();
-        }
-
-        // If the content is empty, there was no error.
-        if (string.IsNullOrEmpty(content))
-        {
-            return null;
-        }
-        
-        return content;
+        _taskContext.TaskOutput.Add(TaskOutputResult.CreateError(line));
     }
 }

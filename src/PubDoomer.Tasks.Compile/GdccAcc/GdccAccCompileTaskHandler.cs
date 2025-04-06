@@ -2,10 +2,8 @@
 using PubDoomer.Engine.TaskInvokation.Context;
 using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using PubDoomer.Engine.TaskInvokation.Utils;
 using PubDoomer.Tasks.Compile.Extensions;
-using PubDoomer.Tasks.Compile.Utils;
-using System.Diagnostics;
-using SystemProcess = System.Diagnostics.Process;
 
 namespace PubDoomer.Tasks.Compile.GdccAcc;
 
@@ -51,7 +49,14 @@ public sealed class GdccAccCompileTaskHandler : ITaskHandler
         bool succeeded;
         try
         {
-            succeeded = await StartProcessAsync(path, BuildArguments(), stdOutStream, stdErrStream);
+
+            succeeded = await TaskHelper.RunProcessAsync(
+                path,
+                BuildArguments(),
+                stdOutStream,
+                stdErrStream,
+                HandleStdout,
+                HandleStdErr);
         }
 
         // Premature exception was thrown, not related to compilation.
@@ -69,14 +74,6 @@ public sealed class GdccAccCompileTaskHandler : ITaskHandler
             await TaskHelper.WriteToFileAsync(stdErrStream, _task.Name, "stderr.txt");
         }
 
-        // Process the error stream and filter out just the warnings.
-        // Should the compiler have an error, we additionally filter out the errors.
-        var results = await ProcessErrStreamAsync(stdErrStream);
-        var warnings = results.Where(x => x.Type == GdccCompileResultType.Warning).Select(x => x.Message).ToArray();
-        var errors = results.Where(x => x.Type == GdccCompileResultType.Error).Select(x => x.Message).ToArray();
-
-        // TODO: Log warnings and errors.
-
         // The compiler returned an error.
         if (!succeeded)
         {
@@ -84,11 +81,6 @@ public sealed class GdccAccCompileTaskHandler : ITaskHandler
             return false;
         }
 
-        var message = warnings.Length != 0
-            ? $"Compiled succesfully with {warnings.Length} warning{(warnings.Length == 1 ? string.Empty : "s")}."
-            : "Compiled succesfully.";
-
-        _taskContext.TaskOutput.Add(TaskOutputResult.CreateSuccess(message));
         return true;
     }
 
@@ -103,69 +95,27 @@ public sealed class GdccAccCompileTaskHandler : ITaskHandler
         }
     }
 
-    private async Task<bool> StartProcessAsync(string path, IEnumerable<string> arguments, MemoryStream stdOutStream, MemoryStream stdErrStream)
+    private void HandleStdout(string line)
     {
-        _logger.LogDebug("calling process.");
-
-        var processStartInfo = new ProcessStartInfo
-        {
-            FileName = path,
-            Arguments = string.Join(" ", arguments),
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        using var process = new SystemProcess { StartInfo = processStartInfo };
-        process.Start();
-
-        // Additional task to output stdout and stderr.
-        var outputTask = process.StandardOutput.BaseStream.CopyToAsync(stdOutStream);
-        var errorTask = process.StandardError.BaseStream.CopyToAsync(stdErrStream);
-        await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
-
-        _logger.LogDebug("Process exit code: {ExitCode}", process.ExitCode);
-        return process.ExitCode == 0;
+        _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage(line));
     }
 
-    private async Task<GdccCompileResult[]> ProcessErrStreamAsync(Stream stream)
+    private void HandleStdErr(string line)
     {
-        var results = new List<GdccCompileResult>();
-
-        await foreach (var result in ReadErrStreamAsync(stream))
+        var result = ParseLine(line);
+        if (result == null)
         {
-            results.Add(result);
-        }
-
-        return results.ToArray();
-    }
-
-    private async IAsyncEnumerable<GdccCompileResult> ReadErrStreamAsync(Stream stream)
-    {
-        using var reader = new StreamReader(stream);
-        _ = stream.Seek(0, SeekOrigin.Begin);
-
-        string? line;
-        while ((line = await reader.ReadLineAsync()) != null)
-        {
-            var result = ParseLine(line);
-            if (result == null)
-            {
-                _logger.LogWarning("Encountered an invalid line in compile results: '{Line}'", line);
-                continue;
-            }
-
-            yield return result.Value;
+            _logger.LogWarning("Encountered an invalid line in compile results: '{Line}'", line);
+            return;
         }
     }
 
-    private static GdccCompileResult? ParseLine(string line)
+    private static TaskOutputResult? ParseLine(string line)
     {
         return line switch
         {
-            { } when line.StartsWith(CompileResultWarningPrefix) => new GdccCompileResult(GdccCompileResultType.Warning, line[CompileResultWarningPrefix.Length..]),
-            { } when line.StartsWith(CompileResultErrorPrefix) => new GdccCompileResult(GdccCompileResultType.Error, line[CompileResultErrorPrefix.Length..]),
+            { } when line.StartsWith(CompileResultWarningPrefix) => TaskOutputResult.CreateWarning(line[CompileResultWarningPrefix.Length..]),
+            { } when line.StartsWith(CompileResultErrorPrefix) => TaskOutputResult.CreateError(line[CompileResultErrorPrefix.Length..]),
             _ => null
         };
     }

@@ -71,8 +71,21 @@ public sealed class ProjectTaskOrchestrator(
                 else
                 {
                     logger.LogWarning("Task failed but is configured to not stop on errors. Execution will continue.");
+                    continue;
                 }
             }
+
+            var warningCount = runTask.TaskOutput.Count(x => x.Type == TaskOutputType.Warning);
+            var errorCount = runTask.TaskOutput.Count(x => x.Type == TaskOutputType.Error);
+            var message = (warningCount, errorCount) switch
+            {
+                (0, 0) => "Task succeeded",
+                (_, 0) => $"Task succeeded with {warningCount} warning(s).",
+                (0, _) => $"Task succeeded with {errorCount} error(s).",
+                (_, _) => $"Task succeeded with {warningCount} warning(s) and {errorCount} error(s).",
+            };
+
+            runTask.TaskOutput.Add(TaskOutputResult.CreateSuccess(message));
         }
 
         profile.ElapsedTimeMs = (int)Stopwatch.GetElapsedTime(stopwatch).TotalMilliseconds;

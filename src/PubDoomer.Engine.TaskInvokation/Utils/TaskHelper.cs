@@ -7,11 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PubDoomer.Tasks.Compile.Utils;
+namespace PubDoomer.Engine.TaskInvokation.Utils;
 
-internal static class TaskHelper
+public static class TaskHelper
 {
-    internal static async Task<bool> RunProcessAsync(
+    public static async Task<bool> RunProcessAsync(
         string path,
         IEnumerable<string> arguments,
         Stream stdOutStream,
@@ -67,7 +67,7 @@ internal static class TaskHelper
         return process.ExitCode == 0;
     }
 
-    internal static async Task WriteToFileAsync(Stream stream, string taskName, string fileName)
+    public static async Task WriteToFileAsync(Stream stream, string taskName, string fileName)
     {
         var directory = Path.Combine(EngineStatics.TemporaryDirectory, taskName);
         _ = Directory.CreateDirectory(directory);

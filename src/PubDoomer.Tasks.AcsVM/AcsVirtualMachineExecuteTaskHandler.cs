@@ -2,6 +2,7 @@
 using PubDoomer.Engine.TaskInvokation.Context;
 using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using PubDoomer.Engine.TaskInvokation.Utils;
 using PubDoomer.Tasks.AcsVM.Extensions;
 using System.Diagnostics;
 using SystemProcess = System.Diagnostics.Process;
@@ -41,7 +42,14 @@ public sealed class AcsVirtualMachineExecuteTaskHandler : ITaskHandler
         bool succeeded;
         try
         {
-            succeeded = await StartProcessAsync(path, BuildArguments(), stdOutStream, stdErrStream);
+
+            succeeded = await TaskHelper.RunProcessAsync(
+                path,
+                BuildArguments(),
+                stdOutStream,
+                stdErrStream,
+                HandleStdout,
+                HandleStdErr);
         }
 
         // Premature exception was thrown, not related to compilation.
@@ -52,81 +60,26 @@ public sealed class AcsVirtualMachineExecuteTaskHandler : ITaskHandler
             return false;
         }
 
-        // TODO: Properly handle errors.
-
-        // The compiler returned an error.
+        // The compiler failed.
         if (!succeeded)
         {
-            // Try to get the stderr output.
-            // TODO: Formatting of output should be improved once I find good examples on what can error.
-            var errors = await ProcessErrStreamAsync(stdErrStream);
-            
-            if (errors.Length == 0)
-            {
-                _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Code execution failed for unknown reason."));
-                return false;
-            }
-
             _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Code execution failed."));
             return false;
         }
 
-        // Get the result from the stream.
-        // TODO: Make this on a per-line basis.
-        using var reader = new StreamReader(stdOutStream);
-        _ = stdOutStream.Seek(0, SeekOrigin.Begin);
-        var codeResponse = await reader.ReadToEndAsync();
         return true;
     }
 
-    private async Task<bool> StartProcessAsync(string path, IEnumerable<string> arguments, MemoryStream stdOutStream, MemoryStream stdErrStream)
+    private void HandleStdout(string line)
     {
-        _logger.LogDebug("calling process.");
-
-        var processStartInfo = new ProcessStartInfo
-        {
-            FileName = path,
-            Arguments = string.Join(" ", arguments),
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        using var process = new SystemProcess { StartInfo = processStartInfo };
-        process.Start();
-
-        // Additional task to output stdout and stderr.
-        var outputTask = process.StandardOutput.BaseStream.CopyToAsync(stdOutStream);
-        var errorTask = process.StandardError.BaseStream.CopyToAsync(stdErrStream);
-        await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
-
-        _logger.LogDebug("Process exit code: {ExitCode}", process.ExitCode);
-        return process.ExitCode == 0;
+        // Anything passed to stdout is part of code output.
+        _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage(line));
     }
 
-    private async Task<string[]> ProcessErrStreamAsync(Stream stream)
+    private void HandleStdErr(string line)
     {
-        var results = new List<string>();
-
-        await foreach (var result in ReadErrStreamAsync(stream))
-        {
-            results.Add(result);
-        }
-
-        return results.ToArray();
-    }
-
-    private async IAsyncEnumerable<string> ReadErrStreamAsync(Stream stream)
-    {
-        using var reader = new StreamReader(stream);
-        _ = stream.Seek(0, SeekOrigin.Begin);
-
-        string? line;
-        while ((line = await reader.ReadLineAsync()) != null)
-        {
-            yield return line;
-        }
+        // Warn here as the compiler likely failed and this will be logged as an error.
+        _taskContext.TaskOutput.Add(TaskOutputResult.CreateWarning(line));
     }
 
     private IEnumerable<string> BuildArguments()

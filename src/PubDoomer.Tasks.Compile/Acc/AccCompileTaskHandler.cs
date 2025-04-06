@@ -2,6 +2,7 @@
 using PubDoomer.Engine.TaskInvokation.Context;
 using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using PubDoomer.Engine.TaskInvokation.Utils;
 using PubDoomer.Tasks.Compile.Extensions;
 using PubDoomer.Tasks.Compile.Utils;
 using System.Diagnostics;
@@ -89,18 +90,17 @@ public sealed class AccCompileTaskHandler : ITaskHandler
             await TaskHelper.WriteToFileAsync(stdErrStream, _task.Name, "stderr.txt");
         }
 
-        // The compiler returned an error.
+        // Check for `acs.err`. Return anything from there as an error.
+        var compileResult = await HandleAccErrAsync();
+        if (compileResult != null)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError(compileResult));
+        }
+
+        // The compiler failed.
         if (!succeeded)
         {
-            // Check for `acs.err`. Otherwise give a generic error.
-            var compileResult = await HandleAccErrAsync();
-            if (compileResult == null)
-            {
-                _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Compilation failed for unknown reason."));
-                return false;
-            }
-
-            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError($"Compilation failed. {compileResult}"));
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError($"Compilation failed."));
             return false;
         }
 
@@ -109,12 +109,13 @@ public sealed class AccCompileTaskHandler : ITaskHandler
 
     private void HandleStdout(string line)
     {
-        // We do not use the stdout.
+        // We do not use the stdout because ACC logs a lot of unneeded messages.
     }
 
     private void HandleStdErr(string line)
     {
-        // We do not use the stderr.
+        // We do not use the stderr because ACC logs a lot of unneeded messages.
+        // Intead we parse the 'acs.err' file that comes with errors.
     }
 
     private IEnumerable<string> BuildArguments()
