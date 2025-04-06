@@ -4,8 +4,6 @@ using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Engine.TaskInvokation.Utils;
 using PubDoomer.Tasks.AcsVM.Extensions;
-using System.Diagnostics;
-using SystemProcess = System.Diagnostics.Process;
 
 namespace PubDoomer.Tasks.AcsVM;
 
@@ -53,7 +51,6 @@ public sealed class AcsVirtualMachineExecuteTaskHandler : ITaskHandler
         }
 
         // Premature exception was thrown, not related to compilation.
-        // TODO: Continue if possible and check if we also have compiler errors, should the process have executed succesfully?
         catch (Exception ex)
         {
             _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Code execution failed due to an error.", ex));

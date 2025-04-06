@@ -61,7 +61,6 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
         }
 
         // Premature exception was thrown, not related to compilation.
-        // TODO: Continue if possible and check if we also have compiler errors, should the process have executed succesfully?
         catch (Exception ex)
         {
             _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Code execution failed due to an error.", ex));
