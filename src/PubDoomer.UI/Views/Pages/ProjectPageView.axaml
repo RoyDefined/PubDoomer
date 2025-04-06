@@ -422,12 +422,12 @@
                                                 </StatefulTextbox>
                                             </Grid>
 
-                                            <!-- GDCC compiler -->
+                                            <!-- GDCC-ACC compiler -->
                                             <Grid ColumnDefinitions="115, *">
 
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"
-                                                           Text="GDCC compiler"
+                                                           Text="GDCC-ACC compiler"
                                                            TextWrapping="Wrap" />
 
                                                 <StatefulTextbox Grid.Column="1"
@@ -436,6 +436,81 @@
                                                         <Button Grid.Column="2"
                                                                 Command="{Binding PickFileCommand}"
                                                                 CommandParameter="{x:Static compilestatics:CompileTaskStatics.GdccAccCompilerExecutableFilePathKey}"
+                                                                Classes="Tertiary"
+                                                                Theme="{DynamicResource SolidButton}"
+                                                                Padding="5 0">
+                                                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                      Classes="ExtraLarge"
+                                                                      Data="{StaticResource SemiIconFolderOpen}" />
+                                                        </Button>
+                                                    </StatefulTextbox.AdditionalContent>
+                                                </StatefulTextbox>
+                                            </Grid>
+                                            
+                                            <!-- GDCC-CC compiler -->
+                                            <Grid ColumnDefinitions="115, *">
+
+                                                <TextBlock VerticalAlignment="Center"
+                                                           FontWeight="Bold"
+                                                           Text="GDCC-CC compiler"
+                                                           TextWrapping="Wrap" />
+
+                                                <StatefulTextbox Grid.Column="1"
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.Configurations[GdccCcCompilerExecutableFilePath]}">
+                                                    <StatefulTextbox.AdditionalContent>
+                                                        <Button Grid.Column="2"
+                                                                Command="{Binding PickFileCommand}"
+                                                                CommandParameter="{x:Static compilestatics:CompileTaskStatics.GdccCcCompilerExecutableFilePathKey}"
+                                                                Classes="Tertiary"
+                                                                Theme="{DynamicResource SolidButton}"
+                                                                Padding="5 0">
+                                                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                      Classes="ExtraLarge"
+                                                                      Data="{StaticResource SemiIconFolderOpen}" />
+                                                        </Button>
+                                                    </StatefulTextbox.AdditionalContent>
+                                                </StatefulTextbox>
+                                            </Grid>
+
+                                            <!-- GDCC-MakeLib compiler -->
+                                            <Grid ColumnDefinitions="115, *">
+
+                                                <TextBlock VerticalAlignment="Center"
+                                                           FontWeight="Bold"
+                                                           Text="GDCC-Makelib"
+                                                           TextWrapping="Wrap" />
+
+                                                <StatefulTextbox Grid.Column="1"
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.Configurations[GdccMakeLibCompilerExecutableFilePath]}">
+                                                    <StatefulTextbox.AdditionalContent>
+                                                        <Button Grid.Column="2"
+                                                                Command="{Binding PickFileCommand}"
+                                                                CommandParameter="{x:Static compilestatics:CompileTaskStatics.GdccMakeLibCompilerExecutableFilePathKey}"
+                                                                Classes="Tertiary"
+                                                                Theme="{DynamicResource SolidButton}"
+                                                                Padding="5 0">
+                                                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                      Classes="ExtraLarge"
+                                                                      Data="{StaticResource SemiIconFolderOpen}" />
+                                                        </Button>
+                                                    </StatefulTextbox.AdditionalContent>
+                                                </StatefulTextbox>
+                                            </Grid>
+
+                                            <!-- GDCC-LD compiler -->
+                                            <Grid ColumnDefinitions="115, *">
+
+                                                <TextBlock VerticalAlignment="Center"
+                                                           FontWeight="Bold"
+                                                           Text="GDCC-LD"
+                                                           TextWrapping="Wrap" />
+
+                                                <StatefulTextbox Grid.Column="1"
+                                                                 Text="{Binding CurrentProjectProvider.ProjectContext.Configurations[GdccLdCompilerExecutableFilePath]}">
+                                                    <StatefulTextbox.AdditionalContent>
+                                                        <Button Grid.Column="2"
+                                                                Command="{Binding PickFileCommand}"
+                                                                CommandParameter="{x:Static compilestatics:CompileTaskStatics.GdccLdCompilerExecutableFilePathKey}"
                                                                 Classes="Tertiary"
                                                                 Theme="{DynamicResource SolidButton}"
                                                                 Padding="5 0">

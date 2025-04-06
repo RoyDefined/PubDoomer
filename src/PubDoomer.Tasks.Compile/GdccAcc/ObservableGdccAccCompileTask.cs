@@ -18,7 +18,7 @@ public partial class ObservableGdccAccCompileTask : CompileTaskBase
 
     [ObservableProperty] private bool _dontWarnForwardReferences;
 
-    // TODO: Implement additional parameters assuming these exist?
+    // TODO: Implement additional parameters.
 
     public ObservableGdccAccCompileTask()
     {

@@ -67,4 +67,18 @@ internal static class MapEditUtil
             .Select(Path.GetFileNameWithoutExtension)
             .OfType<string>();
     }
+
+    internal static void StartSlade(string filePath, IEnumerable<string> paths)
+    {
+        var arguments = string.Join(" ", paths.Select(x => $"\"{x}\""));
+        var processStartInfo = new ProcessStartInfo
+        {
+            FileName = filePath,
+            Arguments = arguments,
+            UseShellExecute = false,
+        };
+
+        // Start the process without waiting for it to finish
+        Process.Start(processStartInfo);
+    }
 }

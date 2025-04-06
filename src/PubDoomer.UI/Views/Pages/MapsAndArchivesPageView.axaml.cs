@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace PubDoomer.Views.Pages;
 
-public partial class MapPageView : UserControl
+public partial class MapsAndArchivesPageView : UserControl
 {
-    public MapPageView()
+    public MapsAndArchivesPageView()
     {
         InitializeComponent();
     }

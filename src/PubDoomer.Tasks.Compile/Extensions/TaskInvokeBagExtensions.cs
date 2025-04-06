@@ -45,6 +45,39 @@ public static class TaskInvokeBagExtensions
         return GetCompilerExecutableFilePathByKey(taskInvokeBag, CompileTaskStatics.GdccAccCompilerExecutableFilePathKey);
     }
 
+    public static TaskInvokeBag SetGdccCcCompilerExecutableFilePath(this TaskInvokeBag taskInvokeBag, string? filePath)
+    {
+        taskInvokeBag[CompileTaskStatics.GdccCcCompilerExecutableFilePathKey] = filePath;
+        return taskInvokeBag;
+    }
+
+    public static string GetGdccCcCompilerExecutableFilePath(this TaskInvokeBag taskInvokeBag)
+    {
+        return GetCompilerExecutableFilePathByKey(taskInvokeBag, CompileTaskStatics.GdccCcCompilerExecutableFilePathKey);
+    }
+
+    public static TaskInvokeBag SetGdccMakeLibCompilerExecutableFilePath(this TaskInvokeBag taskInvokeBag, string? filePath)
+    {
+        taskInvokeBag[CompileTaskStatics.GdccMakeLibCompilerExecutableFilePathKey] = filePath;
+        return taskInvokeBag;
+    }
+
+    public static string GetGdccMakeLibCompilerExecutableFilePath(this TaskInvokeBag taskInvokeBag)
+    {
+        return GetCompilerExecutableFilePathByKey(taskInvokeBag, CompileTaskStatics.GdccMakeLibCompilerExecutableFilePathKey);
+    }
+
+    public static TaskInvokeBag SetGdccLdCompilerExecutableFilePath(this TaskInvokeBag taskInvokeBag, string? filePath)
+    {
+        taskInvokeBag[CompileTaskStatics.GdccLdCompilerExecutableFilePathKey] = filePath;
+        return taskInvokeBag;
+    }
+
+    public static string GetGdccLdCompilerExecutableFilePath(this TaskInvokeBag taskInvokeBag)
+    {
+        return GetCompilerExecutableFilePathByKey(taskInvokeBag, CompileTaskStatics.GdccLdCompilerExecutableFilePathKey);
+    }
+
     private static string GetCompilerExecutableFilePathByKey(TaskInvokeBag taskInvokeBag, string key)
     {
         if (!taskInvokeBag.TryGetValue(key, out var filePathMaybe))

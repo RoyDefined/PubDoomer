@@ -1,19 +1,19 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using PubDoomer.Engine.TaskInvokation.Context;
+using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.UI.Editor.Tasks;
 
 namespace PubDoomer.UI.Editor.Tasks;
 
-public sealed class WarningEditorTaskHandler(
-    ObservableWarningEditorTask _,
-    TaskInvokeContext __) : ITaskHandler
+public sealed class WarningEditorTaskHandler(IInvokableTask taskContext, TaskInvokeContext _) : ITaskHandler
 {
-    public ValueTask<TaskInvokationResult> HandleAsync()
+    public ValueTask<bool> HandleAsync()
     {
-        return ValueTask.FromResult(
-            TaskInvokationResult.FromSuccess(
-                "The warning task has invoked succesfully.",
-                ["Warning 1", "Warning 2"]));
+        taskContext.TaskOutput.Add(TaskOutputResult.CreateWarning("Warning 1"));
+        taskContext.TaskOutput.Add(TaskOutputResult.CreateWarning("Warning 2"));
+        taskContext.TaskOutput.Add(TaskOutputResult.CreateSuccess("The success task has invoked succesfully."));
+        return ValueTask.FromResult(true);
     }
 }

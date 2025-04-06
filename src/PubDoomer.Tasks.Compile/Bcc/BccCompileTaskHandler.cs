@@ -1,81 +1,132 @@
 ﻿using Microsoft.Extensions.Logging;
 using PubDoomer.Engine.TaskInvokation.Context;
-using PubDoomer.Engine.TaskInvokation.Process;
+using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using PubDoomer.Engine.TaskInvokation.Utils;
 using PubDoomer.Tasks.Compile.Extensions;
+using System.Text.RegularExpressions;
 
 namespace PubDoomer.Tasks.Compile.Bcc;
 
-public sealed class BccCompileTaskHandler(
-    ILogger<BccCompileTaskHandler> logger,
-    ObservableBccCompileTask taskInfo,
-    TaskInvokeContext context) : ProcessInvokeHandlerBase(logger, taskInfo), ITaskHandler
+public sealed partial class BccCompileTaskHandler : ITaskHandler
 {
-    protected override string StdOutFileName => "stdout_bcc.txt";
-    protected override string StdErrFileName => "stderr_bcc.txt";
+    private readonly ILogger _logger;
+    private readonly IInvokableTask _taskContext;
+    private readonly TaskInvokeContext _invokeContext;
+    private readonly ObservableBccCompileTask _task;
 
-    public async ValueTask<TaskInvokationResult> HandleAsync()
+    // Match pattern like: "...path with spaces...:14:18: warning: message here"
+    [GeneratedRegex(@"^(.*?):(\d+):(\d+):\s*(warning|error):\s*(.+)$", RegexOptions.IgnoreCase)]
+    private static partial Regex StdErrMessageMatcher();
+
+    public BccCompileTaskHandler(
+        ILogger<BccCompileTaskHandler> logger, IInvokableTask taskContext, TaskInvokeContext invokeContext)
     {
-        var path = context.ContextBag.GetBccCompilerExecutableFilePath();
-        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of BCC executable: {BccExecutablePath}", nameof(BccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
+        if (taskContext.Task is not ObservableBccCompileTask task)
+        {
+            throw new ArgumentException($"The given task is not a {nameof(ObservableBccCompileTask)}.");
+        }
 
-        // Create streams for stdout and stderr if configured.
-        // The stderr stream is always created, as this gives us access to compile errors when they occured.
-        using var stdOutStream = taskInfo.GenerateStdOutAndStdErrFiles ? new MemoryStream() : null;
+        _logger = logger;
+        _taskContext = taskContext;
+        _invokeContext = invokeContext;
+        _task = task;
+    }
+
+    public async ValueTask<bool> HandleAsync()
+    {
+        var path = _invokeContext.ContextBag.GetBccCompilerExecutableFilePath();
+        _logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of BCC executable: {BccExecutablePath}", nameof(BccCompileTaskHandler), _task.InputFilePath, _task.OutputFilePath, path);
+
+        // Verify the task has a name.
+        if (_task.Name == null)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Task is missing a name."));
+            return false;
+        }
+
+        using var stdOutStream = new MemoryStream();
         using var stdErrStream = new MemoryStream();
 
-        var result = await StartProcessAsync(
-            new ProcessInvokeContext(path, BuildArguments(), stdOutStream, stdErrStream));
+        bool succeeded;
+        try
+        {
+            succeeded = await TaskHelper.RunProcessAsync(
+                path,
+                BuildArguments(),
+                stdOutStream,
+                stdErrStream,
+                HandleStdout,
+                HandleStdErr);
+        }
 
         // Premature exception was thrown, not related to compilation.
-        // TODO: Continue if possible and check if we also have compiler errors, should the process have executed?
-        if (result.Exception != null)
+        catch (Exception ex)
         {
-            return TaskInvokationResult.FromError($"Compilation failed due to an error", null, result.Exception);
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Code execution failed due to an error.", ex));
+            return false;
         }
 
         // Write stdout and stderr if configured.
-        if (stdOutStream != null) await WriteStdOutToFileAsync(stdOutStream);
-        if (taskInfo.GenerateStdOutAndStdErrFiles) await WriteStdErrToFileAsync(stdErrStream);
-
-        // The compiler returned an error.
-        if (result.HasCompilerError)
+        if (_task.GenerateStdOutAndStdErrFiles)
         {
-            // Check stderr for content, which means compilation failed.
-            var compileResult = await HandleCompileErrorAsync(stdErrStream);
-            if (compileResult == null)
-            {
-                return TaskInvokationResult.FromError("Compilation failed for unknown reason.");
-            }
-
-            return TaskInvokationResult.FromError($"Compilation failed", compileResult);
+            await TaskHelper.WriteToFileAsync(stdOutStream, _task.Name, "stdout.txt");
+            await TaskHelper.WriteToFileAsync(stdErrStream, _task.Name, "stderr.txt");
         }
 
-        return TaskInvokationResult.FromSuccess();
+        // The compiler failed.
+        if (!succeeded)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Compilation failed."));
+            return false;
+        }
+
+        return true;
     }
 
     private IEnumerable<string> BuildArguments()
     {
-        yield return $"\"{taskInfo.InputFilePath}\"";
-        yield return $"\"{taskInfo.OutputFilePath}\"";
+        yield return $"\"{_task.InputFilePath}\"";
+        yield return $"\"{_task.OutputFilePath}\"";
     }
 
-    private async ValueTask<string?> HandleCompileErrorAsync(Stream stream)
+    private void HandleStdout(string line)
     {
-        _ = stream.Seek(0, SeekOrigin.Begin);
+        _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage(line));
+    }
 
-        string content;
-        using (var reader = new StreamReader(stream))
+    private void HandleStdErr(string line)
+    {
+        var result = ParseLine(line);
+        if (result == null)
         {
-            content = await reader.ReadToEndAsync();
+            _logger.LogWarning("Encountered an invalid line in compile results: '{Line}'", line);
+            return;
         }
+        _taskContext.TaskOutput.Add(result);
+    }
 
-        // If the content is empty, there was no error.
-        if (string.IsNullOrEmpty(content))
-        {
+    private static TaskOutputResult? ParseLine(string line)
+    {
+        // Using regex we determine the formatting of the message.
+        // Notably it always contains 'warning: ' or 'error: '
+
+        if (string.IsNullOrWhiteSpace(line))
             return null;
-        }
-        
-        return content;
+
+        var match = StdErrMessageMatcher().Match(line);
+        if (!match.Success)
+            return null;
+
+        // Note the regex is build to also parse the code line and character, though it is currently unused.
+        var type = match.Groups[4].Value.ToLowerInvariant();
+        var message = match.Groups[5].Value.Trim();
+
+        return type switch
+        {
+            "warning" => TaskOutputResult.CreateWarning(message),
+            "error" => TaskOutputResult.CreateError(message),
+            _ => null
+        };
     }
 }

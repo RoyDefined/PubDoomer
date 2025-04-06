@@ -128,86 +128,123 @@ public partial class MainWindowModel : MainViewModel
     }
 
     [RelayCommand]
-    private async Task SaveBinaryProjectAsync()
-    {
-        await SaveProjectAsync(ProjectReadingWritingType.Binary);
-    }
-
-    [RelayCommand]
-    private async Task SaveTextProjectAsync()
-    {
-        await SaveProjectAsync(ProjectReadingWritingType.Text);
-    }
-
-    [RelayCommand]
-    private async Task SaveBinaryProjectAsAsync()
-    {
-        await SaveProjectAsAsync(ProjectReadingWritingType.Binary);
-    }
-
-    [RelayCommand]
-    private async Task SaveTextProjectAsAsync()
-    {
-        await SaveProjectAsAsync(ProjectReadingWritingType.Text);
-    }
-
-    private async Task SaveProjectAsync(ProjectReadingWritingType type)
+    private async Task SaveProjectAsync()
     {
         if (AssertInDesignMode()) return;
+        
+        try
+        {
+            if (!await SaveProjectCoreAsync()) return;
+            WindowNotificationManager?.Show(new Notification("Project saved", null, NotificationType.Success));
+        }
+        catch (Exception ex)
+        {
+            await _dialogueProvider.AlertAsync(AlertType.Warning,
+                "Failed to save project",
+                $"The project could not be saved. {ex.Message}");
+        }
+    }
+
+    private async Task<bool> SaveProjectCoreAsync()
+    {
+        if (AssertInDesignMode()) return false;
 
         var projectContext = CurrentProjectProvider.ProjectContext;
         if (projectContext == null)
         {
-            return;
+            return false;
         }
 
         // 'Save as' in case of no file path.
         if (projectContext.FilePath == null)
         {
-            await SaveProjectAsAsync(type);
-            return;
+            await SaveProjectAsAsync();
+            return false;
         }
+        
+        // Also 'Save as' if the extension could not be determined.
+        if (Path.GetExtension(projectContext.FilePath) is not { } extension)
+        {
+            await SaveProjectAsAsync();
+            return false;
+        }
+        
+        // Determine the type based on the existing extension
+        var type = extension[1..] switch
+        {
+            ProjectBinaryFormatExtension => ProjectReadingWritingType.Binary,
+            ProjectTextFormatExtension => ProjectReadingWritingType.Text,
+            _ => throw new ArgumentException($"Project type not found from extension: {extension}"),
+        };
 
-        // TODO: Allow different formats.
-        using var fileStream = File.OpenWrite(projectContext.FilePath);
+        await using var fileStream = File.OpenWrite(projectContext.FilePath);
         _savingService.SaveProject(projectContext, projectContext.FilePath, fileStream, type);
-        WindowNotificationManager?.Show(new Notification("Project saved", null, NotificationType.Success));
+        return true;
     }
 
-    private async Task SaveProjectAsAsync(ProjectReadingWritingType type)
+    [RelayCommand]
+    private async Task SaveProjectAsAsync()
     {
         if (AssertInDesignMode()) return;
-        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
-
-        var extension = type switch
+        
+        try
         {
-            ProjectReadingWritingType.Binary => ProjectBinaryFormatExtension,
-            ProjectReadingWritingType.Text => ProjectTextFormatExtension,
-            _ => throw new ArgumentException($"Project type not found: {type}"),
-        };
+            if (!await SaveProjectAsCoreAsync()) return;
+            WindowNotificationManager?.Show(new Notification("Project saved", null, NotificationType.Success));
+        }
+        catch (Exception ex)
+        {
+            await _dialogueProvider.AlertAsync(AlertType.Warning,
+                "Failed to save project",
+                $"The project could not be saved. {ex.Message}");
+        }
+    }
+
+    private async Task<bool> SaveProjectAsCoreAsync()
+    {
+        if (AssertInDesignMode()) return false;
 
         var window = _windowProvider.ProvideWindow();
         var storageFile = await window.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            DefaultExtension = extension,
-            Title = "Save Project"
+            Title = "Save Project",
+            FileTypeChoices = [
+                new FilePickerFileType("PubDoomer data file (binary)") { Patterns =  [$"*.{ProjectBinaryFormatExtension}"] },
+                new FilePickerFileType("PubDoomer data file (text)") { Patterns =  [$"*.{ProjectTextFormatExtension}"] }
+            ]
         });
 
-        if (storageFile == null) return;
+        if (storageFile == null) return false;
 
-        if (storageFile.TryGetLocalPath() is not string filePath)
+        if (storageFile.TryGetLocalPath() is not { } filePath)
         {
             await _dialogueProvider.AlertAsync(AlertType.Warning,
-                "Failed to use path",
+                "Failed to save project",
                 "The path to save is not a valid path.");
-            return;
+            return false;
+        }
+        
+        // Verify the extension can be determined.
+        if (Path.GetExtension(filePath) is not { } extension)
+        {
+            await _dialogueProvider.AlertAsync(AlertType.Warning,
+                "Failed to save project",
+                "The path to save is not a valid path.");
+            return false;
         }
 
-        // TODO: Allow different formats.
-        var writeStream = await storageFile.OpenWriteAsync();
+        // Determine the type based on the existing extension.
+        var type = extension[1..] switch
+        {
+            ProjectBinaryFormatExtension => ProjectReadingWritingType.Binary,
+            ProjectTextFormatExtension => ProjectReadingWritingType.Text,
+            _ => throw new ArgumentException($"Project type not found from extension: {extension}"),
+        };
+        
+        await using var writeStream = await storageFile.OpenWriteAsync();
         _savingService.SaveProject(CurrentProjectProvider.ProjectContext, filePath, writeStream, type);
-        WindowNotificationManager?.Show(new Notification("Project saved", null, NotificationType.Success));
         CurrentProjectProvider.ProjectContext.FilePath = filePath;
+        return true;
     }
 
     [RelayCommand]
@@ -221,8 +258,8 @@ public partial class MainWindowModel : MainViewModel
             Title = "Open Project",
             AllowMultiple = false,
             FileTypeFilter = [
-                new FilePickerFileType("PubDoomer data format") { Patterns = [$"*.{ProjectBinaryFormatExtension}"] },
-                new FilePickerFileType("PubDoomer text format") { Patterns = [$"*.{ProjectTextFormatExtension}"] }
+                new FilePickerFileType("PubDoomer data file (binary)") { Patterns = [$"*.{ProjectBinaryFormatExtension}"] },
+                new FilePickerFileType("PubDoomer data file (text)") { Patterns = [$"*.{ProjectTextFormatExtension}"] }
             ]
         });
 
@@ -230,7 +267,7 @@ public partial class MainWindowModel : MainViewModel
 
         var file = storageFiles.First();
         var filePath = file.Path.AbsolutePath;
-        using var fileStream = await file.OpenReadAsync();
+        await using var fileStream = await file.OpenReadAsync();
         await TryLoadProjectPathAsync(filePath, fileStream);
         await UpdateRecentProjectsWithCurrentAsync();
     }
@@ -250,7 +287,7 @@ public partial class MainWindowModel : MainViewModel
             return;
         }
 
-        using var fileStream = File.OpenRead(filePath);
+        await using var fileStream = File.OpenRead(filePath);
         await TryLoadProjectPathAsync(filePath, fileStream);
     }
 
@@ -267,8 +304,9 @@ public partial class MainWindowModel : MainViewModel
                 _ => throw new ArgumentException($"Project type could not be determined from file '{projectPath}'."),
             };
 
-            // TODO: Allow different formats.
             var projectContext = _savingService.LoadProject(projectPath, fileStream, type);
+
+            projectContext.FilePath = projectPath;
             CurrentProjectProvider.ProjectContext = projectContext;
         }
         catch (Exception ex)

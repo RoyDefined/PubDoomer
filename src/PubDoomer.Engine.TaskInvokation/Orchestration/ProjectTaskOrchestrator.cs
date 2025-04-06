@@ -53,17 +53,10 @@ public sealed class ProjectTaskOrchestrator(
         {
             runTask.Status = ProfileRunTaskStatus.Running;
 
-            var result = await InvokeTaskAsync(runTask.Task, context);
-            logger.LogDebug("Task result: {ResultType}, {Result}", result.ResultType, result.ResultMessage);
+            var success = await InvokeTaskAsync(runTask, context);
+            runTask.Status = success ? ProfileRunTaskStatus.Success : ProfileRunTaskStatus.Error;
 
-            runTask.Status = result.ResultType == TaskResultType.Success
-                ? ProfileRunTaskStatus.Success
-                : ProfileRunTaskStatus.Error;
-
-            runTask.ResultMessage = result.ResultMessage;
-            runTask.ResultWarnings = result.Warnings != null ? new ObservableCollection<string>(result.Warnings) : null;
-            runTask.ResultErrors = result.Errors != null ? new ObservableCollection<string>(result.Errors) : null;
-            runTask.Exception = result.Exception;
+            logger.LogDebug("Task success: {Success}", success);
 
             // Check error behaviour.
             // If there was an error and the behaviour is to quit, then end the task invocation early.
@@ -71,15 +64,28 @@ public sealed class ProjectTaskOrchestrator(
             {
                 if (runTask.Behaviour == ProfileTaskErrorBehaviour.StopOnError)
                 {
-                    logger.LogWarning(runTask.Exception, "Task failure.");
                     profile.Status = ProfileRunContextStatus.Error;
+                    logger.LogWarning("Task failure. Profile is configured to stop.");
                     break;
                 }
                 else
                 {
-                    logger.LogWarning(runTask.Exception, "Task failed but is configured to not stop on errors. Execution will continue.");
+                    logger.LogWarning("Task failed but is configured to not stop on errors. Execution will continue.");
+                    continue;
                 }
             }
+
+            var warningCount = runTask.TaskOutput.Count(x => x.Type == TaskOutputType.Warning);
+            var errorCount = runTask.TaskOutput.Count(x => x.Type == TaskOutputType.Error);
+            var message = (warningCount, errorCount) switch
+            {
+                (0, 0) => "Task succeeded",
+                (_, 0) => $"Task succeeded with {warningCount} warning(s).",
+                (0, _) => $"Task succeeded with {errorCount} error(s).",
+                (_, _) => $"Task succeeded with {warningCount} warning(s) and {errorCount} error(s).",
+            };
+
+            runTask.TaskOutput.Add(TaskOutputResult.CreateSuccess(message));
         }
 
         profile.ElapsedTimeMs = (int)Stopwatch.GetElapsedTime(stopwatch).TotalMilliseconds;
@@ -98,13 +104,13 @@ public sealed class ProjectTaskOrchestrator(
         return handler;
     }
 
-    private async Task<TaskInvokationResult> InvokeTaskAsync(IRunnableTask task, TaskInvokeContext context)
+    private async Task<bool> InvokeTaskAsync(IInvokableTask taskContext, TaskInvokeContext context)
     {
-        var handler = handlerProviderDelegate(task, context);
+        var handler = handlerProviderDelegate(taskContext, context);
         if (handler == null)
-            throw new ArgumentException($"Unknown handler type: {task.HandlerType.FullName}");
+            throw new ArgumentException($"Unknown handler type: {taskContext.Task.HandlerType.FullName}");
 
-        logger.LogDebug("Invoking task {TaskName}", task.HandlerType.FullName);
+        logger.LogDebug("Invoking task {TaskName}", taskContext.Task.HandlerType.FullName);
         return await handler.HandleAsync();
     }
 }

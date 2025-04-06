@@ -22,6 +22,9 @@ internal static class TaskInvokeContextUtil
             .SetAccCompilerExecutableFilePath(settings.AccCompilerExecutableFilePath)
             .SetBccCompilerExecutableFilePath(settings.BccCompilerExecutableFilePath)
             .SetGdccAccCompilerExecutableFilePath(settings.GdccAccCompilerExecutableFilePath)
+            .SetGdccCcCompilerExecutableFilePath(settings.GdccCcCompilerExecutableFilePath)
+            .SetGdccMakeLibCompilerExecutableFilePath(settings.GdccMakeLibCompilerExecutableFilePath)
+            .SetGdccLdCompilerExecutableFilePath(settings.GdccLdCompilerExecutableFilePath)
             .SetAcsVmExecutableFilePath(settings.AcsVmExecutableFilePath);
 
         return context;

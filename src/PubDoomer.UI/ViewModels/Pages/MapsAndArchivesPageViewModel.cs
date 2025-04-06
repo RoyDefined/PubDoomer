@@ -26,7 +26,7 @@ using PubDoomer.Views.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
 
-public partial class MapPageViewModel : PageViewModel
+public partial class MapsAndArchivesPageViewModel : PageViewModel
 {
     private readonly ILogger _logger;
     private readonly DialogueProvider? _dialogueProvider;
@@ -40,7 +40,7 @@ public partial class MapPageViewModel : PageViewModel
 
     private string[]? _selectableConfigurations;
 
-    public MapPageViewModel()
+    public MapsAndArchivesPageViewModel()
     {
         if (!Design.IsDesignMode) throw new InvalidOperationException();
 
@@ -49,8 +49,8 @@ public partial class MapPageViewModel : PageViewModel
         SessionSettings = new SessionSettings();
     }
 
-    public MapPageViewModel(
-        ILogger<MapPageViewModel> logger,
+    public MapsAndArchivesPageViewModel(
+        ILogger<MapsAndArchivesPageViewModel> logger,
         CurrentProjectProvider currentProjectProvider,
         SessionSettings sessionSettings,
         LocalSettings localSettings,
@@ -95,7 +95,7 @@ public partial class MapPageViewModel : PageViewModel
     }
     
     [RelayCommand]
-    private async Task ExecuteRunMapAsync(MapContext map)
+    private async Task RunMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
@@ -106,7 +106,7 @@ public partial class MapPageViewModel : PageViewModel
         // If not, we open the dialogue to configure it and end this method.
         if (SelectedEngineRunConfiguration == null || SelectedIWad == null)
         {
-            await ConfigureExecuteRunMapAsync(map);
+            await ConfigureRunMapAsync(map);
             return;
         }
         
@@ -114,7 +114,7 @@ public partial class MapPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private async Task ConfigureExecuteRunMapAsync(MapContext map)
+    private async Task ConfigureRunMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
@@ -149,19 +149,19 @@ public partial class MapPageViewModel : PageViewModel
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to open Ultimate DoomBuilder");
+            _logger.LogError(ex, "Failed to open Ultimate DoomBuilder.");
             await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Ultimate DoomBuilder",
                 $"An error occurred while opening Ultimate DoomBuilder. Please check your configuration. Error: {ex.Message}");
         }
     }
 
     [RelayCommand]
-    private async Task ExecuteEditMapAsync(MapContext map)
+    private async Task EditUdbMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         
-        _logger.LogDebug("Opening map '{MapName}' using Ultimate DoomBuilder configured at path '{UdbPath}'.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
+        _logger.LogDebug("Opening map {MapName} using Ultimate DoomBuilder configured at path {UdbPath}.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
         
         // Path to UDB must exist.
         if (_mergedSettings.UdbExecutableFilePath == null)
@@ -175,7 +175,7 @@ public partial class MapPageViewModel : PageViewModel
         // If not, we open the dialogue to configure it and end this method.
         if (SelectedIWad == null || SelectedConfiguration == null)
         {
-            await ConfigureExecuteEditMapAsync(map);
+            await ConfigureEditUdbMapAsync(map);
             return;
         }
         
@@ -183,12 +183,12 @@ public partial class MapPageViewModel : PageViewModel
     }
 
     [RelayCommand]
-    private async Task ConfigureExecuteEditMapAsync(MapContext map)
+    private async Task ConfigureEditUdbMapAsync(MapContext map)
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         
-        _logger.LogDebug("Configuring to edit map '{MapName}' using Ultimate DoomBuilder configured at path '{UdbPath}'.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
+        _logger.LogDebug("Configuring to edit map {MapName} using Ultimate DoomBuilder configured at path {UdbPath}.", map.Name, _mergedSettings.UdbExecutableFilePath ?? "N/A");
         
         // Path to UDB must exist.
         if (_mergedSettings.UdbExecutableFilePath == null)
@@ -204,8 +204,9 @@ public partial class MapPageViewModel : PageViewModel
         {
             _selectableConfigurations ??= MapEditUtil.GetConfigurations(_mergedSettings.UdbExecutableFilePath).ToArray();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to retrieve configurations.");
             await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to retrieve configurations",
                 "Failed to retrieve eligible configurations for Ultimate DoomBuilder. Make sure the configured path is valid and contains a '/Configurations' folder with configurations.");
             return;
@@ -237,12 +238,70 @@ public partial class MapPageViewModel : PageViewModel
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to open Ultimate DoomBuilder");
+            _logger.LogError(ex, "Failed to open Ultimate DoomBuilder.");
             await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Ultimate DoomBuilder",
                 $"An error occurred while opening Ultimate DoomBuilder. Please check your configuration. Error: {ex.Message}");
         }
     }
     
+    [RelayCommand]
+    private async Task EditSladeMapAsync(MapContext map)
+    {
+        if (AssertInDesignMode()) return;
+        
+        _logger.LogDebug("Opening map {MapName} using Slade configured at path {UdbPath}.", map.Name, _mergedSettings.SladeExecutableFilePath ?? "N/A");
+        await StartSladeAsync(map.Path!);
+    }
+    
+    [RelayCommand]
+    private async Task EditSladeMapWithArchivesAsync(MapContext map)
+    {
+        if (AssertInDesignMode()) return;
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        
+        _logger.LogDebug("Opening map {MapName} using Slade + Archives configured at path {UdbPath}.", map.Name, _mergedSettings.SladeExecutableFilePath ?? "N/A");
+        
+        // We do archives first so that these are loaded first in Slade.
+        var archivePaths = CurrentProjectProvider.ProjectContext.Archives.Select(x => x.Path!);
+        var paths = archivePaths.Append(map.Path!);
+        await StartSladeAsync(paths);
+    }
+    
+    [RelayCommand]
+    private async Task EditSladeArchiveAsync(ArchiveContext archive)
+    {
+        if (AssertInDesignMode()) return;
+        
+        _logger.LogDebug("Opening archive {ArchiveName} using Slade configured at path {UdbPath}.", archive.Name, _mergedSettings.SladeExecutableFilePath ?? "N/A");
+        await StartSladeAsync(archive.Path!);
+    }
+
+    private async Task StartSladeAsync(params IEnumerable<string> paths)
+    {
+        if (AssertInDesignMode()) return;
+        
+        // Path to Slade must exist.
+        if (_mergedSettings.SladeExecutableFilePath == null)
+        {
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Missing configuration",
+                "The path to Slade is not configured. You must either configure the path in the project settings, or your local settings.");
+            return;
+        }
+        
+        // Launch Slade with all paths specified.
+        // Any exceptions are displayed in a window.
+        try
+        {
+            MapEditUtil.StartSlade(_mergedSettings.SladeExecutableFilePath, paths);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to open Slade.");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Slade",
+                $"An error occurred while opening Slade. Please check your configuration. Error: {ex.Message}");
+        }
+    }
+
     [RelayCommand]
     private async Task EditMapAsync(MapContext context)
     {

@@ -4,11 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:engine="clr-namespace:PubDoomer.Project.Engine"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="PubDoomer.Views.Pages.MapPageView"
-             x:DataType="MapPageViewModel">
+             x:Class="PubDoomer.Views.Pages.MapsAndArchivesTabs.MapsControl"
+             x:DataType="MapsAndArchivesPageViewModel">
     
     <Design.DataContext>
-        <MapPageViewModel />
+        <MapsAndArchivesPageViewModel />
     </Design.DataContext>
 
     <UserControl.Resources>
@@ -89,22 +89,22 @@
                                         -->
                                         <SplitButton Theme="{DynamicResource SolidSplitButton}"
                                                      Classes="Secondary"
-                                                     Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).ExecuteRunMapCommand}"
+                                                     Command="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).RunMapCommand}"
                                                      CommandParameter="{Binding}">
                                             <SplitButton.Content>
                                                 <StackPanel Orientation="Horizontal" Spacing="10">
                                                     
                                                     <!-- Varying image depending on the engine type. -->
-                                                    <Image IsVisible="{Binding $parent[UserControl].((MapPageViewModel)DataContext).SelectedEngineRunConfiguration,
+                                                    <Image IsVisible="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).SelectedEngineRunConfiguration,
                                                                 Converter={StaticResource NullToBoolConverter}}"
                                                            Width="26"
                                                            Height="26"
                                                            Margin="0 0 5 0"
-                                                           Source="{Binding $parent[UserControl].((MapPageViewModel)DataContext).SelectedEngineRunConfiguration.Context.Type,
+                                                           Source="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).SelectedEngineRunConfiguration.Context.Type,
                                                                 Converter={StaticResource EngineTypeToImagePathConverter}}"/>
                                                     
                                                     <!-- Static unknown image when no engine was selected/configured yet. -->
-                                                    <Image IsVisible="{Binding $parent[UserControl].((MapPageViewModel)DataContext).SelectedEngineRunConfiguration,
+                                                    <Image IsVisible="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).SelectedEngineRunConfiguration,
                                                                 Converter={StaticResource NullToBoolConverter}, ConverterParameter=true}"
                                                            Width="26"
                                                            Height="26"
@@ -121,7 +121,7 @@
                                                     
                                                     <!-- Configure and edit opens a separate dialogue. -->
                                                     <MenuItem Header="Configure and run..."
-                                                              Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).ConfigureExecuteRunMapCommand}"
+                                                              Command="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).ConfigureRunMapCommand}"
                                                               CommandParameter="{Binding}">
                                                         <MenuItem.Icon>
                                                             <PathIcon Theme="{StaticResource InnerPathIcon}"
@@ -138,7 +138,7 @@
                                         -->
                                         <SplitButton Theme="{DynamicResource SolidSplitButton}"
                                                      Classes="Secondary"
-                                                     Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).ExecuteEditMapCommand}"
+                                                     Command="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).EditUdbMapCommand}"
                                                      CommandParameter="{Binding}">
                                             <SplitButton.Content>
                                                 <StackPanel Orientation="Horizontal" Spacing="10">
@@ -157,7 +157,7 @@
                                                     
                                                     <!-- Configure and edit opens a separate dialogue. -->
                                                     <MenuItem Header="Configure and edit..."
-                                                              Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).ConfigureExecuteEditMapCommand}"
+                                                              Command="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).ConfigureEditUdbMapCommand}"
                                                               CommandParameter="{Binding}">
                                                         <MenuItem.Icon>
                                                             <PathIcon Theme="{StaticResource InnerPathIcon}"
@@ -168,12 +168,51 @@
                                             </SplitButton.Flyout>
                                         </SplitButton>
                                         
+                                        <!--
+                                            Open the map in Slade..
+                                            This split button has a dropdown allowing for additionally opening all archives with it.
+                                        -->
+                                        <SplitButton Theme="{DynamicResource SolidSplitButton}"
+                                                     Classes="Secondary"
+                                                     Command="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).EditSladeMapCommand}"
+                                                     CommandParameter="{Binding}">
+                                            <SplitButton.Content>
+                                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                                    <Image Source="/Assets/editor-slade.png"
+                                                           Width="16"
+                                                           Height="16"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Left"/>
+                                                    <TextBlock Text="Edit"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </SplitButton.Content>
+                                            
+                                            <SplitButton.Flyout>
+                                                <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                                    
+                                                    <!-- Configure and edit opens a separate dialogue. -->
+                                                    <MenuItem Header="Edit + Archives"
+                                                              Command="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).EditSladeMapWithArchivesCommand}"
+                                                              CommandParameter="{Binding}">
+                                                        <MenuItem.Icon>
+                                                            <Image Source="/Assets/editor-slade.png"
+                                                                   Width="16"
+                                                                   Height="16"
+                                                                   VerticalAlignment="Center"
+                                                                   HorizontalAlignment="Left"/>
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                </MenuFlyout>
+                                            </SplitButton.Flyout>
+                                        </SplitButton>
+                                        
                                         <Button Theme="{DynamicResource SolidButton}"
                                                 Classes="Warning"
-                                                Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).EditMapCommand}"
+                                                Command="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).EditMapCommand}"
                                                 CommandParameter="{Binding}"
                                                 Padding="5 0"
-                                                IsVisible="{Binding $parent[UserControl].((MapPageViewModel)DataContext).SessionSettings.EnableEditing}">
+                                                IsVisible="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).SessionSettings.EnableEditing}">
                                             <PathIcon Theme="{StaticResource InnerPathIcon}"
                                                       Classes="ExtraLarge"
                                                       Data="{StaticResource SemiIconEdit}" />
@@ -181,10 +220,10 @@
                                         
                                         <Button Theme="{DynamicResource SolidButton}"
                                                 Classes="Danger"
-                                                Command="{Binding $parent[UserControl].((MapPageViewModel)DataContext).DeleteMapCommand}"
+                                                Command="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).DeleteMapCommand}"
                                                 CommandParameter="{Binding}"
                                                 Padding="5 0"
-                                                IsVisible="{Binding $parent[UserControl].((MapPageViewModel)DataContext).SessionSettings.EnableEditing}">
+                                                IsVisible="{Binding $parent[UserControl].((MapsAndArchivesPageViewModel)DataContext).SessionSettings.EnableEditing}">
                                             <PathIcon Theme="{StaticResource InnerPathIcon}"
                                                       Classes="ExtraLarge"
                                                       Data="{StaticResource SemiIconDelete}" />

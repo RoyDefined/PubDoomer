@@ -26,6 +26,7 @@ using PubDoomer.Tasks.Compile;
 using PubDoomer.Tasks.Compile.Acc;
 using PubDoomer.Tasks.Compile.Bcc;
 using PubDoomer.Tasks.Compile.GdccAcc;
+using PubDoomer.Tasks.Compile.GdccCc;
 using PubDoomer.Utils.TaskInvokation;
 using PubDoomer.ViewModels.Dialogues;
 
@@ -73,7 +74,6 @@ public partial class CodePageViewModel : PageViewModel
         }
         """;
     
-    
     private const string GdccAccCode = """
         #include "zcommon.acs"
         
@@ -88,6 +88,22 @@ public partial class CodePageViewModel : PageViewModel
             LogMessage("PubDoomer");
         }
         """;
+    
+    private const string GdccCcCode = """
+        #include <stdio.h>
+        
+        static void LogMessage(const char *message)
+        {
+            printf("%s\n", message);
+        }
+        
+        [[call("ScriptS"), script("open")]]
+        void PBMain (void)
+        {
+            // Code goes here.
+            LogMessage("Hello, PubDoomer!");
+        }
+        """;
 
     /// <summary>
     /// Represents mappings of a compiler type to a code template.
@@ -97,6 +113,7 @@ public partial class CodePageViewModel : PageViewModel
         [CompilerType.Acc] = AccCode,
         [CompilerType.Bcc] = BccCode,
         [CompilerType.GdccAcc] = GdccAccCode,
+        [CompilerType.GdccCc] = GdccCcCode,
     };
     
     // Paths used for the editor code.
@@ -303,6 +320,7 @@ public partial class CodePageViewModel : PageViewModel
         AvailableCompilerTasks.Add(new ObservableAccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
         AvailableCompilerTasks.Add(new ObservableBccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
         AvailableCompilerTasks.Add(new ObservableGdccAccCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
+        AvailableCompilerTasks.Add(new ObservableGdccCcCompileTask() { Name = taskName, InputFilePath = _temporaryFileInputPath });
     }
 
     partial void OnSelectedCompilationTaskChanged(CompileTaskBase? value)

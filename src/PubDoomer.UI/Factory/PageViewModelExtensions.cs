@@ -16,7 +16,7 @@ public static class PageViewModelExtensions
             .AddKeyedTransient<PageViewModel, ProjectPageViewModel>("Project")
             .AddKeyedTransient<PageViewModel, SettingsPageViewModel>("Settings")
             .AddKeyedTransient<PageViewModel, CodePageViewModel>("Code")
-            .AddKeyedTransient<PageViewModel, MapPageViewModel>("Maps");
+            .AddKeyedTransient<PageViewModel, MapsAndArchivesPageViewModel>("MapsAndArchives");
 
         return services
 
