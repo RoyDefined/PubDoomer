@@ -25,6 +25,8 @@ public partial class ProfileRunTask : ObservableObject, IInvokableTask
     [ObservableProperty] private ObservableCollection<string>? _resultErrors;
     [ObservableProperty] private Exception? _exception;
 
+    public ObservableCollection<TaskOutputResult> TaskOutput { get; set; } = new();
+
     public ProfileRunTask(
         ProfileTaskErrorBehaviour behaviour,
         IRunnableTask task)

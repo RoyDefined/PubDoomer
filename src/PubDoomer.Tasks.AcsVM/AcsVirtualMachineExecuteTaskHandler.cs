@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using PubDoomer.Engine.TaskInvokation.Context;
+using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Tasks.AcsVM.Extensions;
 using System.Diagnostics;
@@ -7,15 +8,31 @@ using SystemProcess = System.Diagnostics.Process;
 
 namespace PubDoomer.Tasks.AcsVM;
 
-public sealed class AcsVirtualMachineExecuteTaskHandler(
-    ILogger<AcsVirtualMachineExecuteTaskHandler> logger,
-    AcsVirtualMachineExecuteTask taskInfo,
-    TaskInvokeContext context) : ITaskHandler
+public sealed class AcsVirtualMachineExecuteTaskHandler : ITaskHandler
 {
-    public async ValueTask<TaskInvokationResult> HandleAsync()
+    private readonly ILogger _logger;
+    private readonly IInvokableTask _taskContext;
+    private readonly TaskInvokeContext _invokeContext;
+    private readonly AcsVirtualMachineExecuteTask _task;
+
+    public AcsVirtualMachineExecuteTaskHandler(
+        ILogger<AcsVirtualMachineExecuteTaskHandler> logger, IInvokableTask taskContext, TaskInvokeContext invokeContext)
     {
-        var path = context.ContextBag.GetAcsVmExecutableFilePath();
-        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Location of ACSVM executable: {AccExecutablePath}", nameof(AcsVirtualMachineExecuteTaskHandler), taskInfo.InputFilePath, path);
+        if (taskContext.Task is not AcsVirtualMachineExecuteTask task)
+        {
+            throw new ArgumentException($"The given task is not a {nameof(AcsVirtualMachineExecuteTask)}.");
+        }
+
+        _logger = logger;
+        _taskContext = taskContext;
+        _invokeContext = invokeContext;
+        _task = task;
+    }
+
+    public async ValueTask<bool> HandleAsync()
+    {
+        var path = _invokeContext.ContextBag.GetAcsVmExecutableFilePath();
+        _logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Location of ACSVM executable: {AccExecutablePath}", nameof(AcsVirtualMachineExecuteTaskHandler), _task.InputFilePath, path);
 
         // Create streams for stdout and stderr.
         using var stdOutStream = new MemoryStream();
@@ -31,8 +48,11 @@ public sealed class AcsVirtualMachineExecuteTaskHandler(
         // TODO: Continue if possible and check if we also have compiler errors, should the process have executed succesfully?
         catch (Exception ex)
         {
-            return TaskInvokationResult.FromError("Code execution failed due to an error", null, ex);
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Code execution failed due to an error.", ex));
+            return false;
         }
+
+        // TODO: Properly handle errors.
 
         // The compiler returned an error.
         if (!succeeded)
@@ -43,10 +63,12 @@ public sealed class AcsVirtualMachineExecuteTaskHandler(
             
             if (errors.Length == 0)
             {
-                return TaskInvokationResult.FromErrors("Code execution failed for unknown reason.");
+                _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Code execution failed for unknown reason."));
+                return false;
             }
 
-            return TaskInvokationResult.FromErrors($"Code execution failed.", null, errors);
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Code execution failed."));
+            return false;
         }
 
         // Get the result from the stream.
@@ -54,13 +76,12 @@ public sealed class AcsVirtualMachineExecuteTaskHandler(
         using var reader = new StreamReader(stdOutStream);
         _ = stdOutStream.Seek(0, SeekOrigin.Begin);
         var codeResponse = await reader.ReadToEndAsync();
-        
-        return TaskInvokationResult.FromSuccess(codeResponse);
+        return true;
     }
 
     private async Task<bool> StartProcessAsync(string path, IEnumerable<string> arguments, MemoryStream stdOutStream, MemoryStream stdErrStream)
     {
-        logger.LogDebug("calling process.");
+        _logger.LogDebug("calling process.");
 
         var processStartInfo = new ProcessStartInfo
         {
@@ -80,7 +101,7 @@ public sealed class AcsVirtualMachineExecuteTaskHandler(
         var errorTask = process.StandardError.BaseStream.CopyToAsync(stdErrStream);
         await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
 
-        logger.LogDebug("Process exit code: {ExitCode}", process.ExitCode);
+        _logger.LogDebug("Process exit code: {ExitCode}", process.ExitCode);
         return process.ExitCode == 0;
     }
 
@@ -110,6 +131,6 @@ public sealed class AcsVirtualMachineExecuteTaskHandler(
 
     private IEnumerable<string> BuildArguments()
     {
-        yield return $"\"{taskInfo.InputFilePath}\"";
+        yield return $"\"{_task.InputFilePath}\"";
     }
 }

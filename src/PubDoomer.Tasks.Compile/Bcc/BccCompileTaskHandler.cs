@@ -1,30 +1,48 @@
 ﻿using Microsoft.Extensions.Logging;
 using PubDoomer.Engine.TaskInvokation.Context;
+using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Tasks.Compile.Extensions;
 using PubDoomer.Tasks.Compile.Utils;
 using System.Diagnostics;
+using System.Text;
 using SystemProcess = System.Diagnostics.Process;
 
 namespace PubDoomer.Tasks.Compile.Bcc;
 
-public sealed class BccCompileTaskHandler(
-    ILogger<BccCompileTaskHandler> logger,
-    ObservableBccCompileTask taskInfo,
-    TaskInvokeContext context) : ITaskHandler
+public sealed class BccCompileTaskHandler : ITaskHandler
 {
-    public async ValueTask<TaskInvokationResult> HandleAsync()
-    {
-        var path = context.ContextBag.GetBccCompilerExecutableFilePath();
-        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of BCC executable: {BccExecutablePath}", nameof(BccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
+    private readonly ILogger _logger;
+    private readonly IInvokableTask _taskContext;
+    private readonly TaskInvokeContext _invokeContext;
+    private readonly ObservableBccCompileTask _task;
 
-        // Verify the task has a name.
-        if (taskInfo.Name == null)
+    public BccCompileTaskHandler(
+        ILogger<BccCompileTaskHandler> logger, IInvokableTask taskContext, TaskInvokeContext invokeContext)
+    {
+        if (taskContext.Task is not ObservableBccCompileTask task)
         {
-            return TaskInvokationResult.FromError("Task is missing a name.");
+            throw new ArgumentException($"The given task is not a {nameof(ObservableBccCompileTask)}.");
         }
 
-        // Create streams for stdout and stderr.
+        _logger = logger;
+        _taskContext = taskContext;
+        _invokeContext = invokeContext;
+        _task = task;
+    }
+
+    public async ValueTask<bool> HandleAsync()
+    {
+        var path = _invokeContext.ContextBag.GetBccCompilerExecutableFilePath();
+        _logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of BCC executable: {BccExecutablePath}", nameof(BccCompileTaskHandler), _task.InputFilePath, _task.OutputFilePath, path);
+
+        // Verify the task has a name.
+        if (_task.Name == null)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Task is missing a name."));
+            return false;
+        }
+
         using var stdOutStream = new MemoryStream();
         using var stdErrStream = new MemoryStream();
 
@@ -38,14 +56,15 @@ public sealed class BccCompileTaskHandler(
         // TODO: Continue if possible and check if we also have compiler errors, should the process have executed succesfully?
         catch (Exception ex)
         {
-            return TaskInvokationResult.FromError("Code execution failed due to an error", null, ex);
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Code execution failed due to an error.", ex));
+            return false;
         }
 
         // Write stdout and stderr if configured.
-        if (taskInfo.GenerateStdOutAndStdErrFiles)
+        if (_task.GenerateStdOutAndStdErrFiles)
         {
-            await TaskHelper.WriteToFileAsync(stdOutStream, taskInfo.Name, "stdout.txt");
-            await TaskHelper.WriteToFileAsync(stdErrStream, taskInfo.Name, "stderr.txt");
+            await TaskHelper.WriteToFileAsync(stdOutStream, _task.Name, "stdout.txt");
+            await TaskHelper.WriteToFileAsync(stdErrStream, _task.Name, "stderr.txt");
         }
 
         // The compiler returned an error.
@@ -55,24 +74,26 @@ public sealed class BccCompileTaskHandler(
             var compileResult = await HandleCompileErrorAsync(stdErrStream);
             if (compileResult == null)
             {
-                return TaskInvokationResult.FromError("Compilation failed for unknown reason.");
+                _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Compilation failed for unknown reason."));
+                return false;
             }
 
-            return TaskInvokationResult.FromError($"Compilation failed", compileResult);
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError($"Compilation failed. {compileResult}"));
+            return false;
         }
 
-        return TaskInvokationResult.FromSuccess();
+        return true;
     }
 
     private IEnumerable<string> BuildArguments()
     {
-        yield return $"\"{taskInfo.InputFilePath}\"";
-        yield return $"\"{taskInfo.OutputFilePath}\"";
+        yield return $"\"{_task.InputFilePath}\"";
+        yield return $"\"{_task.OutputFilePath}\"";
     }
 
     private async Task<bool> StartProcessAsync(string path, IEnumerable<string> arguments, MemoryStream stdOutStream, MemoryStream stdErrStream)
     {
-        logger.LogDebug("calling process.");
+        _logger.LogDebug("calling process.");
 
         var processStartInfo = new ProcessStartInfo
         {
@@ -92,7 +113,7 @@ public sealed class BccCompileTaskHandler(
         var errorTask = process.StandardError.BaseStream.CopyToAsync(stdErrStream);
         await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
 
-        logger.LogDebug("Process exit code: {ExitCode}", process.ExitCode);
+        _logger.LogDebug("Process exit code: {ExitCode}", process.ExitCode);
         return process.ExitCode == 0;
     }
 

@@ -53,17 +53,10 @@ public sealed class ProjectTaskOrchestrator(
         {
             runTask.Status = ProfileRunTaskStatus.Running;
 
-            var result = await InvokeTaskAsync(runTask.Task, context);
-            logger.LogDebug("Task result: {ResultType}, {Result}", result.ResultType, result.ResultMessage);
+            var success = await InvokeTaskAsync(runTask, context);
+            runTask.Status = success ? ProfileRunTaskStatus.Success : ProfileRunTaskStatus.Error;
 
-            runTask.Status = result.ResultType == TaskResultType.Success
-                ? ProfileRunTaskStatus.Success
-                : ProfileRunTaskStatus.Error;
-
-            runTask.ResultMessage = result.ResultMessage;
-            runTask.ResultWarnings = result.Warnings != null ? new ObservableCollection<string>(result.Warnings) : null;
-            runTask.ResultErrors = result.Errors != null ? new ObservableCollection<string>(result.Errors) : null;
-            runTask.Exception = result.Exception;
+            logger.LogDebug("Task success: {Success}", success);
 
             // Check error behaviour.
             // If there was an error and the behaviour is to quit, then end the task invocation early.
@@ -98,13 +91,13 @@ public sealed class ProjectTaskOrchestrator(
         return handler;
     }
 
-    private async Task<TaskInvokationResult> InvokeTaskAsync(IRunnableTask task, TaskInvokeContext context)
+    private async Task<bool> InvokeTaskAsync(IInvokableTask taskContext, TaskInvokeContext context)
     {
-        var handler = handlerProviderDelegate(task, context);
+        var handler = handlerProviderDelegate(taskContext, context);
         if (handler == null)
-            throw new ArgumentException($"Unknown handler type: {task.HandlerType.FullName}");
+            throw new ArgumentException($"Unknown handler type: {taskContext.Task.HandlerType.FullName}");
 
-        logger.LogDebug("Invoking task {TaskName}", task.HandlerType.FullName);
+        logger.LogDebug("Invoking task {TaskName}", taskContext.Task.HandlerType.FullName);
         return await handler.HandleAsync();
     }
 }

@@ -18,8 +18,8 @@ public static class EngineServiceCollectionExtensions
 
     private static ProjectTaskOrchestratorHandlerProviderDelegate GetTaskHandlerOrDefault(IServiceProvider provider)
     {
-        return (IRunnableTask task, TaskInvokeContext context)
-            => ActivatorUtilities.CreateInstance(provider, task.HandlerType, task, context) as ITaskHandler;
+        return (IInvokableTask task, TaskInvokeContext context)
+            => ActivatorUtilities.CreateInstance(provider, task.Task.HandlerType, task, context) as ITaskHandler;
     }
 
     private static ProjectTaskOrchestratorValidatorProviderDelegate GetTaskValidatorOrDefault(IServiceProvider provider)

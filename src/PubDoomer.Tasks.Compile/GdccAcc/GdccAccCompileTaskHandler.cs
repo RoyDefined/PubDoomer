@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using PubDoomer.Engine.TaskInvokation.Context;
+using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Tasks.Compile.Extensions;
 using PubDoomer.Tasks.Compile.Utils;
@@ -8,26 +9,42 @@ using SystemProcess = System.Diagnostics.Process;
 
 namespace PubDoomer.Tasks.Compile.GdccAcc;
 
-public sealed class GdccAccCompileTaskHandler(
-    ILogger<GdccAccCompileTaskHandler> logger,
-    ObservableGdccAccCompileTask taskInfo,
-    TaskInvokeContext context) : ITaskHandler
+public sealed class GdccAccCompileTaskHandler : ITaskHandler
 {
     private const string CompileResultWarningPrefix = "WARNING: ";
     private const string CompileResultErrorPrefix = "ERROR: ";
 
-    public async ValueTask<TaskInvokationResult> HandleAsync()
-    {
-        var path = context.ContextBag.GetGdccAccCompilerExecutableFilePath();
-        logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of GDCC-ACC executable: {GdccAccExecutablePath}", nameof(GdccAccCompileTaskHandler), taskInfo.InputFilePath, taskInfo.OutputFilePath, path);
+    private readonly ILogger _logger;
+    private readonly IInvokableTask _taskContext;
+    private readonly TaskInvokeContext _invokeContext;
+    private readonly ObservableGdccAccCompileTask _task;
 
-        // Verify the task has a name.
-        if (taskInfo.Name == null)
+    public GdccAccCompileTaskHandler(
+        ILogger<GdccAccCompileTaskHandler> logger, IInvokableTask taskContext, TaskInvokeContext invokeContext)
+    {
+        if (taskContext.Task is not ObservableGdccAccCompileTask task)
         {
-            return TaskInvokationResult.FromError("Task is missing a name.");
+            throw new ArgumentException($"The given task is not a {nameof(ObservableGdccAccCompileTask)}.");
         }
 
-        // Create streams for stdout and stderr.
+        _logger = logger;
+        _taskContext = taskContext;
+        _invokeContext = invokeContext;
+        _task = task;
+    }
+
+    public async ValueTask<bool> HandleAsync()
+    {
+        var path = _invokeContext.ContextBag.GetGdccAccCompilerExecutableFilePath();
+        _logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of GDCC-ACC executable: {GdccAccExecutablePath}", nameof(GdccAccCompileTaskHandler), _task.InputFilePath, _task.OutputFilePath, path);
+
+        // Verify the task has a name.
+        if (_task.Name == null)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Task is missing a name."));
+            return false;
+        }
+
         using var stdOutStream = new MemoryStream();
         using var stdErrStream = new MemoryStream();
 
@@ -41,46 +58,46 @@ public sealed class GdccAccCompileTaskHandler(
         // TODO: Continue if possible and check if we also have compiler errors, should the process have executed succesfully?
         catch (Exception ex)
         {
-            return TaskInvokationResult.FromError("Code execution failed due to an error", null, ex);
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Code execution failed due to an error", ex));
+            return false;
         }
 
         // Write stdout and stderr if configured.
-        if (taskInfo.GenerateStdOutAndStdErrFiles)
+        if (_task.GenerateStdOutAndStdErrFiles)
         {
-            await TaskHelper.WriteToFileAsync(stdOutStream, taskInfo.Name, "stdout.txt");
-            await TaskHelper.WriteToFileAsync(stdErrStream, taskInfo.Name, "stderr.txt");
+            await TaskHelper.WriteToFileAsync(stdOutStream, _task.Name, "stdout.txt");
+            await TaskHelper.WriteToFileAsync(stdErrStream, _task.Name, "stderr.txt");
         }
 
         // Process the error stream and filter out just the warnings.
         // Should the compiler have an error, we additionally filter out the errors.
         var results = await ProcessErrStreamAsync(stdErrStream);
         var warnings = results.Where(x => x.Type == GdccCompileResultType.Warning).Select(x => x.Message).ToArray();
+        var errors = results.Where(x => x.Type == GdccCompileResultType.Error).Select(x => x.Message).ToArray();
+
+        // TODO: Log warnings and errors.
 
         // The compiler returned an error.
         if (!succeeded)
         {
-            var errors = results.Where(x => x.Type == GdccCompileResultType.Error).Select(x => x.Message).ToArray();
-
-            if (errors.Length == 0)
-            {
-                return TaskInvokationResult.FromErrors("Compilation failed for unknown reason.", warnings);
-            }
-
-            return TaskInvokationResult.FromErrors($"Compilation failed", warnings, errors);
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Compilation failed"));
+            return false;
         }
 
         var message = warnings.Length != 0
             ? $"Compiled succesfully with {warnings.Length} warning{(warnings.Length == 1 ? string.Empty : "s")}."
             : "Compiled succesfully.";
-        return TaskInvokationResult.FromSuccess(message, warnings);
+
+        _taskContext.TaskOutput.Add(TaskOutputResult.CreateSuccess(message));
+        return true;
     }
 
     private IEnumerable<string> BuildArguments()
     {
-        yield return $"\"{taskInfo.InputFilePath}\"";
-        yield return $"-o \"{taskInfo.OutputFilePath}\"";
+        yield return $"\"{_task.InputFilePath}\"";
+        yield return $"-o \"{_task.OutputFilePath}\"";
 
-        if (taskInfo.DontWarnForwardReferences)
+        if (_task.DontWarnForwardReferences)
         {
             yield return "--no-warn-forward-reference";
         }
@@ -88,7 +105,7 @@ public sealed class GdccAccCompileTaskHandler(
 
     private async Task<bool> StartProcessAsync(string path, IEnumerable<string> arguments, MemoryStream stdOutStream, MemoryStream stdErrStream)
     {
-        logger.LogDebug("calling process.");
+        _logger.LogDebug("calling process.");
 
         var processStartInfo = new ProcessStartInfo
         {
@@ -108,7 +125,7 @@ public sealed class GdccAccCompileTaskHandler(
         var errorTask = process.StandardError.BaseStream.CopyToAsync(stdErrStream);
         await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
 
-        logger.LogDebug("Process exit code: {ExitCode}", process.ExitCode);
+        _logger.LogDebug("Process exit code: {ExitCode}", process.ExitCode);
         return process.ExitCode == 0;
     }
 
@@ -135,7 +152,7 @@ public sealed class GdccAccCompileTaskHandler(
             var result = ParseLine(line);
             if (result == null)
             {
-                logger.LogWarning("Encountered an invalid line in compile results: '{Line}'", line);
+                _logger.LogWarning("Encountered an invalid line in compile results: '{Line}'", line);
                 continue;
             }
 
