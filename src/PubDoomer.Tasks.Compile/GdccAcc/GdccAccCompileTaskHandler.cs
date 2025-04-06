@@ -4,18 +4,20 @@ using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Engine.TaskInvokation.Utils;
 using PubDoomer.Tasks.Compile.Extensions;
+using System.Text.RegularExpressions;
 
 namespace PubDoomer.Tasks.Compile.GdccAcc;
 
-public sealed class GdccAccCompileTaskHandler : ITaskHandler
+public sealed partial class GdccAccCompileTaskHandler : ITaskHandler
 {
-    private const string CompileResultWarningPrefix = "WARNING: ";
-    private const string CompileResultErrorPrefix = "ERROR: ";
-
     private readonly ILogger _logger;
     private readonly IInvokableTask _taskContext;
     private readonly TaskInvokeContext _invokeContext;
     private readonly ObservableGdccAccCompileTask _task;
+
+    // Match pattern like: "warning:...path with spaces...:14:18:message here"
+    [GeneratedRegex(@"^(warning|error):\s*(.*?):(\d+):(\d+):\s*(.+)$", RegexOptions.IgnoreCase)]
+    private static partial Regex StdErrMessageMatcher();
 
     public GdccAccCompileTaskHandler(
         ILogger<GdccAccCompileTaskHandler> logger, IInvokableTask taskContext, TaskInvokeContext invokeContext)
@@ -108,14 +110,29 @@ public sealed class GdccAccCompileTaskHandler : ITaskHandler
             _logger.LogWarning("Encountered an invalid line in compile results: '{Line}'", line);
             return;
         }
+        _taskContext.TaskOutput.Add(result);
     }
 
     private static TaskOutputResult? ParseLine(string line)
     {
-        return line switch
+        // Using regex we determine the formatting of the message.
+        // Notably it always contains 'warning: ' or 'error: '
+
+        if (string.IsNullOrWhiteSpace(line))
+            return null;
+
+        var match = StdErrMessageMatcher().Match(line);
+        if (!match.Success)
+            return null;
+
+        // Note the regex is build to also parse the code line and character, though it is currently unused.
+        var type = match.Groups[1].Value.ToLowerInvariant();
+        var message = match.Groups[5].Value.Trim();
+
+        return type switch
         {
-            { } when line.StartsWith(CompileResultWarningPrefix) => TaskOutputResult.CreateWarning(line[CompileResultWarningPrefix.Length..]),
-            { } when line.StartsWith(CompileResultErrorPrefix) => TaskOutputResult.CreateError(line[CompileResultErrorPrefix.Length..]),
+            "warning" => TaskOutputResult.CreateWarning(message),
+            "error" => TaskOutputResult.CreateError(message),
             _ => null
         };
     }

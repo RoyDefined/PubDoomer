@@ -4,15 +4,20 @@ using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Engine.TaskInvokation.Utils;
 using PubDoomer.Tasks.Compile.Extensions;
+using System.Text.RegularExpressions;
 
 namespace PubDoomer.Tasks.Compile.Bcc;
 
-public sealed class BccCompileTaskHandler : ITaskHandler
+public sealed partial class BccCompileTaskHandler : ITaskHandler
 {
     private readonly ILogger _logger;
     private readonly IInvokableTask _taskContext;
     private readonly TaskInvokeContext _invokeContext;
     private readonly ObservableBccCompileTask _task;
+
+    // Match pattern like: "...path with spaces...:14:18: warning: message here"
+    [GeneratedRegex(@"^(.*?):(\d+):(\d+):\s*(warning|error):\s*(.+)$", RegexOptions.IgnoreCase)]
+    private static partial Regex StdErrMessageMatcher();
 
     public BccCompileTaskHandler(
         ILogger<BccCompileTaskHandler> logger, IInvokableTask taskContext, TaskInvokeContext invokeContext)
@@ -93,6 +98,36 @@ public sealed class BccCompileTaskHandler : ITaskHandler
 
     private void HandleStdErr(string line)
     {
-        _taskContext.TaskOutput.Add(TaskOutputResult.CreateError(line));
+        var result = ParseLine(line);
+        if (result == null)
+        {
+            _logger.LogWarning("Encountered an invalid line in compile results: '{Line}'", line);
+            return;
+        }
+        _taskContext.TaskOutput.Add(result);
+    }
+
+    private static TaskOutputResult? ParseLine(string line)
+    {
+        // Using regex we determine the formatting of the message.
+        // Notably it always contains 'warning: ' or 'error: '
+
+        if (string.IsNullOrWhiteSpace(line))
+            return null;
+
+        var match = StdErrMessageMatcher().Match(line);
+        if (!match.Success)
+            return null;
+
+        // Note the regex is build to also parse the code line and character, though it is currently unused.
+        var type = match.Groups[4].Value.ToLowerInvariant();
+        var message = match.Groups[5].Value.Trim();
+
+        return type switch
+        {
+            "warning" => TaskOutputResult.CreateWarning(message),
+            "error" => TaskOutputResult.CreateError(message),
+            _ => null
+        };
     }
 }
