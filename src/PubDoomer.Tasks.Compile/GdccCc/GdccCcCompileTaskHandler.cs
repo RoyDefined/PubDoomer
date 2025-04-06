@@ -7,10 +7,13 @@ using PubDoomer.Engine.Abstract;
 using SystemProcess = System.Diagnostics.Process;
 using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Tasks.Compile.GdccAcc;
+using System.Text.RegularExpressions;
+using PubDoomer.Engine.TaskInvokation.Utils;
+using System.IO;
 
 namespace PubDoomer.Tasks.Compile.GdccCc;
 
-public sealed class GdccCcCompileTaskHandler : ITaskHandler
+public sealed partial class GdccCcCompileTaskHandler : ITaskHandler
 {
     private static readonly string _tempDirectory = Path.Combine(EngineStatics.TemporaryDirectory, "Gdcc-cc");
     private static readonly string _makeLibOutputPath = Path.Combine(_tempDirectory, "makelibfile.ir");
@@ -20,6 +23,10 @@ public sealed class GdccCcCompileTaskHandler : ITaskHandler
     private readonly IInvokableTask _taskContext;
     private readonly TaskInvokeContext _invokeContext;
     private readonly ObservableGdccCcCompileTask _task;
+
+    // Match pattern like: "warning:...path with spaces...:14:18:message here"
+    [GeneratedRegex(@"^(warning|error):\s*(.*?):(\d+):(\d+):\s*(.+)$", RegexOptions.IgnoreCase)]
+    private static partial Regex StdErrMessageMatcher();
 
     public GdccCcCompileTaskHandler(
         ILogger<GdccCcCompileTaskHandler> logger, IInvokableTask taskContext, TaskInvokeContext invokeContext)
@@ -57,121 +64,110 @@ public sealed class GdccCcCompileTaskHandler : ITaskHandler
         if (_task.LinkLibc || _task.LinkLibGdcc)
         {
             _logger.LogDebug("Compiling libc and/or libGDCC. Location of GDCC-MakeLib executable: {GdccMakeLibExecutablePath}. Compile Libc: {CompileLibc}. Compile LibGDCC: {CompileLibGdcc}.", gdccMakeLibPath, _task.LinkLibc, _task.LinkLibGdcc);
-            var makeLibResult = await MakeLibAsync(gdccMakeLibPath);
 
-            if (makeLibResult != 0)
+            // TODO: Use
+            using var makeLibStdOutStream = new MemoryStream();
+            using var makeLibStdErrStream = new MemoryStream();
+
+            bool makeLibSucceeded;
+            try
             {
-                _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Compilation failed, process exit code was not 0."));
+                makeLibSucceeded = await TaskHelper.RunProcessAsync(
+                    gdccMakeLibPath,
+                    BuildMakeLibArgs(),
+                    makeLibStdOutStream,
+                    makeLibStdErrStream,
+                    HandleStdout,
+                    HandleStdErr);
+            }
+
+            // Premature exception was thrown, not related to the makelib operation.
+            catch (Exception ex)
+            {
+                _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("MakeLib process failed due to an error", ex));
                 return false;
             }
+
+            // Makelib returned an error.
+            if (!makeLibSucceeded)
+            {
+                _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("MakeLib process failed"));
+                return false;
+            }
+
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage("Makelib operation succeeded"));
         }
 
         // Compile the input files.
         _logger.LogDebug("Compiling. Location of GDCC-CC executable: {GdccCcExecutablePath}.", gdccCcPath);
-        var compileResult = await CompileAsync(gdccCcPath);
 
-        if (compileResult != 0)
+        // TODO: Use
+        using var compilationStdOutStream = new MemoryStream();
+        using var compilationStdErrStream = new MemoryStream();
+
+        bool compilationSucceeded;
+        try
         {
-            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Compilation failed, process exit code was not 0."));
+            compilationSucceeded = await TaskHelper.RunProcessAsync(
+                gdccCcPath,
+                BuildCompileArgs(),
+                compilationStdOutStream,
+                compilationStdErrStream,
+                HandleStdout,
+                HandleStdErr);
+        }
+
+        // Premature exception was thrown, not related to the compilation.
+        catch (Exception ex)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Compilation failed due to an error", ex));
             return false;
         }
+
+        // Compilation returned an error.
+        if (!compilationSucceeded)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Compilation failed"));
+            return false;
+        }
+
+        _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage("Compilation succeeded"));
 
         // Link the files.
         _logger.LogDebug("Linking. Location of GDCC-LD executable: {GdccLdExecutablePath}", gdccLdPath);
-        var linkResult = await LinkAsync(gdccLdPath);
 
-        if (linkResult != 0)
+        // TODO: Use
+        using var linkingStdOutStream = new MemoryStream();
+        using var linkingStdErrStream = new MemoryStream();
+
+        bool linkingSucceeded;
+        try
         {
-            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Compilation failed, process exit code was not 0."));
+            linkingSucceeded = await TaskHelper.RunProcessAsync(
+                gdccLdPath,
+                BuildLinkArgs(),
+                linkingStdOutStream,
+                linkingStdErrStream,
+                HandleStdout,
+                HandleStdErr);
+        }
+
+        // Premature exception was thrown, not related to the linking.
+        catch (Exception ex)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Linking failed due to an error", ex));
             return false;
         }
 
-        _logger.LogDebug("GDCC-CC compilation and linking completed successfully.");
+        // Linking returned an error.
+        if (!linkingSucceeded)
+        {
+            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("Linking failed"));
+            return false;
+        }
+
+        _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage("Linking succeeded"));
         return true;
-    }
-
-    private async Task<int> MakeLibAsync(string gdccMakeLibPath)
-    {
-        var args = BuildMakeLibArgs();
-        var processStartInfo = new ProcessStartInfo
-        {
-            FileName = gdccMakeLibPath,
-            Arguments = string.Join(" ", args),
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-
-        using var process = new SystemProcess { StartInfo = processStartInfo };
-        process.Start();
-
-        var stdout = await process.StandardOutput.ReadToEndAsync();
-        var stderr = await process.StandardError.ReadToEndAsync();
-
-        await process.WaitForExitAsync();
-
-        _logger.LogDebug("GDCC-MakeLib stdout: {StdOut}", stdout);
-        _logger.LogDebug("GDCC-MakeLib stderr: {StdErr}", stderr);
-        _logger.LogDebug("Process exit code: {ExitCode}.", process.ExitCode);
-
-        return process.ExitCode;
-    }
-
-    private async Task<int> CompileAsync(string gdccCcPath)
-    {
-        var args = BuildCompileArgs();
-        var processStartInfo = new ProcessStartInfo
-        {
-            FileName = gdccCcPath,
-            Arguments = string.Join(" ", args),
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-
-        using var process = new SystemProcess { StartInfo = processStartInfo };
-        process.Start();
-
-        var stdout = await process.StandardOutput.ReadToEndAsync();
-        var stderr = await process.StandardError.ReadToEndAsync();
-
-        await process.WaitForExitAsync();
-
-        _logger.LogDebug("GDCC-CC stdout: {StdOut}", stdout);
-        _logger.LogDebug("GDCC-CC stderr: {StdErr}", stderr);
-        _logger.LogDebug("Process exit code: {ExitCode}.", process.ExitCode);
-
-        return process.ExitCode;
-    }
-
-    private async Task<int> LinkAsync(string gdccLdPath)
-    {
-        var args = BuildLinkArgs();
-        var processStartInfo = new ProcessStartInfo
-        {
-            FileName = gdccLdPath,
-            Arguments = string.Join(" ", args),
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-
-        using var process = new SystemProcess { StartInfo = processStartInfo };
-        process.Start();
-
-        var stdout = await process.StandardOutput.ReadToEndAsync();
-        var stderr = await process.StandardError.ReadToEndAsync();
-
-        await process.WaitForExitAsync();
-
-        _logger.LogDebug("GDCC-LD stdout: {StdOut}", stdout);
-        _logger.LogDebug("GDCC-LD stderr: {StdErr}", stderr);
-        _logger.LogDebug("Process exit code: {ExitCode}.", process.ExitCode);
-
-        return process.ExitCode;
     }
 
     private IEnumerable<string> BuildMakeLibArgs()
@@ -199,5 +195,45 @@ public sealed class GdccCcCompileTaskHandler : ITaskHandler
         
         yield return _compiledOutputPath;
         yield return $"--target-engine {_task.TargetEngine}";
+    }
+
+    private void HandleStdout(string line)
+    {
+        _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage(line));
+    }
+
+    private void HandleStdErr(string line)
+    {
+        var result = ParseLine(line);
+        if (result == null)
+        {
+            _logger.LogWarning("Encountered an invalid line in compile results: '{Line}'", line);
+            return;
+        }
+        _taskContext.TaskOutput.Add(result);
+    }
+
+    private static TaskOutputResult? ParseLine(string line)
+    {
+        // Using regex we determine the formatting of the message.
+        // Notably it always contains 'warning: ' or 'error: '
+
+        if (string.IsNullOrWhiteSpace(line))
+            return null;
+
+        var match = StdErrMessageMatcher().Match(line);
+        if (!match.Success)
+            return null;
+
+        // Note the regex is build to also parse the code line and character, though it is currently unused.
+        var type = match.Groups[1].Value.ToLowerInvariant();
+        var message = match.Groups[5].Value.Trim();
+
+        return type switch
+        {
+            "warning" => TaskOutputResult.CreateWarning(message),
+            "error" => TaskOutputResult.CreateError(message),
+            _ => null
+        };
     }
 }
