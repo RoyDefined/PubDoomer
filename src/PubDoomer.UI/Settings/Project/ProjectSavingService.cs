@@ -39,7 +39,7 @@ public sealed class ProjectSavingService
     /// This is the version written to files.
     /// <br /> When reading, this version will not be used. Instead it will be conditionally handled.
     /// </summary>
-    private readonly ProjectSaveVersion _latestSaveVersion = new(0, 1);
+    private readonly ProjectSaveVersion _latestSaveVersion = new(0, 2);
 
     public void SaveProject(ProjectContext projectContext, string filePath, Stream stream, ProjectReadingWritingType writerType)
     {

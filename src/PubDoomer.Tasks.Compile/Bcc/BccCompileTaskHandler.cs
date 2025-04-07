@@ -86,6 +86,11 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
 
     private IEnumerable<string> BuildArguments()
     {
+        foreach (var directory in _task.IncludeDirectories)
+        {
+            yield return $"-i \"{directory.Value}\"";
+        }
+        
         yield return $"\"{_task.InputFilePath}\"";
         yield return $"\"{_task.OutputFilePath}\"";
     }

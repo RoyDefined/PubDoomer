@@ -17,6 +17,7 @@ using PubDoomer.Tasks.Compile.Acc;
 using PubDoomer.Tasks.Compile.Bcc;
 using PubDoomer.Tasks.Compile.GdccAcc;
 using PubDoomer.Tasks.Compile.GdccCc;
+using PubDoomer.Tasks.Compile.Observables;
 
 namespace PubDoomer.ViewModels.Dialogues;
 
@@ -111,6 +112,31 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
     private void UpdateFormValid(object? sender, PropertyChangedEventArgs e)
     {
         OnPropertyChanged(nameof(FormIsValid));
+    }
+
+    /// <summary>
+    /// Command specific to tasks which adds a field which specifies a directory to search in for files.
+    /// </summary>
+    [RelayCommand]
+    private void AddIncludeDirectory()
+    {
+        if (CurrentTask is not ObservableBccCompileTask task)
+        {
+            return;
+        }
+        
+        task.IncludeDirectories.Add(new());
+    }
+    
+    [RelayCommand]
+    private void RemoveIncludeDirectory(ObservableString value)
+    {
+        if (CurrentTask is not ObservableBccCompileTask task)
+        {
+            return;
+        }
+        
+        task.IncludeDirectories.Remove(value);
     }
 
     [RelayCommand]
