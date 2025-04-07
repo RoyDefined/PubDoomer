@@ -6,6 +6,7 @@
         xmlns:bcc="clr-namespace:PubDoomer.Tasks.Compile.Bcc;assembly=PubDoomer.Tasks.Compile"
         xmlns:gdccAcc="clr-namespace:PubDoomer.Tasks.Compile.GdccAcc;assembly=PubDoomer.Tasks.Compile"
         xmlns:gdccCc="clr-namespace:PubDoomer.Tasks.Compile.GdccCc;assembly=PubDoomer.Tasks.Compile"
+        xmlns:tasks="clr-namespace:PubDoomer.Project.Tasks;assembly=PubDoomer.Tasks.Compile"
         mc:Ignorable="d"
         x:Class="PubDoomer.Views.Dialogues.CreateOrEditTaskWindow"
         Title="{Binding WindowTitle}"
@@ -62,15 +63,15 @@
                          HorizontalAlignment="Stretch"
                          Text="{Binding CurrentTask.Name}" />
             </Grid>
-
+            
             <!-- Dynamically added body depending on the task type. -->
             <ContentControl Content="{Binding CurrentTask}"
                             IsVisible="{Binding CurrentTask, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}">
 
                 <ContentControl.DataTemplates>
 
-                    <!-- DataTemplate for AccCompileTask -->
-                    <DataTemplate DataType="{x:Type acc:ObservableAccCompileTask}">
+                    <!-- General DataTemplate for Compile task bases -->
+                    <DataTemplate DataType="{x:Type tasks:CompileTaskBase}">
                         <StackPanel Spacing="10">
                             
                             <!-- Input path -->
@@ -126,277 +127,113 @@
                                     </Button>
                                 </Grid>
                             </Grid>
-                            
-                            <StackPanel Spacing="2">
-                                
-                                <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
-                                <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
-                                          IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
-                                
-                                <StackPanel>
-                                    <!-- If `true`, keep the 'acs.err' file if finished but with a compile error that generated it. -->
-                                    <CheckBox Content="Keep 'acs.err' if finished with a compile error."
-                                              IsChecked="{Binding KeepAccErrFile}" />
-                                
-                                    <!-- Additional clarification regarding the 'acs.err' file. -->
-                                    <TextBlock Classes="Tertiary"
-                                               FontSize="10"
-                                               Margin="25 0 0 0"
-                                               HorizontalAlignment="Stretch"
-                                               TextWrapping="Wrap"
-                                               Text="NOTE: Concurrent ACC compilation tasks always remove the 'acs.err' file by design. The tool will rename this file when running concurrent compilation to avoid this." />
-                                </StackPanel>
-                                
-                            </StackPanel>
-                        </StackPanel>
-                    </DataTemplate>
-                    
-                    <!-- DataTemplate for BccCompileTask -->
-                    <DataTemplate DataType="{x:Type bcc:ObservableBccCompileTask}">
-                        <StackPanel Spacing="10">
-                            
-                            <!-- Input path -->
-                            <Grid ColumnDefinitions="*, 2.5*">
+                        
+                            <!-- Additional content per compile task. -->
+                            <ContentControl Content="{Binding }">
 
-                                <TextBlock FontWeight="Bold"
-                                           Text="Input Path:"
-                                           VerticalAlignment="Center" />
-                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
-                                      HorizontalAlignment="Stretch">
-                                    <TextBox Text="{Binding InputFilePath}"
-                                             HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2"
-                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
-                                            Classes="Tertiary"
-                                            Theme="{DynamicResource SolidButton}"
-                                            HorizontalAlignment="Stretch"
-                                            Padding="5 0">
-                                        <Button.CommandParameter>
-                                            <TaskCreateDialogueFilePickerType CompilerType="bcc" FileType="input" />
-                                        </Button.CommandParameter>
-                                        
-                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                                  Classes="ExtraLarge"
-                                                  Data="{StaticResource SemiIconFolderOpen}" />
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                            
-                            <!-- Output path -->
-                            <Grid ColumnDefinitions="*, 2.5*">
+                                <ContentControl.DataTemplates>
 
-                                <TextBlock FontWeight="Bold"
-                                           Text="Output Path:"
-                                           VerticalAlignment="Center" />
-                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
-                                      HorizontalAlignment="Stretch">
-                                    <TextBox Text="{Binding OutputFilePath}"
-                                             HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2"
-                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
-                                            Classes="Tertiary"
-                                            Theme="{DynamicResource SolidButton}"
-                                            HorizontalAlignment="Stretch"
-                                            Padding="5 0">
-                                        <Button.CommandParameter>
-                                            <TaskCreateDialogueFilePickerType CompilerType="bcc" FileType="output" />
-                                        </Button.CommandParameter>
-                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                                  Classes="ExtraLarge"
-                                                  Data="{StaticResource SemiIconFolderOpen}" />
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                            
-                            
-                            <StackPanel Spacing="2">
-                                
-                                <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
-                                <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
-                                          IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
-                            </StackPanel>
-                        </StackPanel>
-                    </DataTemplate>
-                    
-                    <!-- DataTemplate for GdccAccCompileTask -->
-                    <DataTemplate DataType="{x:Type gdccAcc:ObservableGdccAccCompileTask}">
-                        <StackPanel Spacing="10">
-                            
-                            <!-- Input path -->
-                            <Grid ColumnDefinitions="*, 2.5*">
-
-                                <TextBlock FontWeight="Bold"
-                                           Text="Input Path:"
-                                           VerticalAlignment="Center" />
-                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
-                                      HorizontalAlignment="Stretch">
-                                    <TextBox Text="{Binding InputFilePath}"
-                                             HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2"
-                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
-                                            Classes="Tertiary"
-                                            Theme="{DynamicResource SolidButton}"
-                                            HorizontalAlignment="Stretch"
-                                            Padding="5 0">
-                                        <Button.CommandParameter>
-                                            <TaskCreateDialogueFilePickerType CompilerType="gdccacc" FileType="input" />
-                                        </Button.CommandParameter>
-                                        
-                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                                  Classes="ExtraLarge"
-                                                  Data="{StaticResource SemiIconFolderOpen}" />
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                            
-                            <!-- Output path -->
-                            <Grid ColumnDefinitions="*, 2.5*">
-
-                                <TextBlock FontWeight="Bold"
-                                           Text="Output Path:"
-                                           VerticalAlignment="Center" />
-                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
-                                      HorizontalAlignment="Stretch">
-                                    <TextBox Text="{Binding OutputFilePath}"
-                                             HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2"
-                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
-                                            Classes="Tertiary"
-                                            Theme="{DynamicResource SolidButton}"
-                                            HorizontalAlignment="Stretch"
-                                            Padding="5 0">
-                                        <Button.CommandParameter>
-                                            <TaskCreateDialogueFilePickerType CompilerType="gdccacc" FileType="output" />
-                                        </Button.CommandParameter>
-                                        
-                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                                  Classes="ExtraLarge"
-                                                  Data="{StaticResource SemiIconFolderOpen}" />
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                            
-                            
-                            <StackPanel Spacing="2">
-                                
-                                <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
-                                <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
-                                          IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
-                                
-                                <!-- If `true`, don't warn about forward references. -->
-                                <CheckBox Content="Don't warn about forward references."
-                                          IsChecked="{Binding DontWarnForwardReferences}" />
-
-                                
-                            </StackPanel>
-                        </StackPanel>
-                    </DataTemplate>
-                    
-                    <!-- DataTemplate for GdccCcCompileTask -->
-                    <DataTemplate DataType="{x:Type gdccCc:ObservableGdccCcCompileTask}">
-                        <StackPanel Spacing="10">
-                            
-                            <!-- Input path -->
-                            <Grid ColumnDefinitions="*, 2.5*">
-
-                                <TextBlock FontWeight="Bold"
-                                           Text="Input Path:"
-                                           VerticalAlignment="Center" />
-                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
-                                      HorizontalAlignment="Stretch">
-                                    <TextBox Text="{Binding InputFilePath}"
-                                             HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2"
-                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
-                                            Classes="Tertiary"
-                                            Theme="{DynamicResource SolidButton}"
-                                            HorizontalAlignment="Stretch"
-                                            Padding="5 0">
-                                        <Button.CommandParameter>
-                                            <TaskCreateDialogueFilePickerType CompilerType="gdccacc" FileType="input" />
-                                        </Button.CommandParameter>
-                                        
-                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                                  Classes="ExtraLarge"
-                                                  Data="{StaticResource SemiIconFolderOpen}" />
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                            
-                            <!-- Output path -->
-                            <Grid ColumnDefinitions="*, 2.5*">
-
-                                <TextBlock FontWeight="Bold"
-                                           Text="Output Path:"
-                                           VerticalAlignment="Center" />
-                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
-                                      HorizontalAlignment="Stretch">
-                                    <TextBox Text="{Binding OutputFilePath}"
-                                             HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2"
-                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
-                                            Classes="Tertiary"
-                                            Theme="{DynamicResource SolidButton}"
-                                            HorizontalAlignment="Stretch"
-                                            Padding="5 0">
-                                        <Button.CommandParameter>
-                                            <TaskCreateDialogueFilePickerType CompilerType="gdccacc" FileType="output" />
-                                        </Button.CommandParameter>
-                                        
-                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                                  Classes="ExtraLarge"
-                                                  Data="{StaticResource SemiIconFolderOpen}" />
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                            
-                            
-                            <StackPanel Spacing="8">
-                                
-                                <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
-                                <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
-                                          IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
-                                
-                                <StackPanel Spacing="2">
+                                    <!-- DataTemplate for AccCompileTask -->
+                                    <DataTemplate DataType="{x:Type acc:ObservableAccCompileTask}">
+                                        <StackPanel Spacing="2">
+                                                
+                                            <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
+                                            <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
+                                                      IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
+                                            
+                                            <StackPanel>
+                                                <!-- If `true`, keep the 'acs.err' file if finished but with a compile error that generated it. -->
+                                                <CheckBox Content="Keep 'acs.err' if finished with a compile error."
+                                                          IsChecked="{Binding KeepAccErrFile}" />
+                                            
+                                                <!-- Additional clarification regarding the 'acs.err' file. -->
+                                                <TextBlock Classes="Tertiary"
+                                                           FontSize="10"
+                                                           Margin="25 0 0 0"
+                                                           HorizontalAlignment="Stretch"
+                                                           TextWrapping="Wrap"
+                                                           Text="NOTE: Concurrent ACC compilation tasks always remove the 'acs.err' file by design. The tool will rename this file when running concurrent compilation to avoid this." />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </DataTemplate>
                                     
-                                    <!-- If `true`, build and link libc. -->
-                                    <CheckBox Content="Build and link libc."
-                                              IsChecked="{Binding LinkLibc}" />
-                                
-                                    <!-- Additional clarification regarding building and linking libc. -->
-                                    <TextBlock Classes="Tertiary"
-                                               FontSize="10"
-                                               Margin="25 0 0 0"
-                                               HorizontalAlignment="Stretch"
-                                               TextWrapping="Wrap"
-                                               Text="If disabled this will mean the task skips building and linking libc, the C standard library. None of the C standard functions will be callable with this disabled." />
-                                </StackPanel>
-
-                                
-                                <StackPanel Spacing="2">
+                                    <!-- DataTemplate for BccCompileTask -->
+                                    <DataTemplate DataType="{x:Type bcc:ObservableBccCompileTask}">
+                                        <StackPanel Spacing="2">
+                                            
+                                            <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
+                                            <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
+                                                      IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
+                                        </StackPanel>
+                                    </DataTemplate>
                                     
-                                    <!-- If `true`, build and link libGDCC. -->
-                                    <CheckBox Content="Build and link libGDCC."
-                                              IsChecked="{Binding LinkLibGdcc}" />
-                                
-                                    <!-- Additional clarification regarding building and linking libGDCC. -->
-                                    <TextBlock Classes="Tertiary"
-                                               FontSize="10"
-                                               Margin="25 0 0 0"
-                                               HorizontalAlignment="Stretch"
-                                               TextWrapping="Wrap"
-                                               Text="If disabled this will mean the task skips building and linking libGDCC, the memory allocator backend. libc won't fully work without a memory allocator, so this option is mainly for alternate allocators like safe-malloc or disabling both libraries." />
-                                </StackPanel>
-                                
-                                <!-- Additional clarification regarding the libc and libGDCC options. -->
-                                <TextBlock Classes="Warning"
-                                           FontSize="10"
-                                           Margin="25 0 0 0"
-                                           HorizontalAlignment="Stretch"
-                                           TextWrapping="Wrap"
-                                           Text="Do not disable linking and building libc or libGDCC unless you know what you're doing." />
-                                
-                            </StackPanel>
+                                    <!-- DataTemplate for GdccAccCompileTask -->
+                                    <DataTemplate DataType="{x:Type gdccAcc:ObservableGdccAccCompileTask}">
+                                        <StackPanel Spacing="2">
+                                            
+                                            <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
+                                            <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
+                                                      IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
+                                            
+                                            <!-- If `true`, don't warn about forward references. -->
+                                            <CheckBox Content="Don't warn about forward references."
+                                                      IsChecked="{Binding DontWarnForwardReferences}" />
+
+                                        </StackPanel>
+                                    </DataTemplate>
+                                    
+                                    <!-- DataTemplate for GdccCcCompileTask -->
+                                    <DataTemplate DataType="{x:Type gdccCc:ObservableGdccCcCompileTask}">
+                                        
+                                        <StackPanel Spacing="2">
+                                            
+                                            <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
+                                            <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
+                                                      IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
+                                            
+                                            <StackPanel Spacing="2">
+                                                
+                                                <!-- If `true`, build and link libc. -->
+                                                <CheckBox Content="Build and link libc."
+                                                          IsChecked="{Binding LinkLibc}" />
+                                            
+                                                <!-- Additional clarification regarding building and linking libc. -->
+                                                <TextBlock Classes="Tertiary"
+                                                           FontSize="10"
+                                                           Margin="25 0 0 0"
+                                                           HorizontalAlignment="Stretch"
+                                                           TextWrapping="Wrap"
+                                                           Text="If disabled this will mean the task skips building and linking libc, the C standard library. None of the C standard functions will be callable with this disabled." />
+                                            </StackPanel>
+
+                                            
+                                            <StackPanel Spacing="2">
+                                                
+                                                <!-- If `true`, build and link libGDCC. -->
+                                                <CheckBox Content="Build and link libGDCC."
+                                                          IsChecked="{Binding LinkLibGdcc}" />
+                                            
+                                                <!-- Additional clarification regarding building and linking libGDCC. -->
+                                                <TextBlock Classes="Tertiary"
+                                                           FontSize="10"
+                                                           Margin="25 0 0 0"
+                                                           HorizontalAlignment="Stretch"
+                                                           TextWrapping="Wrap"
+                                                           Text="If disabled this will mean the task skips building and linking libGDCC, the memory allocator backend. libc won't fully work without a memory allocator, so this option is mainly for alternate allocators like safe-malloc or disabling both libraries." />
+                                            </StackPanel>
+                                            
+                                            <!-- Additional clarification regarding the libc and libGDCC options. -->
+                                            <TextBlock Classes="Warning"
+                                                       FontSize="10"
+                                                       Margin="25 0 0 0"
+                                                       HorizontalAlignment="Stretch"
+                                                       TextWrapping="Wrap"
+                                                       Text="Do not disable linking and building libc or libGDCC unless you know what you're doing." />
+                                            
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ContentControl.DataTemplates>
+                            </ContentControl>
                         </StackPanel>
                     </DataTemplate>
                 </ContentControl.DataTemplates>
