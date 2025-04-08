@@ -49,6 +49,13 @@ public sealed class ProjectTaskOrchestrator(
         var stopwatch = Stopwatch.GetTimestamp();
         profile.Status = ProfileRunContextStatus.Running;
 
+        // Clear current state of the tasks.
+        foreach (var task in profile.Tasks)
+        {
+            task.Status = ProfileRunTaskStatus.Pending;
+            task.TaskOutput.Clear();
+        }
+
         foreach (var runTask in profile.Tasks)
         {
             runTask.Status = ProfileRunTaskStatus.Running;
