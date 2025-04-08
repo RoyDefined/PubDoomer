@@ -10,6 +10,7 @@
     </Design.DataContext>
 
     <UserControl.Resources>
+        <EnumMatchConverter x:Key="EnumMatchConverter" />
         <NullToBoolConverter x:Key="NullToBoolConverter" />
         <ProfileRunTaskStatusTemplateSelector x:Key="ProfileRunTaskStatusTemplateSelector" />
         <CountToBoolConverter x:Key="CountToBoolConverter" />
