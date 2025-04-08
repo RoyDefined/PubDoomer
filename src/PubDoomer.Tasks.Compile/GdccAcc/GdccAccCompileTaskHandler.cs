@@ -112,7 +112,7 @@ public sealed partial class GdccAccCompileTaskHandler : ITaskHandler
         _taskContext.TaskOutput.Add(result);
     }
 
-    private static TaskOutputResult? ParseLine(string line)
+    private TaskOutputResult? ParseLine(string line)
     {
         // Using regex we determine the formatting of the message.
         // Notably it always contains 'warning: ' or 'error: '
@@ -124,9 +124,16 @@ public sealed partial class GdccAccCompileTaskHandler : ITaskHandler
         if (!match.Success)
             return null;
 
-        // Note the regex is build to also parse the code line and character, though it is currently unused.
         var type = match.Groups[1].Value.ToLowerInvariant();
+        var file = match.Groups[2].Value;
+        var faulthyLine = match.Groups[3].Value;
+        var faulthyCharacter = match.Groups[4].Value;
         var message = match.Groups[5].Value.Trim();
+
+        // Get the relative path to the file compared to the source and build a new message from that.
+        var fileDirectory = Path.GetDirectoryName(_task.InputFilePath!)!;
+        var relativeFilePath = Path.GetRelativePath(fileDirectory, file);
+        message = $"File \"{relativeFilePath}\", line {faulthyLine}, char {faulthyCharacter}: {message}";
 
         return type switch
         {
