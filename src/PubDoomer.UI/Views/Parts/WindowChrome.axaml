@@ -81,7 +81,22 @@
                               Command="{Binding OpenRecentProjectCommand}">
                         <MenuItem.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name}"/>
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <TextBlock Text="{Binding Name}"
+                                               VerticalAlignment="Center"/>
+                                    
+                                    <!-- Remove button to remove the recent project from the list. -->
+                                    <Button Grid.Column="1"
+                                            Command="{Binding $parent[Window].((MainWindowModel)DataContext).PromptRemoveRecentProjectCommand}"
+                                            CommandParameter="{Binding}"
+                                            Classes="Danger"
+                                            Theme="{DynamicResource BorderlessButton}"
+                                            Margin="10 0 0 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconDelete}" />
+                                    </Button>
+                                </Grid>
                             </DataTemplate>
                         </MenuItem.ItemTemplate>
                     </MenuItem>

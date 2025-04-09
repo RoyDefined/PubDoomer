@@ -279,23 +279,54 @@ public partial class MainWindowModel : MainViewModel
         if (RecentProjectIndex == -1) return;
         await OpenRecentProjectAsync(RecentProjects[RecentProjectIndex]);
     }
+    
+    /// <summary>
+    /// Command prompts removal of the specified recent project and removes it when continuing.
+    /// </summary>
+    [RelayCommand]
+    private async Task PromptRemoveRecentProjectAsync(RecentProject recentProject)
+    {
+        // In design mode we do not prompt, but rather remove immediately.
+        if (AssertInDesignMode())
+        {
+            await RemoveRecentProjectAsync(recentProject);
+            return;
+        }
+        
+        var result = await _dialogueProvider.PromptAsync(
+            AlertType.None,
+            "Remove project",
+            "Are you sure you want to remove the project from the list?",
+            string.Empty,
+            new InformationalWindowButton(AlertType.None, "Cancel"),
+            new InformationalWindowButton(AlertType.Error, "Remove"));
 
-    private async Task OpenRecentProjectAsync(RecentProject project)
+        if (!result) return;
+        await RemoveRecentProjectAsync(recentProject);
+    }
+
+    private async Task OpenRecentProjectAsync(RecentProject recentProject)
     {
         if (AssertInDesignMode()) return;
 
-        // No project on the given path.
-        // TODO: Remove project from recent projects if it was retrieved from there.
-        if (!File.Exists(project.FilePath))
+        // No project on the given path. Prompt to remove it.
+        if (!File.Exists(recentProject.FilePath))
         {
-            await _dialogueProvider.AlertAsync(AlertType.Warning,
+            var result = await _dialogueProvider.PromptAsync(
+                AlertType.None,
                 "Failed to open project",
-                "The project under the given path no longer exists.");
+                "The project under the given path no longer exists.",
+                "Would you like to remove it?",
+                new InformationalWindowButton(AlertType.None, "Cancel"),
+                new InformationalWindowButton(AlertType.Error, "Remove"));
+
+            if (!result) return;
+            await RemoveRecentProjectAsync(recentProject);
             return;
         }
 
-        await using var fileStream = File.OpenRead(project.FilePath);
-        await TryLoadProjectPathAsync(project.FilePath, fileStream);
+        await using var fileStream = File.OpenRead(recentProject.FilePath);
+        await TryLoadProjectPathAsync(recentProject.FilePath, fileStream);
     }
 
     private async Task TryLoadProjectPathAsync(string projectPath, Stream fileStream)
@@ -350,7 +381,7 @@ public partial class MainWindowModel : MainViewModel
     {
         if (AssertInDesignMode()) return;
 
-        if (CurrentProjectProvider?.ProjectContext?.FilePath == null)
+        if (CurrentProjectProvider.ProjectContext?.FilePath == null)
             return;
 
         // Remove this project from the recent projects if it exists.
@@ -364,6 +395,17 @@ public partial class MainWindowModel : MainViewModel
         RecentProjects.Insert(0, recentProject);
 
         await _recentProjectsService.SaveRecentProjectsAsync();
+    }
+    
+    /// <summary>
+    /// Removes the given project form the list of recent projects and saves the current list.
+    /// </summary>
+    private async Task RemoveRecentProjectAsync(RecentProject recentProject)
+    {
+        RecentProjects.Remove(recentProject);
+        
+        // We do not save the recent projects in design mode.
+        if (!AssertInDesignMode()) await _recentProjectsService.SaveRecentProjectsAsync();
     }
 
     [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_savingService), nameof(_localSettingsService), nameof(_recentProjectsService), nameof(_dialogueProvider))]
