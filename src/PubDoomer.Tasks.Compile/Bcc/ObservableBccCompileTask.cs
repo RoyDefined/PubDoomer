@@ -45,7 +45,7 @@ public partial class ObservableBccCompileTask : CompileTaskBase
 
     public override ObservableBccCompileTask DeepClone()
     {
-        return new ObservableBccCompileTask(Name, InputFilePath, OutputFilePath);
+        return new ObservableBccCompileTask(Name, InputFilePath, OutputFilePath, new(IncludeDirectories));
     }
 
     public override void Merge(ProjectTaskBase task)
