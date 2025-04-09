@@ -141,8 +141,9 @@ public partial class MainWindowModel : MainViewModel
         catch (Exception ex)
         {
             await _dialogueProvider.AlertAsync(AlertType.Warning,
+                ex,
                 "Failed to save project",
-                $"The project could not be saved. {ex.Message}");
+                "The project could not be saved.");
         }
     }
 
@@ -343,9 +344,10 @@ public partial class MainWindowModel : MainViewModel
         {
             var result = await _dialogueProvider.PromptAsync(
                 AlertType.None,
+                ex,
                 "Failed to open project",
                 "The project could not be loaded.",
-                $"{ex.Message}\nWould you like to remove it?",
+                "Would you like to remove it?",
                 new InformationalWindowButton(AlertType.None, "Cancel"),
                 new InformationalWindowButton(AlertType.Error, "Remove"));
 
@@ -382,7 +384,8 @@ public partial class MainWindowModel : MainViewModel
         }
         catch (Exception ex)
         {
-            await _dialogueProvider.AlertAsync(AlertType.Warning, $"The recent projects could not be loaded. {ex.Message}");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, 
+                ex,"The recent projects could not be loaded.");
         }
 
         try
@@ -391,7 +394,8 @@ public partial class MainWindowModel : MainViewModel
         }
         catch (Exception ex)
         {
-            await _dialogueProvider.AlertAsync(AlertType.Warning, $"The local settings could not be loaded. {ex.Message}");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, 
+                ex,"The local settings could not be loaded.");
         }
     }
 
