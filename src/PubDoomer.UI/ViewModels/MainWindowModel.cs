@@ -269,8 +269,16 @@ public partial class MainWindowModel : MainViewModel
         var file = storageFiles.First();
         var filePath = file.Path.AbsolutePath;
         await using var fileStream = await file.OpenReadAsync();
-        await TryLoadProjectPathAsync(filePath, fileStream);
-        await UpdateRecentProjectsWithCurrentAsync();
+
+        try
+        {
+            await TryLoadProjectPathAsync(filePath, fileStream);
+            await UpdateRecentProjectsWithCurrentAsync();
+        }
+        catch (Exception ex)
+        {
+            await _dialogueProvider.AlertAsync(AlertType.Error, "The project could not be loaded.", ex.Message);
+        }
     }
 
     [RelayCommand]
@@ -326,31 +334,41 @@ public partial class MainWindowModel : MainViewModel
         }
 
         await using var fileStream = File.OpenRead(recentProject.FilePath);
-        await TryLoadProjectPathAsync(recentProject.FilePath, fileStream);
+
+        try
+        {
+            await TryLoadProjectPathAsync(recentProject.FilePath, fileStream);
+        }
+        catch (Exception ex)
+        {
+            var result = await _dialogueProvider.PromptAsync(
+                AlertType.None,
+                "Failed to open project",
+                "The project could not be loaded.",
+                $"{ex.Message}\nWould you like to remove it?",
+                new InformationalWindowButton(AlertType.None, "Cancel"),
+                new InformationalWindowButton(AlertType.Error, "Remove"));
+
+            if (!result) return;
+            await RemoveRecentProjectAsync(recentProject);
+        }
     }
 
     private async Task TryLoadProjectPathAsync(string projectPath, Stream fileStream)
     {
         if (AssertInDesignMode()) return;
         
-        try
+        var type = Path.GetExtension(projectPath) switch
         {
-            var type = Path.GetExtension(projectPath) switch
-            {
-                $".{ProjectBinaryFormatExtension}" => ProjectReadingWritingType.Binary,
-                $".{ProjectTextFormatExtension}" => ProjectReadingWritingType.Text,
-                _ => throw new ArgumentException($"Project type could not be determined from file '{projectPath}'."),
-            };
+            $".{ProjectBinaryFormatExtension}" => ProjectReadingWritingType.Binary,
+            $".{ProjectTextFormatExtension}" => ProjectReadingWritingType.Text,
+            _ => throw new ArgumentException($"Project type could not be determined from file '{projectPath}'."),
+        };
 
-            var projectContext = _savingService.LoadProject(projectPath, fileStream, type);
+        var projectContext = _savingService.LoadProject(projectPath, fileStream, type);
 
-            projectContext.FilePath = projectPath;
-            CurrentProjectProvider.ProjectContext = projectContext;
-        }
-        catch (Exception ex)
-        {
-            await _dialogueProvider.AlertAsync(AlertType.Error, $"The project could not be loaded. {ex.Message}");
-        }
+        projectContext.FilePath = projectPath;
+        CurrentProjectProvider.ProjectContext = projectContext;
     }
 
     // Loads all local data.
