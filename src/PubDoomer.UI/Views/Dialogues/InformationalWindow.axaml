@@ -8,6 +8,7 @@
         Title="{Binding WindowTitle}"
         CanResize="False"
         SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
         x:DataType="InformationalWindowViewModel">
     
     <Design.DataContext>
@@ -35,14 +36,12 @@
 
                 <!-- Text -->
                 <StackPanel Grid.Column="1" HorizontalAlignment="Stretch">
-                    <TextBlock Classes="H5"
-                               TextWrapping="Wrap"
-                               Theme="{StaticResource TitleTextBlock}"
-                               Text="{Binding Title}" />
-                    <TextBlock Classes="Tertiary"
-                               TextWrapping="Wrap"
-                               Theme="{StaticResource TitleTextBlock}"
-                               Text="{Binding SubTitle}" />
+                    <TextBlock Text="{Binding Title}"
+                               FontWeight="Bold"
+                               TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding SubTitle}"
+                               Classes="Tertiary"
+                               TextWrapping="Wrap"/>
                 </StackPanel>
             </Grid>
 

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using PubDoomer.ViewModels.Dialogues;
 using PubDoomer.Views.Dialogues;
 
@@ -29,12 +31,11 @@ public sealed class DialogueProvider(
         var viewModel = new InformationalWindowViewModel();
         configureWindow(viewModel);
 
-        var dialogue = new InformationalWindow
+        var dialog = new InformationalWindow()
         {
-            DataContext = viewModel
+            DataContext = viewModel,
         };
-
-        return await dialogue.ShowDialog<int>(window);
+        return await dialog.ShowDialog<int>(window);
     }
 
     public async Task<bool> PromptAsync(AlertType type, string windowTitle, string title, string subTitle,
