@@ -60,10 +60,19 @@ public sealed class ProjectTaskOrchestrator(
         {
             runTask.Status = ProfileRunTaskStatus.Running;
 
-            var success = await InvokeTaskAsync(runTask, context);
-            runTask.Status = success ? ProfileRunTaskStatus.Success : ProfileRunTaskStatus.Error;
-
-            logger.LogDebug("Task success: {Success}", success);
+            try
+            {
+                var success = await InvokeTaskAsync(runTask, context);
+                runTask.Status = success ? ProfileRunTaskStatus.Success : ProfileRunTaskStatus.Error;
+                logger.LogDebug("Task result: {Success}", success);
+            }
+            catch (Exception ex)
+            {
+                // Automatic error on an exception.
+                runTask.Status = ProfileRunTaskStatus.Error;
+                logger.LogWarning(ex, "Task threw an exception.");
+                runTask.TaskOutput.Add(TaskOutputResult.CreateError("Task threw an exception.", ex));
+            }
 
             // Check error behaviour.
             // If there was an error and the behaviour is to quit, then end the task invocation early.
@@ -73,11 +82,13 @@ public sealed class ProjectTaskOrchestrator(
                 {
                     profile.Status = ProfileRunContextStatus.Error;
                     logger.LogWarning("Task failure. Profile is configured to stop.");
+                    runTask.TaskOutput.Add(TaskOutputResult.CreateWarning("Task failure. Task is configured to stop."));
                     break;
                 }
                 else
                 {
                     logger.LogWarning("Task failed but is configured to not stop on errors. Execution will continue.");
+                    runTask.TaskOutput.Add(TaskOutputResult.CreateWarning("Task failure. Task is configured to continue on errors."));
                     continue;
                 }
             }
