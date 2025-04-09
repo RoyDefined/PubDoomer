@@ -75,15 +75,13 @@
 
                     <!-- Recent Projects -->
                     <MenuItem Header="Recent Projects"
-                              IsEnabled="{Binding RecentProjects.Count, Converter={StaticResource CountToBoolConverter}}">
-                        <MenuItem.ItemsSource>
-                            <Binding Path="RecentProjects" />
-                        </MenuItem.ItemsSource>
+                              IsEnabled="{Binding RecentProjects.Count, Converter={StaticResource CountToBoolConverter}}"
+                              ItemsSource="{Binding RecentProjects}"
+                              SelectedIndex="{Binding RecentProjectIndex}"
+                              Command="{Binding OpenRecentProjectCommand}">
                         <MenuItem.ItemTemplate>
                             <DataTemplate>
-                                <MenuItem Header="{Binding Name}"
-                                          Command="{Binding #Root.((MainWindowModel)DataContext).OpenRecentProjectCommand}"
-                                          CommandParameter="{Binding FilePath}" />
+                                <TextBlock Text="{Binding Name}"/>
                             </DataTemplate>
                         </MenuItem.ItemTemplate>
                     </MenuItem>

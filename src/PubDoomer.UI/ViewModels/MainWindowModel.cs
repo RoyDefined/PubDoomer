@@ -40,6 +40,7 @@ public partial class MainWindowModel : MainViewModel
     private readonly WindowProvider? _windowProvider;
 
     [ObservableProperty] private RecentProjectCollection _recentProjects;
+    [ObservableProperty] private int _recentProjectIndex;
 
     public MainWindowModel()
     {
@@ -273,13 +274,19 @@ public partial class MainWindowModel : MainViewModel
     }
 
     [RelayCommand]
-    private async Task OpenRecentProjectAsync(string filePath)
+    private async Task OpenRecentProjectAsync()
+    {
+        if (RecentProjectIndex == -1) return;
+        await OpenRecentProjectAsync(RecentProjects[RecentProjectIndex]);
+    }
+
+    private async Task OpenRecentProjectAsync(RecentProject project)
     {
         if (AssertInDesignMode()) return;
 
         // No project on the given path.
         // TODO: Remove project from recent projects if it was retrieved from there.
-        if (!File.Exists(filePath))
+        if (!File.Exists(project.FilePath))
         {
             await _dialogueProvider.AlertAsync(AlertType.Warning,
                 "Failed to open project",
@@ -287,8 +294,8 @@ public partial class MainWindowModel : MainViewModel
             return;
         }
 
-        await using var fileStream = File.OpenRead(filePath);
-        await TryLoadProjectPathAsync(filePath, fileStream);
+        await using var fileStream = File.OpenRead(project.FilePath);
+        await TryLoadProjectPathAsync(project.FilePath, fileStream);
     }
 
     private async Task TryLoadProjectPathAsync(string projectPath, Stream fileStream)
