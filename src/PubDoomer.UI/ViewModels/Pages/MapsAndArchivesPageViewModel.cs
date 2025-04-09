@@ -275,6 +275,18 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
         _logger.LogDebug("Opening archive {ArchiveName} using Slade configured at path {UdbPath}.", archive.Name, _mergedSettings.SladeExecutableFilePath ?? "N/A");
         await StartSladeAsync(archive.Path!);
     }
+    
+    [RelayCommand]
+    private async Task EditSladeAllArchivesAsync()
+    {
+        if (AssertInDesignMode()) return;
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        
+        _logger.LogDebug("Opening all archives using Slade configured at path {UdbPath}.", _mergedSettings.SladeExecutableFilePath ?? "N/A");
+        
+        var archivePaths = CurrentProjectProvider.ProjectContext.Archives.Select(x => x.Path!);
+        await StartSladeAsync(archivePaths);
+    }
 
     private async Task StartSladeAsync(params IEnumerable<string> paths)
     {
