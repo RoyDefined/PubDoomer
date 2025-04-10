@@ -286,9 +286,12 @@ public partial class CodePageViewModel : PageViewModel
         }
 
         // Set up profile and context
+        // The project directory can be null when none are opened,
+        // though it doesn't make a difference here because we don't have any project specific logic in the tasks invoked here.
         var profile = new ProfileRunContext("Code editor run profile", runTasks);
+        var projectDirectory = Path.GetDirectoryName(CurrentProjectProvider.ProjectContext?.FilePath);
         var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, _settings);
-        var context = TaskInvokeContextUtil.BuildContext(settings);
+        var context = TaskInvokeContextUtil.BuildContext(projectDirectory, settings);
 
         // TODO: Make use of the profile.
         await _projectTaskOrchestrator.InvokeProfileAsync(profile, context);

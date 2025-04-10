@@ -23,6 +23,7 @@ using PubDoomer.Utils.TaskInvokation;
 using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.Validation;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using System.IO;
 
 namespace PubDoomer.ViewModels.Pages;
 
@@ -89,11 +90,20 @@ public partial class ProfilesPageViewModel : PageViewModel
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(SelectedRunProfile != null);
-        
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+
         _logger.LogDebug("Executing profile {ProfileName}", SelectedRunProfile.Name);
 
+        // The project directory should exist.
+        var projectDirectory = Path.GetDirectoryName(CurrentProjectProvider.ProjectContext.FilePath);
+        if (projectDirectory == null)
+        {
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Missing project", "A project is expected to be set in order to run profiles.");
+            return;
+        }
+
         var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
-        var context = TaskInvokeContextUtil.BuildContext(settings);
+        var context = TaskInvokeContextUtil.BuildContext(projectDirectory, settings);
 
         await _projectTaskOrchestrator.InvokeProfileAsync(SelectedRunProfile, context);
         
