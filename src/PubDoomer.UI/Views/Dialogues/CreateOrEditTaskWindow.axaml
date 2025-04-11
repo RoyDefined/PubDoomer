@@ -7,6 +7,7 @@
         xmlns:gdccAcc="clr-namespace:PubDoomer.Tasks.Compile.GdccAcc;assembly=PubDoomer.Tasks.Compile"
         xmlns:gdccCc="clr-namespace:PubDoomer.Tasks.Compile.GdccCc;assembly=PubDoomer.Tasks.Compile"
         xmlns:tasks="clr-namespace:PubDoomer.Project.Tasks;assembly=PubDoomer.Tasks.Compile"
+        xmlns:copyProject="clr-namespace:PubDoomer.Tasks.CopyProject;assembly=PubDoomer.Tasks.CopyProject"
         mc:Ignorable="d"
         x:Class="PubDoomer.Views.Dialogues.CreateOrEditTaskWindow"
         Title="{Binding WindowTitle}"
@@ -286,6 +287,49 @@
                                     </DataTemplate>
                                 </ContentControl.DataTemplates>
                             </ContentControl>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Copy Project task -->
+                    <DataTemplate DataType="{x:Type copyProject:ObservableCopyProjectTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <StackPanel>
+                                <!-- If `true`, keep the 'acs.err' file if finished but with a compile error that generated it. -->
+                                <CheckBox Content="Copy to a temp folder."
+                                          IsChecked="{Binding UseTempFolder}" />
+                                            
+                                <!-- Additional clarification regarding the copy to a temporary folder. -->
+                                <TextBlock Classes="Tertiary"
+                                           FontSize="10"
+                                           Margin="25 0 0 0"
+                                           HorizontalAlignment="Stretch"
+                                           TextWrapping="Wrap"
+                                           Text="NOTE: This will copy the project to a generated directory in the current user's temporary folder." />
+                            </StackPanel>
                         </StackPanel>
                     </DataTemplate>
                 </ContentControl.DataTemplates>

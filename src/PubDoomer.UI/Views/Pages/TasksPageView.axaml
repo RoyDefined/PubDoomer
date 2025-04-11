@@ -5,6 +5,7 @@
              xmlns:acc="clr-namespace:PubDoomer.Tasks.Compile.Acc;assembly=PubDoomer.Tasks.Compile"
              xmlns:bcc="clr-namespace:PubDoomer.Tasks.Compile.Bcc;assembly=PubDoomer.Tasks.Compile"
              xmlns:gdccAcc="clr-namespace:PubDoomer.Tasks.Compile.GdccAcc;assembly=PubDoomer.Tasks.Compile"
+             xmlns:copyProject="clr-namespace:PubDoomer.Tasks.CopyProject;assembly=PubDoomer.Tasks.CopyProject"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="PubDoomer.Views.Pages.TasksPageView"
              x:DataType="TasksPageViewModel">
@@ -12,6 +13,10 @@
     <Design.DataContext>
         <TasksPageViewModel />
     </Design.DataContext>
+    
+    <UserControl.Resources>
+        <NullToBoolConverter x:Key="NullToBoolConverter" />
+    </UserControl.Resources>
 
     <Border Padding="10">
         <Grid RowDefinitions="Auto, *">
@@ -96,6 +101,20 @@
                                                         <TextBlock Text="{Binding InputFilePath, StringFormat='Input: {0}'}"
                                                                    FontSize="12" Foreground="Gray" />
                                                         <TextBlock Text="{Binding OutputFilePath, StringFormat='Output: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                                
+                                                <!-- DataTemplate for Copy Project task -->
+                                                <DataTemplate DataType="copyProject:ObservableCopyProjectTask">
+                                                    
+                                                    <!-- Show the target folder, or specify a temporary folder is generated. -->
+                                                    <StackPanel>
+                                                        <TextBlock IsVisible="{Binding TargetFolder, Converter={StaticResource NullToBoolConverter}}"
+                                                                   Text="{Binding TargetFolder, StringFormat='Target folder: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                        <TextBlock IsVisible="{Binding TargetFolder, Converter={StaticResource NullToBoolConverter}, ConverterParameter=true}"
+                                                                   Text="Target folder: generated when the task is invoked."
                                                                    FontSize="12" Foreground="Gray" />
                                                     </StackPanel>
                                                 </DataTemplate>

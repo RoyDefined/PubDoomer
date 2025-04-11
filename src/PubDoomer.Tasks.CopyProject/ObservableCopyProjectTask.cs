@@ -1,5 +1,7 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using PubDoomer.Engine.Saving;
 using PubDoomer.Project.Tasks;
+using System.Collections.ObjectModel;
 
 namespace PubDoomer.Tasks.CopyProject;
 
@@ -13,23 +15,56 @@ public partial class ObservableCopyProjectTask : ProjectTaskBase
     public override string DisplayName => TaskName;
     public override string Description => TaskDescription;
 
-    public override ProjectTaskBase DeepClone()
+    /// <summary>
+    /// The target folder to copy the project to.
+    /// </summary>
+    [ObservableProperty] private string? _targetFolder;
+    
+    /// <summary>
+    /// If <see langword="true"/>, copy the project over to a temporary directory generated during invokation.
+    /// </summary>
+    [ObservableProperty] private bool _useTempFolder = true;
+
+    public ObservableCopyProjectTask()
     {
-        throw new NotImplementedException();
     }
 
-    public override void Deserialize(IProjectReader reader, ProjectSaveVersion version)
+    public ObservableCopyProjectTask(
+        string? name, string? targetFolder = null, bool useTempFolder = true)
     {
-        throw new NotImplementedException();
+        Name = name;
+        TargetFolder = targetFolder;
+        UseTempFolder = useTempFolder;
+    }
+
+
+    public override ObservableCopyProjectTask DeepClone()
+    {
+        return new ObservableCopyProjectTask(Name, TargetFolder, UseTempFolder);
     }
 
     public override void Merge(ProjectTaskBase task)
     {
-        throw new NotImplementedException();
+        if (task is not ObservableCopyProjectTask copyProjectTask)
+        {
+            // TODO: Error?
+            return;
+        }
+
+        Name = copyProjectTask.Name;
+        TargetFolder = copyProjectTask.TargetFolder;
+        UseTempFolder = copyProjectTask.UseTempFolder;
     }
 
     public override void Serialize(IProjectWriter writer)
     {
-        throw new NotImplementedException();
+        writer.Write(TargetFolder);
+        writer.Write(UseTempFolder);
+    }
+
+    public override void Deserialize(IProjectReader reader, ProjectSaveVersion version)
+    {
+        TargetFolder = reader.ReadString();
+        UseTempFolder = reader.ReadBoolean();
     }
 }

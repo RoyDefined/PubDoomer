@@ -37,6 +37,7 @@
         <ProjectReference Include="..\PubDoomer.Engine\PubDoomer.Engine.csproj" />
         <ProjectReference Include="..\PubDoomer.Tasks.AcsVM\PubDoomer.Tasks.AcsVM.csproj" />
         <ProjectReference Include="..\PubDoomer.Tasks.Compile\PubDoomer.Tasks.Compile.csproj" />
+        <ProjectReference Include="..\PubDoomer.Tasks.CopyProject\PubDoomer.Tasks.CopyProject.csproj" />
     </ItemGroup>
 
     <ItemGroup>

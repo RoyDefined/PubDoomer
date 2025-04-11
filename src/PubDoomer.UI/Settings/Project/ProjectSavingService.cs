@@ -21,6 +21,7 @@ using PubDoomer.Tasks.Compile.Acc;
 using PubDoomer.Tasks.Compile.Bcc;
 using PubDoomer.Tasks.Compile.GdccAcc;
 using PubDoomer.Tasks.Compile.GdccCc;
+using PubDoomer.Tasks.CopyProject;
 
 namespace PubDoomer.Settings.Project;
 
@@ -33,6 +34,7 @@ public sealed class ProjectSavingService
         [ObservableBccCompileTask.TaskName] = new ObservableBccCompileTask(),
         [ObservableGdccAccCompileTask.TaskName] = new ObservableGdccAccCompileTask(),
         [ObservableGdccCcCompileTask.TaskName] = new ObservableGdccCcCompileTask(),
+        [ObservableCopyProjectTask.TaskName] = new ObservableCopyProjectTask(),
     };
 
     /// <summary>
@@ -250,7 +252,7 @@ public sealed class ProjectSavingService
                     {
                         var task = new ProfileTask();
 
-                        // Determine task reference from existing tasks so we retan proper references.
+                        // Determine task reference from existing tasks so we retain proper references.
                         // TODO: Better support this part in the event a task can't be found.
                         var name = reader.ReadString();
                         task.Task = projectContext.Tasks.Single(x => x.Name == name);

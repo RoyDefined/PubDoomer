@@ -18,6 +18,7 @@ using PubDoomer.Tasks.Compile.Bcc;
 using PubDoomer.Tasks.Compile.GdccAcc;
 using PubDoomer.Tasks.Compile.GdccCc;
 using PubDoomer.Tasks.Compile.Observables;
+using PubDoomer.Tasks.CopyProject;
 
 namespace PubDoomer.ViewModels.Dialogues;
 
@@ -42,7 +43,8 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         new ObservableAccCompileTask(),
         new ObservableBccCompileTask(),
         new ObservableGdccAccCompileTask(),
-        new ObservableGdccCcCompileTask()
+        new ObservableGdccCcCompileTask(),
+        new ObservableCopyProjectTask()
     ];
 
     [ObservableProperty] private string _createOrEditButtonText;
@@ -95,10 +97,13 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
 
     public bool FormIsValid => CurrentTask switch
     {
+        // TODO: IsNullOrWhitespace, not IsNullOrEmpty.
+        // TODO: This should be part of the task.
         ObservableAccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
         ObservableBccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
         ObservableGdccAccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
         ObservableGdccCcCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
+        ObservableCopyProjectTask copyProjectTask => !string.IsNullOrWhiteSpace(copyProjectTask.TargetFolder) || copyProjectTask.UseTempFolder,
         _ => false
     };
 
