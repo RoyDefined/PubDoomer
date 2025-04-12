@@ -71,6 +71,27 @@
                            VerticalAlignment="Center"
                            Text="The IWad you select will be used as a base for the editor."/>
                 
+                <!-- Compiler -->
+                <Grid ColumnDefinitions="120, Auto">
+
+                    <TextBlock VerticalAlignment="Center"
+                               FontWeight="Bold"
+                               Text="Compiler"
+                               TextWrapping="Wrap" />
+
+                    <ComboBox Grid.Column="1"
+                              SelectedIndex="0" 
+                              Width="200"
+                              SelectedItem="{Binding SelectedCompiler}"
+                              ItemsSource="{Binding SelectableCompilers}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Grid>
+                
                 <!-- Ultimate Doombuilder path -->
                 <TextBlock Theme="{StaticResource TitleTextBlock}"
                            Classes="Tertiary"

@@ -68,6 +68,12 @@ internal static class MapEditUtil
             .OfType<string>();
     }
 
+    public static IEnumerable<UdbCompiler> GetCompilers(string udbExecutableFilePath)
+    {
+        // TODO
+        yield break;
+    }
+
     internal static void StartSlade(string filePath, IEnumerable<string> paths)
     {
         var arguments = string.Join(" ", paths.Select(x => $"\"{x}\""));

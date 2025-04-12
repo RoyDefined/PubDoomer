@@ -30,6 +30,12 @@ public partial class ConfigureEditMapViewModel : PageViewModel
     [ObservableProperty] private ObservableCollection<string> _selectableConfigurations;
     
     /// <summary>
+    /// The collection of compilers that can be selected.
+    /// <br /> This list is determined the same way Ultimate Doombuilder determines compilers.
+    /// </summary>
+    [ObservableProperty] private ObservableCollection<UdbCompiler> _selectableCompilers;
+    
+    /// <summary>
     /// The IWad configured to be opened.
     /// </summary>
     [ObservableProperty]
@@ -42,6 +48,13 @@ public partial class ConfigureEditMapViewModel : PageViewModel
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FormIsValid))]
     private string? _selectedConfiguration;
+    
+    /// <summary>
+    /// The compiler configured to be used with the map.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FormIsValid))]
+    private UdbCompiler? _selectedCompiler;
     
     public ConfigureEditMapViewModel()
     {
@@ -57,21 +70,31 @@ public partial class ConfigureEditMapViewModel : PageViewModel
             "Doom_Doom2Doom",
             "Doom_DoomDoom",
         ];
+        SelectableCompilers =
+        [
+            new("ACC", "ACC.cfg"),
+            new("BCC", "BCC.cfg"),
+            new("BCC (fork)", "ZT-BCC.cfg"),
+        ];
     }
     
     public ConfigureEditMapViewModel(
         string udbExecutableFilePath,
         IEnumerable<IWadContext> iWadContexts,
         IEnumerable<string> configurations,
+        IEnumerable<UdbCompiler> compilers,
         IWadContext? selectedIWad,
-        string? selectedConfiguration)
+        string? selectedConfiguration,
+        UdbCompiler selectedCompiler)
     {
         UdbExecutableFilePath = udbExecutableFilePath;
         SelectableIWads = new ObservableCollection<IWadContext>(iWadContexts);
         SelectableConfigurations = new ObservableCollection<string>(configurations);
+        SelectableCompilers = new ObservableCollection<UdbCompiler>(compilers);
         SelectedIWad = selectedIWad;
         SelectedConfiguration = selectedConfiguration;
+        SelectedCompiler = selectedCompiler;
     }
 
-    public bool FormIsValid => SelectedIWad != null && SelectedConfiguration != null;
+    public bool FormIsValid => SelectedIWad != null && SelectedConfiguration != null && SelectedCompiler != null;
 }

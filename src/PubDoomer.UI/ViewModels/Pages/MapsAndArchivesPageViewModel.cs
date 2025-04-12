@@ -37,8 +37,10 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
     [ObservableProperty] private IWadContext? _selectedIWad;
     [ObservableProperty] private EngineRunConfiguration? _selectedEngineRunConfiguration;
     [ObservableProperty] private string? _selectedConfiguration;
+    [ObservableProperty] private UdbCompiler? _selectedCompiler;
 
     private string[]? _selectableConfigurations;
+    private UdbCompiler[]? _selectableCompilers;
 
     public MapsAndArchivesPageViewModel()
     {
@@ -212,7 +214,21 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
             return;
         }
         
-        var vm = new ConfigureEditMapViewModel(_mergedSettings.UdbExecutableFilePath, _mergedSettings.IWads, _selectableConfigurations, SelectedIWad, SelectedConfiguration);
+        // Check for selectable compilers.
+        // If not set, initialize them.
+        try
+        {
+            _selectableCompilers ??= MapEditUtil.GetCompilers(_mergedSettings.UdbExecutableFilePath).ToArray();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to retrieve compilers.");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to retrieve compilers",
+                "Failed to retrieve eligible compilers for Ultimate DoomBuilder. Make sure the configured path is valid.");
+            return;
+        }
+        
+        var vm = new ConfigureEditMapViewModel(_mergedSettings.UdbExecutableFilePath, _mergedSettings.IWads, _selectableConfigurations, _selectableCompilers, SelectedIWad, SelectedConfiguration, SelectedCompiler);
         var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
         if (!result || vm.SelectedIWad == null || vm.SelectedConfiguration == null) return;
         
