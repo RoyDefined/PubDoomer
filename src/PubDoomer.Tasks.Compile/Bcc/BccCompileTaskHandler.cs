@@ -16,7 +16,7 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
     private readonly ObservableBccCompileTask _task;
 
     // Match pattern like: "...path with spaces...:14:18: warning: message here"
-    [GeneratedRegex(@"^(.*?):(\d+):(\d+):\s*(warning|error):\s*(.+)$", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"^(.*?):(\d+):(\d+):(?:\s*(warning|error):\s*)?(.*)$", RegexOptions.IgnoreCase)]
     private static partial Regex StdErrMessageMatcher();
 
     public BccCompileTaskHandler(
@@ -102,6 +102,9 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
 
     private void HandleStdErr(string line)
     {
+        if (string.IsNullOrWhiteSpace(line))
+            return;
+
         var result = ParseLine(line);
         if (result == null)
         {
@@ -126,8 +129,11 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
         var file = match.Groups[1].Value;
         var faulthyLine = match.Groups[2].Value;
         var faulthyCharacter = match.Groups[3].Value;
-        var type = match.Groups[4].Value.ToLowerInvariant();
+        var typeGroup = match.Groups[4].Value;
         var message = match.Groups[5].Value.Trim();
+
+        // Default to "error" if no type group
+        var type = string.IsNullOrWhiteSpace(typeGroup) ? "error" : typeGroup.ToLowerInvariant();
 
         // Get the relative path to the file compared to the source and build a new message from that.
         var fileDirectory = Path.GetDirectoryName(_task.InputFilePath!)!;
@@ -138,7 +144,7 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
         {
             "warning" => TaskOutputResult.CreateWarning(message),
             "error" => TaskOutputResult.CreateError(message),
-            _ => null
+            _ => TaskOutputResult.CreateError(message),
         };
     }
 }
