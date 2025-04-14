@@ -11,6 +11,8 @@ using PubDoomer.ViewModels.Pages;
 
 namespace PubDoomer.ViewModels.Dialogues;
 
+// TODO: The combo box items should include a "none" that indicate no value was provided. Right now we can't revert a selected item.
+
 public partial class ConfigureEditMapViewModel : PageViewModel
 {
     /// <summary>
@@ -39,21 +41,18 @@ public partial class ConfigureEditMapViewModel : PageViewModel
     /// The IWad configured to be opened.
     /// </summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FormIsValid))]
     private IWadContext? _selectedIWad;
     
     /// <summary>
     /// The Configuration configured to be used with the map.
     /// </summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FormIsValid))]
     private string? _selectedConfiguration;
     
     /// <summary>
     /// The compiler configured to be used with the map.
     /// </summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FormIsValid))]
     private UdbCompiler? _selectedCompiler;
     
     public ConfigureEditMapViewModel()
@@ -95,6 +94,4 @@ public partial class ConfigureEditMapViewModel : PageViewModel
         SelectedConfiguration = selectedConfiguration;
         SelectedCompiler = selectedCompiler;
     }
-
-    public bool FormIsValid => SelectedIWad != null && SelectedConfiguration != null && SelectedCompiler != null;
 }

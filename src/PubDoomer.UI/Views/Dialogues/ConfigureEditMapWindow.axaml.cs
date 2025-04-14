@@ -16,20 +16,12 @@ public partial class ConfigureEditMapWindow : Window
     private void CancelFormButton_OnClick(object? sender, RoutedEventArgs e)
     {
         if (Design.IsDesignMode) return;
-
         Close(false);
     }
 
-    private async void FinishFormButton_OnClick(object? sender, RoutedEventArgs e)
+    private void FinishFormButton_OnClick(object? sender, RoutedEventArgs e)
     {
         if (Design.IsDesignMode) return;
-        
-        var viewModel = (ConfigureEditMapViewModel)DataContext!;
-        if (!viewModel.FormIsValid) return;
-
-        // We add a yield so the command is able to trigger in time. Otherwise it will not trigger.
-        await Task.Yield();
-
         Close(true);
     }
 }

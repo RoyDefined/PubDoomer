@@ -173,14 +173,6 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
             return;
         }
         
-        // Verify an IWad and configuration is selected.
-        // If not, we open the dialogue to configure it and end this method.
-        if (SelectedIWad == null || SelectedConfiguration == null || SelectedCompiler == null)
-        {
-            await ConfigureEditUdbMapAsync(map);
-            return;
-        }
-        
         await OpenMapAsync(_mergedSettings.UdbExecutableFilePath, map, SelectedIWad, SelectedConfiguration, SelectedCompiler, CurrentProjectProvider.ProjectContext.Archives);
     }
 
@@ -230,7 +222,7 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
         
         var vm = new ConfigureEditMapViewModel(_mergedSettings.UdbExecutableFilePath, _mergedSettings.IWads, _selectableConfigurations, _selectableCompilers, SelectedIWad, SelectedConfiguration, SelectedCompiler);
         var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
-        if (!result || vm.SelectedIWad == null || vm.SelectedConfiguration == null || vm.SelectedCompiler == null) return;
+        if (!result) return;
         
         SelectedIWad = vm.SelectedIWad;
         SelectedConfiguration = vm.SelectedConfiguration;
@@ -241,9 +233,9 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
     private async Task OpenMapAsync(
         string udbExecutableFilePath,
         MapContext map,
-        IWadContext selectedIWad,
-        string selectedConfiguration,
-        UdbCompiler selectedCompiler,
+        IWadContext? selectedIWad,
+        string? selectedConfiguration,
+        UdbCompiler? selectedCompiler,
         ObservableCollection<ArchiveContext> archives)
     {
         Debug.Assert(_dialogueProvider != null);

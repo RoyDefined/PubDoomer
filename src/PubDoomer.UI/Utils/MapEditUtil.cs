@@ -27,8 +27,9 @@ internal static partial class MapEditUtil
     /// Starts Ultimate Doombuilder using the provided filepath, opening the given map and optionally loading one or more archives.
     /// <br /> The method will ensure the process is started in the background and doesn't get awaited.
     /// </summary>
-    internal static void StartUltimateDoomBuilder(string filePath, MapContext map, IWadContext selectedIWad,
-        string selectedConfiguration, UdbCompiler selectedCompiler, IEnumerable<ArchiveContext> archives)
+    internal static void StartUltimateDoomBuilder(string filePath, MapContext map,
+        IWadContext? selectedIWad, string? selectedConfiguration, UdbCompiler? selectedCompiler,
+        IEnumerable<ArchiveContext> archives)
     {
         var argumentBuilder = new StringBuilder();
             
@@ -36,13 +37,16 @@ internal static partial class MapEditUtil
         argumentBuilder.AppendFormat("\"{0}\" -map {1}", map.Path, map.MapLumpName);
         
         // Add configuration
-        argumentBuilder.Append($" -cfg \"{selectedConfiguration}.cfg\"");
+        if (selectedConfiguration != null)
+            argumentBuilder.Append($" -cfg \"{selectedConfiguration}.cfg\"");
 
         // Add script configuration
-        argumentBuilder.Append($" -scriptconfig \"{selectedCompiler.IdentifyingName}\"");
+        if (selectedCompiler != null)
+            argumentBuilder.Append($" -scriptconfig \"{selectedCompiler.IdentifyingName}\"");
         
         // Add IWad
-        argumentBuilder.AppendFormat(" -resource wad \"{0}\"", selectedIWad.Path);
+        if (selectedIWad != null)
+            argumentBuilder.AppendFormat(" -resource wad \"{0}\"", selectedIWad.Path);
             
         // Add each archive as a resource
         foreach (var archive in archives)

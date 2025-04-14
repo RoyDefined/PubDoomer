@@ -92,13 +92,24 @@
                     </ComboBox>
                 </Grid>
                 
-                <!-- Ultimate Doombuilder path -->
+                <!-- Ultimate Doombuilder path clarification -->
                 <TextBlock Theme="{StaticResource TitleTextBlock}"
                            Classes="Tertiary"
                            FontSize="10"
                            TextWrapping="Wrap"
                            VerticalAlignment="Center"
                            Text="{Binding UdbExecutableFilePath, StringFormat='The editor that will be opened is located at \'{0}\'.'}"/>
+                
+                <!-- Clarification about selecting values. -->
+                <TextBlock Theme="{StaticResource TitleTextBlock}"
+                           Classes="Tertiary"
+                           FontSize="10"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center">
+                    If one or more configuration above is left empty, Ultimate DoomBuilder will determine the value.
+                    <LineBreak />
+                    This can be either from the map's .dbs file or the application's default configuration.
+                </TextBlock>
             </StackPanel>
             
             <!-- Cancel and submit button -->
@@ -111,7 +122,6 @@
                         Click="CancelFormButton_OnClick" />
 
                 <Button Content="Open map"
-                        IsEnabled="{Binding FormIsValid}"
                         Classes="Success"
                         Theme="{DynamicResource SolidButton}"
                         Click="FinishFormButton_OnClick" />
