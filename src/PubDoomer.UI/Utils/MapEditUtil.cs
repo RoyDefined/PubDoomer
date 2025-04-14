@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using PubDoomer.Project.Archive;
 using PubDoomer.Project.IWad;
@@ -10,16 +12,23 @@ using PubDoomer.Project.Maps;
 
 namespace PubDoomer.Utils;
 
-internal static class MapEditUtil
+internal static partial class MapEditUtil
 {
     private const string UdbConfigurationFolderPath = "Configurations";
-    
+    private const string UdbScriptsFolderPath = "Scripting";
+
+    [GeneratedRegex(@"^scripttype\s*=\s*[""]?(.*?)[""]?;", RegexOptions.IgnoreCase, "en-NL")]
+    private static partial Regex UdbConfigurationScriptTypeLineRegex();
+
+    [GeneratedRegex(@"^description\s*=\s*[""]?(.*?)[""]?;", RegexOptions.IgnoreCase, "en-NL")]
+    private static partial Regex UdbConfigurationDescriptionLineRegex();
+
     /// <summary>
     /// Starts Ultimate Doombuilder using the provided filepath, opening the given map and optionally loading one or more archives.
     /// <br /> The method will ensure the process is started in the background and doesn't get awaited.
     /// </summary>
     internal static void StartUltimateDoomBuilder(string filePath, MapContext map, IWadContext selectedIWad,
-        string selectedConfiguration, IEnumerable<ArchiveContext> archives)
+        string selectedConfiguration, UdbCompiler selectedCompiler, IEnumerable<ArchiveContext> archives)
     {
         var argumentBuilder = new StringBuilder();
             
@@ -28,6 +37,9 @@ internal static class MapEditUtil
         
         // Add configuration
         argumentBuilder.Append($" -cfg \"{selectedConfiguration}.cfg\"");
+
+        // Add script configuration
+        argumentBuilder.Append($" -scriptconfig \"{selectedCompiler.IdentifyingName}\"");
         
         // Add IWad
         argumentBuilder.AppendFormat(" -resource wad \"{0}\"", selectedIWad.Path);
@@ -60,7 +72,7 @@ internal static class MapEditUtil
         path = Path.Combine(path, UdbConfigurationFolderPath);
         if (!Directory.Exists(path))
         {
-            throw new DirectoryNotFoundException($"The directory '{path}' was not found.");
+            throw new DirectoryNotFoundException($"Failed to fetch UDB configurations. The directory '{path}' was not found.");
         }
 
         return Directory.GetFiles(path, "*.cfg", SearchOption.TopDirectoryOnly)
@@ -68,11 +80,65 @@ internal static class MapEditUtil
             .OfType<string>();
     }
 
-    public static IEnumerable<UdbCompiler> GetCompilers(string udbExecutableFilePath)
+    public static async IAsyncEnumerable<UdbCompiler> GetCompilersAsync(string udbExecutableFilePath)
     {
-        // TODO
-        yield break;
+        var path = Path.GetDirectoryName(udbExecutableFilePath) ?? string.Empty;
+        path = Path.Combine(path, UdbScriptsFolderPath);
+
+        if (!Directory.Exists(path))
+        {
+            throw new DirectoryNotFoundException($"Failed to fetch UDB compilers. The directory '{path}' was not found.");
+        }
+
+        var configurationSources = Directory.GetFiles(path, "*.cfg", SearchOption.TopDirectoryOnly);
+
+        foreach (var source in configurationSources)
+        {
+            string? scriptType = null;
+            string? description = null;
+
+            var lines = await File.ReadAllLinesAsync(source);
+            foreach (var line in lines)
+            {
+                var trimmed = line.Trim();
+
+                // Skip comments
+                if (string.IsNullOrWhiteSpace(trimmed) || trimmed.StartsWith("//"))
+                    continue;
+
+                // Parse scripttype
+                if (scriptType == null)
+                {
+                    var match = UdbConfigurationScriptTypeLineRegex().Match(trimmed);
+                    if (match.Success)
+                    {
+                        scriptType = match.Groups[1].Value;
+                    }
+                }
+
+                // Parse description
+                if (description == null)
+                {
+                    var match = UdbConfigurationDescriptionLineRegex().Match(trimmed);
+                    if (match.Success)
+                    {
+                        description = match.Groups[1].Value;
+                    }
+                }
+
+                // Stop early if both values found
+                if (scriptType != null && description != null)
+                    break;
+            }
+
+            Debug.Assert(description != null);
+            if (string.Equals(scriptType, "acs", StringComparison.OrdinalIgnoreCase))
+            {
+                yield return new UdbCompiler(description, Path.GetFileName(source));
+            }
+        }
     }
+
 
     internal static void StartSlade(string filePath, IEnumerable<string> paths)
     {

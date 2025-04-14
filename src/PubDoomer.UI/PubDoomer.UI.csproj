@@ -29,6 +29,7 @@
         <PackageReference Include="Semi.Avalonia" />
         <PackageReference Include="Serilog" />
         <PackageReference Include="Serilog.Extensions.Hosting" />
+        <PackageReference Include="System.Linq.Async" />
         <PackageReference Include="System.Reactive" />
     </ItemGroup>
 

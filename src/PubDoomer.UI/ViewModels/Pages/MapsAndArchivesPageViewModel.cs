@@ -175,13 +175,13 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
         
         // Verify an IWad and configuration is selected.
         // If not, we open the dialogue to configure it and end this method.
-        if (SelectedIWad == null || SelectedConfiguration == null)
+        if (SelectedIWad == null || SelectedConfiguration == null || SelectedCompiler == null)
         {
             await ConfigureEditUdbMapAsync(map);
             return;
         }
         
-        await OpenMapAsync(_mergedSettings.UdbExecutableFilePath, map, SelectedIWad, SelectedConfiguration, CurrentProjectProvider.ProjectContext.Archives);
+        await OpenMapAsync(_mergedSettings.UdbExecutableFilePath, map, SelectedIWad, SelectedConfiguration, SelectedCompiler, CurrentProjectProvider.ProjectContext.Archives);
     }
 
     [RelayCommand]
@@ -218,7 +218,7 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
         // If not set, initialize them.
         try
         {
-            _selectableCompilers ??= MapEditUtil.GetCompilers(_mergedSettings.UdbExecutableFilePath).ToArray();
+            _selectableCompilers ??= await MapEditUtil.GetCompilersAsync(_mergedSettings.UdbExecutableFilePath).ToArrayAsync();
         }
         catch (Exception ex)
         {
@@ -230,11 +230,12 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
         
         var vm = new ConfigureEditMapViewModel(_mergedSettings.UdbExecutableFilePath, _mergedSettings.IWads, _selectableConfigurations, _selectableCompilers, SelectedIWad, SelectedConfiguration, SelectedCompiler);
         var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
-        if (!result || vm.SelectedIWad == null || vm.SelectedConfiguration == null) return;
+        if (!result || vm.SelectedIWad == null || vm.SelectedConfiguration == null || vm.SelectedCompiler == null) return;
         
         SelectedIWad = vm.SelectedIWad;
         SelectedConfiguration = vm.SelectedConfiguration;
-        await OpenMapAsync(_mergedSettings.UdbExecutableFilePath, map, SelectedIWad, SelectedConfiguration, CurrentProjectProvider.ProjectContext.Archives);
+        SelectedCompiler = vm.SelectedCompiler;
+        await OpenMapAsync(_mergedSettings.UdbExecutableFilePath, map, SelectedIWad, SelectedConfiguration, SelectedCompiler, CurrentProjectProvider.ProjectContext.Archives);
     }
 
     private async Task OpenMapAsync(
@@ -242,6 +243,7 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
         MapContext map,
         IWadContext selectedIWad,
         string selectedConfiguration,
+        UdbCompiler selectedCompiler,
         ObservableCollection<ArchiveContext> archives)
     {
         Debug.Assert(_dialogueProvider != null);
@@ -250,7 +252,7 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
         // Any exceptions are displayed in a window.
         try
         {
-            MapEditUtil.StartUltimateDoomBuilder(udbExecutableFilePath, map, selectedIWad, selectedConfiguration, archives);
+            MapEditUtil.StartUltimateDoomBuilder(udbExecutableFilePath, map, selectedIWad, selectedConfiguration, selectedCompiler, archives);
         }
         catch (Exception ex)
         {

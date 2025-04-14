@@ -85,7 +85,7 @@ public partial class ConfigureEditMapViewModel : PageViewModel
         IEnumerable<UdbCompiler> compilers,
         IWadContext? selectedIWad,
         string? selectedConfiguration,
-        UdbCompiler selectedCompiler)
+        UdbCompiler? selectedCompiler)
     {
         UdbExecutableFilePath = udbExecutableFilePath;
         SelectableIWads = new ObservableCollection<IWadContext>(iWadContexts);
