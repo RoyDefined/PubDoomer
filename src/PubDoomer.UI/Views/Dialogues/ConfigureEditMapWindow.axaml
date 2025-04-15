@@ -37,11 +37,12 @@
                     <ComboBox Grid.Column="1"
                               SelectedIndex="0" 
                               Width="200"
-                              SelectedItem="{Binding SelectedIWad}"
+                              SelectedValue="{Binding SelectedIWad}"
+                              SelectedValueBinding="{Binding Value}"
                               ItemsSource="{Binding SelectableIWads}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name}"/>
+                                <TextBlock Text="{Binding Key, FallbackValue=None}"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -58,8 +59,14 @@
                     <ComboBox Grid.Column="1"
                               SelectedIndex="0" 
                               Width="200"
-                              SelectedItem="{Binding SelectedConfiguration}"
+                              SelectedValue="{Binding SelectedConfiguration}"
+                              SelectedValueBinding="{Binding Value}"
                               ItemsSource="{Binding SelectableConfigurations}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Key, FallbackValue=None}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
                     </ComboBox>
                 </Grid>
                 
@@ -82,11 +89,12 @@
                     <ComboBox Grid.Column="1"
                               SelectedIndex="0" 
                               Width="200"
-                              SelectedItem="{Binding SelectedCompiler}"
+                              SelectedValue="{Binding SelectedCompiler}"
+                              SelectedValueBinding="{Binding Key}"
                               ItemsSource="{Binding SelectableCompilers}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name}"/>
+                                <TextBlock Text="{Binding Key, FallbackValue=None}"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
