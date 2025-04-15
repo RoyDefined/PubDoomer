@@ -25,10 +25,12 @@ internal static class MapRunUtil
         foreach (var archive in archives)
         {
             if (string.IsNullOrEmpty(archive.Path)) continue;
+            if (archive.ExcludeFromTesting) continue;
             argumentBuilder.AppendFormat("-file \"{0}\" ", archive.Path);
         }
 
         // Add map information
+        argumentBuilder.AppendFormat("-file \"{0}\" ", map.Path);
         argumentBuilder.AppendFormat("+map {0} ", map.MapLumpName);
         
         // Add additional command line arguments for engine specific settings.
