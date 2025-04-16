@@ -5,7 +5,7 @@
              xmlns:acc="clr-namespace:PubDoomer.Tasks.Compile.Acc;assembly=PubDoomer.Tasks.Compile"
              xmlns:bcc="clr-namespace:PubDoomer.Tasks.Compile.Bcc;assembly=PubDoomer.Tasks.Compile"
              xmlns:gdccAcc="clr-namespace:PubDoomer.Tasks.Compile.GdccAcc;assembly=PubDoomer.Tasks.Compile"
-             xmlns:copyProject="clr-namespace:PubDoomer.Tasks.CopyProject;assembly=PubDoomer.Tasks.CopyProject"
+             xmlns:copyProject="clr-namespace:PubDoomer.Tasks.FileSystem.CopyProject;assembly=PubDoomer.Tasks.FileSystem"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="PubDoomer.Views.Pages.TasksPageView"
              x:DataType="TasksPageViewModel">

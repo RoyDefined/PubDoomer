@@ -21,7 +21,8 @@ using PubDoomer.Tasks.Compile.Acc;
 using PubDoomer.Tasks.Compile.Bcc;
 using PubDoomer.Tasks.Compile.GdccAcc;
 using PubDoomer.Tasks.Compile.GdccCc;
-using PubDoomer.Tasks.CopyProject;
+using PubDoomer.Tasks.FileSystem;
+using PubDoomer.Tasks.FileSystem.CopyProject;
 
 namespace PubDoomer.Settings.Project;
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PubDoomer.Tasks.CopyProject.Utils;
+namespace PubDoomer.Tasks.FileSystem.Utils;
 
 internal static class DirMoveUtil
 {

@@ -7,7 +7,7 @@
         xmlns:gdccAcc="clr-namespace:PubDoomer.Tasks.Compile.GdccAcc;assembly=PubDoomer.Tasks.Compile"
         xmlns:gdccCc="clr-namespace:PubDoomer.Tasks.Compile.GdccCc;assembly=PubDoomer.Tasks.Compile"
         xmlns:tasks="clr-namespace:PubDoomer.Project.Tasks;assembly=PubDoomer.Tasks.Compile"
-        xmlns:copyProject="clr-namespace:PubDoomer.Tasks.CopyProject;assembly=PubDoomer.Tasks.CopyProject"
+        xmlns:copyProject="clr-namespace:PubDoomer.Tasks.FileSystem.CopyProject;assembly=PubDoomer.Tasks.FileSystem"
         mc:Ignorable="d"
         x:Class="PubDoomer.Views.Dialogues.CreateOrEditTaskWindow"
         Title="{Binding WindowTitle}"

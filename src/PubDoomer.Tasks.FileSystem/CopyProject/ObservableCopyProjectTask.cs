@@ -3,7 +3,7 @@ using PubDoomer.Engine.Saving;
 using PubDoomer.Project.Tasks;
 using System.Collections.ObjectModel;
 
-namespace PubDoomer.Tasks.CopyProject;
+namespace PubDoomer.Tasks.FileSystem.CopyProject;
 
 public partial class ObservableCopyProjectTask : ProjectTaskBase
 {

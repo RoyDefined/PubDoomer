@@ -18,7 +18,8 @@ using PubDoomer.Tasks.Compile.Bcc;
 using PubDoomer.Tasks.Compile.GdccAcc;
 using PubDoomer.Tasks.Compile.GdccCc;
 using PubDoomer.Tasks.Compile.Observables;
-using PubDoomer.Tasks.CopyProject;
+using PubDoomer.Tasks.FileSystem;
+using PubDoomer.Tasks.FileSystem.CopyProject;
 
 namespace PubDoomer.ViewModels.Dialogues;
 

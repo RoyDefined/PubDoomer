@@ -3,14 +3,14 @@ using PubDoomer.Engine.TaskInvokation.Context;
 using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Engine.TaskInvokation.Utils;
-using PubDoomer.Tasks.CopyProject.Utils;
+using PubDoomer.Tasks.FileSystem.Utils;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Threading.Channels;
 using PubDoomer.Engine.Abstract;
 
-namespace PubDoomer.Tasks.CopyProject;
+namespace PubDoomer.Tasks.FileSystem.CopyProject;
 
 public sealed class CopyProjectTaskHandler : ITaskHandler
 {
