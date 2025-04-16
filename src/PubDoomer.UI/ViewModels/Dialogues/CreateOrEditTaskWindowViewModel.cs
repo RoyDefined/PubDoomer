@@ -19,7 +19,11 @@ using PubDoomer.Tasks.Compile.GdccAcc;
 using PubDoomer.Tasks.Compile.GdccCc;
 using PubDoomer.Tasks.Compile.Observables;
 using PubDoomer.Tasks.FileSystem;
+using PubDoomer.Tasks.FileSystem.CopyFile;
+using PubDoomer.Tasks.FileSystem.CopyFolder;
 using PubDoomer.Tasks.FileSystem.CopyProject;
+using PubDoomer.Tasks.FileSystem.MoveFile;
+using PubDoomer.Tasks.FileSystem.MoveFolder;
 
 namespace PubDoomer.ViewModels.Dialogues;
 
@@ -45,7 +49,11 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         new ObservableBccCompileTask(),
         new ObservableGdccAccCompileTask(),
         new ObservableGdccCcCompileTask(),
-        new ObservableCopyProjectTask()
+        new ObservableCopyProjectTask(),
+        new ObservableCopyFolderTask(),
+        new ObservableMoveFolderTask(),
+        new ObservableCopyFileTask(),
+        new ObservableMoveFileTask(),
     ];
 
     [ObservableProperty] private string _createOrEditButtonText;

@@ -22,7 +22,11 @@ using PubDoomer.Tasks.Compile.Bcc;
 using PubDoomer.Tasks.Compile.GdccAcc;
 using PubDoomer.Tasks.Compile.GdccCc;
 using PubDoomer.Tasks.FileSystem;
+using PubDoomer.Tasks.FileSystem.CopyFile;
+using PubDoomer.Tasks.FileSystem.CopyFolder;
 using PubDoomer.Tasks.FileSystem.CopyProject;
+using PubDoomer.Tasks.FileSystem.MoveFile;
+using PubDoomer.Tasks.FileSystem.MoveFolder;
 
 namespace PubDoomer.Settings.Project;
 
@@ -36,6 +40,10 @@ public sealed class ProjectSavingService
         [ObservableGdccAccCompileTask.TaskName] = new ObservableGdccAccCompileTask(),
         [ObservableGdccCcCompileTask.TaskName] = new ObservableGdccCcCompileTask(),
         [ObservableCopyProjectTask.TaskName] = new ObservableCopyProjectTask(),
+        [ObservableCopyFolderTask.TaskName] = new ObservableCopyFolderTask(),
+        [ObservableMoveFolderTask.TaskName] = new ObservableMoveFolderTask(),
+        [ObservableCopyFileTask.TaskName] = new ObservableCopyFileTask(),
+        [ObservableMoveFileTask.TaskName] = new ObservableMoveFileTask(),
     };
 
     /// <summary>

@@ -6,6 +6,10 @@
              xmlns:bcc="clr-namespace:PubDoomer.Tasks.Compile.Bcc;assembly=PubDoomer.Tasks.Compile"
              xmlns:gdccAcc="clr-namespace:PubDoomer.Tasks.Compile.GdccAcc;assembly=PubDoomer.Tasks.Compile"
              xmlns:copyProject="clr-namespace:PubDoomer.Tasks.FileSystem.CopyProject;assembly=PubDoomer.Tasks.FileSystem"
+             xmlns:copyFolder="clr-namespace:PubDoomer.Tasks.FileSystem.CopyFolder;assembly=PubDoomer.Tasks.FileSystem"
+             xmlns:moveFolder="clr-namespace:PubDoomer.Tasks.FileSystem.MoveFolder;assembly=PubDoomer.Tasks.FileSystem"
+             xmlns:copyFile="clr-namespace:PubDoomer.Tasks.FileSystem.CopyFile;assembly=PubDoomer.Tasks.FileSystem"
+             xmlns:moveFile="clr-namespace:PubDoomer.Tasks.FileSystem.MoveFile;assembly=PubDoomer.Tasks.FileSystem"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="PubDoomer.Views.Pages.TasksPageView"
              x:DataType="TasksPageViewModel">
@@ -115,6 +119,50 @@
                                                                    FontSize="12" Foreground="Gray" />
                                                         <TextBlock IsVisible="{Binding TargetFolder, Converter={StaticResource NullToBoolConverter}, ConverterParameter=true}"
                                                                    Text="Target folder: generated when the task is invoked."
+                                                                   FontSize="12" Foreground="Gray" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                                
+                                                <!-- DataTemplate for Copy folder task -->
+                                                <DataTemplate DataType="copyFolder:ObservableCopyFolderTask">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding SourceFolder, StringFormat='Source folder: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                        <TextBlock Text="{Binding TargetFolder, StringFormat='Target folder: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                        <TextBlock Text="{Binding Recursive, StringFormat='Recursive: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                                
+                                                <!-- DataTemplate for Move folder task -->
+                                                <DataTemplate DataType="moveFolder:ObservableMoveFolderTask">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding SourceFolder, StringFormat='Source folder: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                        <TextBlock Text="{Binding TargetFolder, StringFormat='Target folder: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                        <TextBlock Text="{Binding Recursive, StringFormat='Recursive: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                                
+                                                <!-- DataTemplate for Copy file task -->
+                                                <DataTemplate DataType="copyFile:ObservableCopyFileTask">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding SourceFile, StringFormat='Source file: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                        <TextBlock Text="{Binding TargetFile, StringFormat='Target file: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                                
+                                                <!-- DataTemplate for Move file task -->
+                                                <DataTemplate DataType="moveFile:ObservableMoveFileTask">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding SourceFile, StringFormat='Source file: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                        <TextBlock Text="{Binding TargetFile, StringFormat='Target file: {0}'}"
                                                                    FontSize="12" Foreground="Gray" />
                                                     </StackPanel>
                                                 </DataTemplate>
