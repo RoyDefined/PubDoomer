@@ -84,7 +84,7 @@ public sealed class CopyProjectTaskHandler : ITaskHandler
         }
 
         // Update the current location of the project.
-        DirMoveUtil.CopyDirectory(sourceFolderPath, targetFolderPath, true);
+        TransferUtil.TransferDirectory(sourceFolderPath, targetFolderPath, TransferStratergyType.Copy, true);
         _invokeContext.WorkingDirectory = targetFolderPath;
 
         _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage($"Updated the working directory to {targetFolderPath}"));
