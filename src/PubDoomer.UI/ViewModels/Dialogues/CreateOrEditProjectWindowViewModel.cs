@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -23,6 +24,10 @@ public partial class CreateOrEditProjectWindowViewModel : ViewModelBase
 
     // Form visuals
     [ObservableProperty] private string _windowTitle;
+
+    // Displays the path that will be used for the project as a little helper for the user to avoid confusion between naming.
+    // We default to the binary extension because the initial project file will always be made that way.
+    public string FilePathToUse => Path.Combine(Project.FolderPath, Project.FileName) + $".{ProjectContext.ProjectBinaryFormatExtension}";
     
     public CreateOrEditProjectWindowViewModel()
     {
@@ -90,6 +95,7 @@ public partial class CreateOrEditProjectWindowViewModel : ViewModelBase
 
     private void UpdateFormValid(object? sender, PropertyChangedEventArgs e)
     {
+        OnPropertyChanged(nameof(FilePathToUse));
         OnPropertyChanged(nameof(FormIsValid));
     }
     

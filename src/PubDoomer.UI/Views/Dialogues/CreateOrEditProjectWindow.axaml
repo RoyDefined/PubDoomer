@@ -55,6 +55,14 @@
                     </Button>
                 </Grid>
             </Grid>
+            
+            <!-- Extra information about where the file will be saved -->
+            <TextBlock Theme="{StaticResource TitleTextBlock}"
+                       Classes="Tertiary"
+                       FontSize="10"
+                       TextWrapping="Wrap"
+                       VerticalAlignment="Center"
+                       Text="{Binding FilePathToUse, StringFormat='The project definition will be saved at \'{0}\'.'}"/>
 
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right"
