@@ -113,6 +113,10 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         ObservableGdccAccCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
         ObservableGdccCcCompileTask compileTask => !string.IsNullOrEmpty(compileTask.InputFilePath) && !string.IsNullOrEmpty(compileTask.OutputFilePath),
         ObservableCopyProjectTask copyProjectTask => !string.IsNullOrWhiteSpace(copyProjectTask.TargetFolder) || copyProjectTask.UseTempFolder,
+        ObservableCopyFolderTask copyFolderTask => !string.IsNullOrWhiteSpace(copyFolderTask.SourceFolder) || !string.IsNullOrWhiteSpace(copyFolderTask.TargetFolder) || copyFolderTask.Recursive,
+        ObservableMoveFolderTask moveFolderTask => !string.IsNullOrWhiteSpace(moveFolderTask.SourceFolder) || !string.IsNullOrWhiteSpace(moveFolderTask.TargetFolder) || moveFolderTask.Recursive,
+        ObservableCopyFileTask copyFileTask => !string.IsNullOrWhiteSpace(copyFileTask.SourceFile) || !string.IsNullOrWhiteSpace(copyFileTask.TargetFile),
+        ObservableMoveFileTask moveFileTask => !string.IsNullOrWhiteSpace(moveFileTask.SourceFile) || !string.IsNullOrWhiteSpace(moveFileTask.TargetFile),
         _ => false
     };
 
