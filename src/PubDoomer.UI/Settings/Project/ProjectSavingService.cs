@@ -52,16 +52,14 @@ public sealed class ProjectSavingService
     /// </summary>
     private readonly ProjectSaveVersion _latestSaveVersion = new(0, 2);
 
-    public void SaveProject(ProjectContext projectContext, string filePath, Stream stream, ProjectReadingWritingType writerType)
+    public void SaveProject(ProjectContext projectContext, Stream stream)
     {
-        var projectPath = Path.GetDirectoryName(filePath)
-            ?? throw new ArgumentException($"Failed to determine directory from filepath: {filePath}");
-
-        IProjectWriter writer = writerType switch
+        // Get the writer based on the save type.
+        IProjectWriter writer = projectContext.SaveType switch
         {
-            ProjectReadingWritingType.Binary => new BinaryProjectWriter(projectPath, stream),
-            ProjectReadingWritingType.Text => new TextProjectWriter(projectPath, stream),
-            _ => throw new ArgumentException($"Writer not found for type {writerType}."),
+            ProjectSaveType.Binary => new BinaryProjectWriter(projectContext.FolderPath, stream),
+            ProjectSaveType.Text => new TextProjectWriter(projectContext.FolderPath, stream),
+            _ => throw new ArgumentException($"Writer not found for type {projectContext.SaveType}."),
         };
 
         try
@@ -69,7 +67,7 @@ public sealed class ProjectSavingService
             writer.WriteSignature();
             writer.WriteVersion(_latestSaveVersion);
             
-            writer.Write(projectContext.Name ?? string.Empty);
+            writer.Write(projectContext.Name);
             WriteConfiguration(projectContext, writer);
 
             // Start with tasks so that we can scaffold these on load first. This allows for references to be passed into the later profiles.
@@ -90,16 +88,13 @@ public sealed class ProjectSavingService
         }
     }
 
-    public ProjectContext LoadProject(string filePath, Stream fileStream, ProjectReadingWritingType readerType)
+    public ProjectContext LoadProject(string folderPath, Stream fileStream, ProjectSaveType saveType)
     {
-        var projectPath = Path.GetDirectoryName(filePath)
-            ?? throw new ArgumentException($"Failed to determine directory from filepath: {filePath}");
-
-        IProjectReader reader = readerType switch
+        IProjectReader reader = saveType switch
         {
-            ProjectReadingWritingType.Binary => new BinaryProjectReader(projectPath, fileStream),
-            ProjectReadingWritingType.Text => new TextProjectReader(projectPath, fileStream),
-            _ => throw new ArgumentException($"Reader not found for type {readerType}."),
+            ProjectSaveType.Binary => new BinaryProjectReader(folderPath, fileStream),
+            ProjectSaveType.Text => new TextProjectReader(folderPath, fileStream),
+            _ => throw new ArgumentException($"Reader not found for type {saveType}."),
         };
 
         try

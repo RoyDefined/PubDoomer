@@ -94,16 +94,8 @@ public partial class ProfilesPageViewModel : PageViewModel
 
         _logger.LogDebug("Executing profile {ProfileName}", SelectedRunProfile.Name);
 
-        // The project directory should exist.
-        var projectDirectory = Path.GetDirectoryName(CurrentProjectProvider.ProjectContext.FilePath);
-        if (projectDirectory == null)
-        {
-            await _dialogueProvider.AlertAsync(AlertType.Warning, "Missing project", "A project is expected to be set in order to run profiles.");
-            return;
-        }
-
         var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
-        var context = TaskInvokeContextUtil.BuildContext(projectDirectory, settings);
+        var context = TaskInvokeContextUtil.BuildContext(CurrentProjectProvider.ProjectContext.FolderPath, settings);
 
         await _projectTaskOrchestrator.InvokeProfileAsync(SelectedRunProfile, context);
         

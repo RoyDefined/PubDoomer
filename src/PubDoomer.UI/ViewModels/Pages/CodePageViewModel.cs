@@ -289,7 +289,7 @@ public partial class CodePageViewModel : PageViewModel
         // The project directory can be null when none are opened,
         // though it doesn't make a difference here because we don't have any project specific logic in the tasks invoked here.
         var profile = new ProfileRunContext("Code editor run profile", runTasks);
-        var projectDirectory = Path.GetDirectoryName(CurrentProjectProvider.ProjectContext?.FilePath);
+        var projectDirectory = Path.GetDirectoryName(CurrentProjectProvider.ProjectContext?.FolderPath);
         var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, _settings);
         var context = TaskInvokeContextUtil.BuildContext(projectDirectory, settings);
 
