@@ -32,15 +32,15 @@ public abstract partial class CompileTaskBase : ProjectTaskBase
 
     public override void Serialize(IProjectWriter writer)
     {
-        writer.WritePath(InputFilePath ?? string.Empty);
-        writer.WritePath(OutputFilePath ?? string.Empty);
+        writer.Write(InputFilePath ?? string.Empty);
+        writer.Write(OutputFilePath ?? string.Empty);
         writer.Write(GenerateStdOutAndStdErrFiles);
     }
 
     public override void Deserialize(IProjectReader reader, ProjectSaveVersion _)
     {
-        InputFilePath = reader.ReadPath();
-        OutputFilePath = reader.ReadPath();
+        InputFilePath = reader.ReadString();
+        OutputFilePath = reader.ReadString();
         GenerateStdOutAndStdErrFiles = reader.ReadBoolean();
     }
 }

@@ -15,17 +15,6 @@ public sealed class BinaryProjectWriter(
     public void Write(int? value) => _writer.Write(value ?? 0);
     public void Write(bool? value) => _writer.Write(value ?? false);
     public void WriteEnum<T>(T? value) where T : struct, Enum => _writer.Write(Convert.ToInt32(value));
-    public void WritePath(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            _writer.Write(string.Empty);
-            return;
-        }
-
-        var path = Path.GetRelativePath(projectPath, value);
-        Write(path);
-    }
     public void WriteVersion(ProjectSaveVersion value)
     {
         Write(value.Major);

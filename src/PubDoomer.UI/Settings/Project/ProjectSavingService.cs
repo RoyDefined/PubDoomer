@@ -129,7 +129,7 @@ public sealed class ProjectSavingService
         void WriteConfiguration(string name, string value)
         {
             writer.Write(name);
-            writer.WritePath(value);
+            writer.Write(value);
         }
 
         // Number of configuration items.
@@ -174,7 +174,7 @@ public sealed class ProjectSavingService
         foreach (var iwad in projectContext.IWads)
         {
             writer.Write(iwad.Name ?? string.Empty);
-            writer.WritePath(iwad.Path ?? string.Empty);
+            writer.Write(iwad.Path ?? string.Empty);
         }
     }
 
@@ -184,7 +184,7 @@ public sealed class ProjectSavingService
         foreach (var archive in projectContext.Archives)
         {
             writer.Write(archive.Name ?? string.Empty);
-            writer.WritePath(archive.Path ?? string.Empty);
+            writer.Write(archive.Path ?? string.Empty);
             writer.Write(archive.ExcludeFromTesting);
         }
     }
@@ -195,7 +195,7 @@ public sealed class ProjectSavingService
         foreach (var engine in projectContext.Engines)
         {
             writer.Write(engine.Name ?? string.Empty);
-            writer.WritePath(engine.Path ?? string.Empty);
+            writer.Write(engine.Path ?? string.Empty);
             writer.Write((int)engine.Type);
         }
     }
@@ -207,7 +207,7 @@ public sealed class ProjectSavingService
         {
             writer.Write(map.Name ?? string.Empty);
             writer.Write(map.MapLumpName ?? string.Empty);
-            writer.WritePath(map.Path ?? string.Empty);
+            writer.Write(map.Path ?? string.Empty);
         }
     }
 
@@ -215,7 +215,7 @@ public sealed class ProjectSavingService
     {
         (string key, string value) ReadConfiguration()
         {
-            return (reader.ReadString(), reader.ReadPath() ?? string.Empty);
+            return (reader.ReadString(), reader.ReadString() ?? string.Empty);
         }
 
         var configurationIterator = Enumerable.Range(0, reader.ReadInt32())
@@ -278,7 +278,7 @@ public sealed class ProjectSavingService
             .Select(x => new IWadContext()
             {
                 Name = reader.ReadString(),
-                Path = reader.ReadPath(),
+                Path = reader.ReadString(),
             });
 
         projectContext.IWads = [.. iwadsIterator];
@@ -290,7 +290,7 @@ public sealed class ProjectSavingService
             .Select(x => new ArchiveContext()
             {
                 Name = reader.ReadString(),
-                Path = reader.ReadPath(),
+                Path = reader.ReadString(),
                 ExcludeFromTesting = reader.ReadBoolean(),
             });
 
@@ -303,7 +303,7 @@ public sealed class ProjectSavingService
             .Select(x => new EngineContext()
             {
                 Name = reader.ReadString(),
-                Path = reader.ReadPath(),
+                Path = reader.ReadString(),
                 Type = (EngineType)reader.ReadInt32(),
             });
 
@@ -317,7 +317,7 @@ public sealed class ProjectSavingService
             {
                 Name = reader.ReadString(),
                 MapLumpName = reader.ReadString(),
-                Path = reader.ReadPath(),
+                Path = reader.ReadString(),
             });
 
         projectContext.Maps = [.. mapIterator];
