@@ -203,9 +203,13 @@ public partial class ProjectPageViewModel : PageViewModel, IDisposable
 
         // Base method to make the path relative
         string MakeRelative(string? input)
-            => string.IsNullOrWhiteSpace(input)
-                ? input ?? string.Empty
-                : Path.GetRelativePath(basePath, Path.GetFullPath(input));
+        {
+            if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+            if (!Path.IsPathRooted(input)) return input;
+            var fullPath = Path.GetFullPath(input);
+            var relative = Path.GetRelativePath(basePath, fullPath);
+            return relative;
+        }
 
         var config = CurrentProjectProvider.ProjectContext?.Configurations;
         if (config == null) return;

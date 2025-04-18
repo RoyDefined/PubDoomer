@@ -139,7 +139,8 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
 
         string MakeRelative(string? input)
         {
-            if (string.IsNullOrWhiteSpace(input)) return input ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+            if (!Path.IsPathRooted(input)) return input;
             var fullPath = Path.GetFullPath(input);
             var relative = Path.GetRelativePath(basePath, fullPath);
             return relative;
