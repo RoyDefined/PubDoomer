@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -22,9 +23,9 @@ using PubDoomer.ViewModels.Dialogues;
 
 namespace PubDoomer.ViewModels.Pages;
 
-public partial class ProjectPageViewModel : PageViewModel
+public partial class ProjectPageViewModel : PageViewModel, IDisposable
 {
-    private static readonly Dictionary<string, string> _typeToMessage = new()
+    private static readonly Dictionary<string, string> PathedConfigurationToMessage = new()
     {
         [CompileTaskStatics.AccCompilerExecutableFilePathKey] = "Select ACC compiler executable",
         [CompileTaskStatics.BccCompilerExecutableFilePathKey] = "Select BCC compiler executable",
@@ -179,7 +180,7 @@ public partial class ProjectPageViewModel : PageViewModel
         var window = _windowProvider.ProvideWindow();
         var filePicker = await window.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = _typeToMessage[configurationKey],
+            Title = PathedConfigurationToMessage[configurationKey],
             AllowMultiple = false
         });
 
@@ -193,5 +194,33 @@ public partial class ProjectPageViewModel : PageViewModel
     private bool AssertInDesignMode()
     {
         return Design.IsDesignMode;
+    }
+
+    private void ConvertConfigurationPathsToRelativePaths()
+    {
+        var basePath = CurrentProjectProvider.ProjectContext?.FolderPath;
+        Debug.Assert(!string.IsNullOrWhiteSpace(basePath), "Project context base folder must be set.");
+
+        // Base method to make the path relative
+        string MakeRelative(string? input)
+            => string.IsNullOrWhiteSpace(input)
+                ? input ?? string.Empty
+                : Path.GetRelativePath(basePath, Path.GetFullPath(input));
+
+        var config = CurrentProjectProvider.ProjectContext?.Configurations;
+        if (config == null) return;
+
+        // Get all instances of a pathed configuration and make sure that the configuration is converted to be a relative path.
+        foreach (var (key, _) in PathedConfigurationToMessage)
+        {
+            if (config.TryGetValue(key, out var value))
+                config[key] = MakeRelative(value);
+        }
+    }
+
+
+    public void Dispose()
+    {
+        ConvertConfigurationPathsToRelativePaths();
     }
 }
