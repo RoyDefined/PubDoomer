@@ -20,9 +20,6 @@ public sealed class AccCompileTaskHandler : ITaskHandler
 
     private readonly ObservableAccCompileTask _task;
 
-    private readonly string _errorFilePath;
-    private readonly CompositeFormat _errorFileRenamePathTemplate;
-
     public AccCompileTaskHandler(
         ILogger<AccCompileTaskHandler> logger, IInvokableTask taskContext, TaskInvokeContext invokeContext)
     {
@@ -36,14 +33,11 @@ public sealed class AccCompileTaskHandler : ITaskHandler
         _invokeContext = invokeContext;
 
         _task = task;
-
-        _errorFilePath = Path.Combine(Path.GetDirectoryName(task.InputFilePath)!, "acs.err");
-        _errorFileRenamePathTemplate = CompositeFormat.Parse(Path.Combine(Path.GetDirectoryName(task.InputFilePath)!, "acs.err.backup{0}"));
     }
 
     public async ValueTask<bool> HandleAsync()
     {
-        var path = _invokeContext.ContextBag.GetAccCompilerExecutableFilePath();
+        var path = GetAccCompilerExecutableFilePath();
         _logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of ACC executable: {AccExecutablePath}", nameof(AccCompileTaskHandler), _task.InputFilePath, _task.OutputFilePath, path);
 
         // Verify the task has a name.
@@ -53,11 +47,23 @@ public sealed class AccCompileTaskHandler : ITaskHandler
             return false;
         }
 
+        // We get the arguments early in this task because we need the input for the error file handling.
+        var (inputPath, outputPath) = GetArguments();
+
+        var inputPathDirectory = Path.GetDirectoryName(inputPath);
+        if (string.IsNullOrWhiteSpace(inputPathDirectory))
+        {
+            throw new ArgumentNullException(nameof(inputPath), "Expected a valid directory path from the input path.");
+        }
+        
+        var errorFilePath = Path.Combine(inputPathDirectory, "acs.err");
+        var errorFileRenamePathTemplate = CompositeFormat.Parse(Path.Combine(inputPathDirectory, "acs.err.backup{0}"));
+        
         // Check for existing 'acs.err' file.
         // If found, move this file because otherwise the compiler gets rid of it.
-        if (File.Exists(_errorFilePath))
+        if (File.Exists(errorFilePath))
         {
-            File.Move(_errorFilePath, GetValidBackupPath());
+            File.Move(errorFilePath, GetValidBackupPath(errorFileRenamePathTemplate));
         }
 
         using var stdOutStream = new MemoryStream();
@@ -68,7 +74,7 @@ public sealed class AccCompileTaskHandler : ITaskHandler
         {
             succeeded = await TaskHelper.RunProcessAsync(
                 path,
-                BuildArguments(),
+                new[] { inputPath, outputPath }.Select(x => $"\"{x}\""),
                 stdOutStream,
                 stdErrStream,
                 HandleStdout,
@@ -89,8 +95,8 @@ public sealed class AccCompileTaskHandler : ITaskHandler
             await TaskHelper.WriteToFileAsync(stdErrStream, _task.Name, "stderr.txt");
         }
 
-        // Check for `acs.err`. Return anything from there as an error.
-        var compileResult = await HandleAccErrAsync();
+        // Check for `acs.err`. Return its content as an error.
+        var compileResult = await HandleAccErrAsync(errorFilePath);
         if (compileResult != null)
         {
             _taskContext.TaskOutput.Add(TaskOutputResult.CreateError(compileResult));
@@ -105,6 +111,24 @@ public sealed class AccCompileTaskHandler : ITaskHandler
 
         return true;
     }
+    
+    private string GetAccCompilerExecutableFilePath()
+    {
+        var path = _invokeContext.ContextBag.GetAccCompilerExecutableFilePath();
+        
+        // Handle relative path
+        if (!Path.IsPathRooted(path))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative ACC compiler executable path ({path}). No working directory was specified. Either the working directory must be specified or the ACC compiler executable path must be absolute.");
+            }
+            
+            path = Path.Combine(_invokeContext.WorkingDirectory, path);
+        }
+        
+        return path;
+    }
 
     private void HandleStdout(string line)
     {
@@ -117,34 +141,61 @@ public sealed class AccCompileTaskHandler : ITaskHandler
         // Intead we parse the 'acs.err' file that comes with errors.
     }
 
-    private IEnumerable<string> BuildArguments()
+    private (string inputPath, string outputPath) GetArguments()
     {
-        yield return $"\"{_task.InputFilePath}\"";
-        yield return $"\"{_task.OutputFilePath}\"";
+        var inputPath = _task.InputFilePath;
+        ArgumentException.ThrowIfNullOrWhiteSpace(inputPath, nameof(_task.InputFilePath));
+        
+        // Handle relative input path
+        if (!Path.IsPathRooted(inputPath))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative input path for ACS file input ({inputPath}). No working directory was specified. Either the working directory must be specified or the path to the ACS file input must be absolute.");
+            }
+            
+            inputPath = Path.Combine(_invokeContext.WorkingDirectory, inputPath);
+        }
+        
+        var outputPath = _task.OutputFilePath;
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath, nameof(_task.OutputFilePath));
+        
+        // Handle relative output path
+        if (!Path.IsPathRooted(outputPath))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative input path for ACS file output ({outputPath}). No working directory was specified. Either the working directory must be specified or the path to the ACS file output must be absolute.");
+            }
+            
+            outputPath = Path.Combine(_invokeContext.WorkingDirectory, outputPath);
+        }
+        
+        return (inputPath, outputPath);
     }
 
-    private string GetValidBackupPath()
+    private string GetValidBackupPath(CompositeFormat errorFileRenamePathTemplate)
     {
-        var path = string.Format(CultureInfo.InvariantCulture, _errorFileRenamePathTemplate, string.Empty);
+        var path = string.Format(CultureInfo.InvariantCulture, errorFileRenamePathTemplate, string.Empty);
         var nextFileIndex = 0;
         while (File.Exists(path))
         {
             nextFileIndex++;
-            path = string.Format(CultureInfo.InvariantCulture, _errorFileRenamePathTemplate, $" ({nextFileIndex})");
+            path = string.Format(CultureInfo.InvariantCulture, errorFileRenamePathTemplate, $" ({nextFileIndex})");
         }
 
         return path;
     }
 
-    private async ValueTask<string?> HandleAccErrAsync()
+    private async ValueTask<string?> HandleAccErrAsync(string errorFilePath)
     {
-        if (!File.Exists(_errorFilePath))
+        if (!File.Exists(errorFilePath))
         {
             return null;
         }
 
         string content;
-        using (var reader = new StreamReader(_errorFilePath))
+        using (var reader = new StreamReader(errorFilePath))
         {
             content = await reader.ReadToEndAsync();
         }
@@ -153,7 +204,7 @@ public sealed class AccCompileTaskHandler : ITaskHandler
         if (!_task.KeepAccErrFile)
         {
             _logger.LogDebug("Remove 'acs.err' file as configured.");
-            File.Delete(_errorFilePath);
+            File.Delete(errorFilePath);
         }
 
         return content;

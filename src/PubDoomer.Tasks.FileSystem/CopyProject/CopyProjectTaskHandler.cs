@@ -37,19 +37,17 @@ public sealed class CopyProjectTaskHandler : ITaskHandler
 
     public ValueTask<bool> HandleAsync()
     {
-        // Does the project already point to the target path?
-        // If so, end early.
         var sourceFolderPath = _invokeContext.WorkingDirectory;
         if (string.IsNullOrWhiteSpace(sourceFolderPath))
         {
-            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("No source path provided to copy the project. This probably means there is no project open."));
-            return ValueTask.FromResult(false);
+            throw new ArgumentException($"Failed to determine working directory because no working directory was specified. This likely means the project was not loaded.");
         }
-
+        
+        var targetFolderPath = GetArguments();
+        
         // Determine target folder.
         // If none were specified, the boolean must be checked to generate a temporary directory.
         // If both were specified we will warn and make a temporary folder.
-        var targetFolderPath = _task.TargetFolder;
         if (_task.UseTempFolder || string.IsNullOrWhiteSpace(targetFolderPath))
         {
             if (!_task.UseTempFolder)
@@ -89,5 +87,24 @@ public sealed class CopyProjectTaskHandler : ITaskHandler
 
         _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage($"Updated the working directory to {targetFolderPath}"));
         return ValueTask.FromResult(true);
+    }
+    
+    private string GetArguments()
+    {
+        var targetPath = _task.TargetFolder;
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetPath, nameof(_task.TargetFolder));
+        
+        // Handle relative output path
+        if (!Path.IsPathRooted(targetPath))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative path for folder target ({targetPath}). No working directory was specified. Either the working directory must be specified or the path to the target folder input must be absolute.");
+            }
+            
+            targetPath = Path.Combine(_invokeContext.WorkingDirectory, targetPath);
+        }
+        
+        return targetPath;
     }
 }

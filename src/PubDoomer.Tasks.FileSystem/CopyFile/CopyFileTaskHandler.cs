@@ -30,21 +30,7 @@ public sealed class CopyFileTaskHandler : ITaskHandler
 
     public ValueTask<bool> HandleAsync()
     {
-        var sourceFilePath = _task.SourceFile;
-        var targetFilePath = _task.TargetFile;
-
-        if (string.IsNullOrWhiteSpace(sourceFilePath))
-        {
-            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("No source file was specified."));
-            return ValueTask.FromResult(false);
-        }
-
-        if (string.IsNullOrWhiteSpace(targetFilePath))
-        {
-            _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("No target file was specified."));
-            return ValueTask.FromResult(false);
-        }
-
+        var (sourceFilePath, targetFilePath) = GetArguments();
         _logger.LogDebug("Copying file from {Source} to {Target}.", sourceFilePath, targetFilePath);
 
         if (!File.Exists(sourceFilePath))
@@ -71,5 +57,38 @@ public sealed class CopyFileTaskHandler : ITaskHandler
             _taskContext.TaskOutput.Add(TaskOutputResult.CreateError($"An error occurred while copying the file: {ex.Message}"));
             return ValueTask.FromResult(false);
         }
+    }
+    
+    private (string sourceFilePath, string targetFilePath) GetArguments()
+    {
+        var sourcePath = _task.SourceFile;
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath, nameof(_task.SourceFile));
+        
+        // Handle relative input path
+        if (!Path.IsPathRooted(sourcePath))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative path for file source ({sourcePath}). No working directory was specified. Either the working directory must be specified or the path to the source file input must be absolute.");
+            }
+            
+            sourcePath = Path.Combine(_invokeContext.WorkingDirectory, sourcePath);
+        }
+        
+        var targetPath = _task.TargetFile;
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetPath, nameof(_task.TargetFile));
+        
+        // Handle relative output path
+        if (!Path.IsPathRooted(targetPath))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative path for file target ({targetPath}). No working directory was specified. Either the working directory must be specified or the path to the target file input must be absolute.");
+            }
+            
+            targetPath = Path.Combine(_invokeContext.WorkingDirectory, targetPath);
+        }
+        
+        return (sourcePath, targetPath);
     }
 }

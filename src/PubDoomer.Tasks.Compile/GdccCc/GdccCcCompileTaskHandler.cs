@@ -50,15 +50,15 @@ public sealed partial class GdccCcCompileTaskHandler : ITaskHandler
             // TODO: Warn of missing engine.
             _task.TargetEngine = TargetEngineType.Zandronum;
         }
-        
-        Directory.CreateDirectory(_tempDirectory);
 
-        var gdccCcPath = _invokeContext.ContextBag.GetGdccCcCompilerExecutableFilePath();
-        var gdccMakeLibPath = _invokeContext.ContextBag.GetGdccMakeLibCompilerExecutableFilePath();
-        var gdccLdPath = _invokeContext.ContextBag.GetGdccLdCompilerExecutableFilePath();
+        var gdccCcPath = GetGdccCcCompilerExecutableFilePath();
+        var gdccMakeLibPath = GetGdccMakeLibCompilerExecutableFilePath();
+        var gdccLdPath = GetGdccLdCompilerExecutableFilePath();
 
         _logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}.", nameof(GdccCcCompileTaskHandler), _task.InputFilePath, _task.OutputFilePath);
 
+        Directory.CreateDirectory(_tempDirectory);
+        
         // Compile libc and/or libGDCC, unless explicitly specified not to.
         // This setting is merged as to call the process once with both parameters.
         if (_task.LinkLibc || _task.LinkLibGdcc)
@@ -169,6 +169,60 @@ public sealed partial class GdccCcCompileTaskHandler : ITaskHandler
         _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage("Linking succeeded"));
         return true;
     }
+    
+    private string GetGdccCcCompilerExecutableFilePath()
+    {
+        var path = _invokeContext.ContextBag.GetGdccCcCompilerExecutableFilePath();
+        
+        // Handle relative path
+        if (!Path.IsPathRooted(path))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.ProjectDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative GDCC-CC compiler executable path ({path}). No working directory was specified. Either the working directory must be specified or the GDCC-CC compiler executable path must be absolute.");
+            }
+            
+            path = Path.Combine(_invokeContext.ProjectDirectory, path);
+        }
+        
+        return path;
+    }
+    
+    private string GetGdccMakeLibCompilerExecutableFilePath()
+    {
+        var path = _invokeContext.ContextBag.GetGdccMakeLibCompilerExecutableFilePath();
+        
+        // Handle relative path
+        if (!Path.IsPathRooted(path))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.ProjectDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative GDCC-MakeLib compiler executable path ({path}). No working directory was specified. Either the working directory must be specified or the GDCC-MakeLib compiler executable path must be absolute.");
+            }
+            
+            path = Path.Combine(_invokeContext.ProjectDirectory, path);
+        }
+        
+        return path;
+    }
+    
+    private string GetGdccLdCompilerExecutableFilePath()
+    {
+        var path = _invokeContext.ContextBag.GetGdccLdCompilerExecutableFilePath();
+        
+        // Handle relative path
+        if (!Path.IsPathRooted(path))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.ProjectDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative GDCC-Ld compiler executable path ({path}). No working directory was specified. Either the working directory must be specified or the GDCC-Ld compiler executable path must be absolute.");
+            }
+            
+            path = Path.Combine(_invokeContext.ProjectDirectory, path);
+        }
+        
+        return path;
+    }
 
     private IEnumerable<string> BuildMakeLibArgs()
     {
@@ -182,14 +236,42 @@ public sealed partial class GdccCcCompileTaskHandler : ITaskHandler
 
     private IEnumerable<string> BuildCompileArgs()
     {
+        var inputPath = _task.InputFilePath;
+        ArgumentException.ThrowIfNullOrWhiteSpace(inputPath, nameof(_task.InputFilePath));
+        
+        // Handle relative input path
+        if (!Path.IsPathRooted(inputPath))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative input path for ACS file input ({inputPath}). No working directory was specified. Either the working directory must be specified or the path to the ACS file input must be absolute.");
+            }
+            
+            inputPath = Path.Combine(_invokeContext.WorkingDirectory, inputPath);
+        }
+        
         yield return $"-co {_compiledOutputPath}";
-        yield return _task.InputFilePath!;
+        yield return inputPath;
         yield return $"--target-engine {_task.TargetEngine}";
     }
 
     private IEnumerable<string> BuildLinkArgs()
     {
-        yield return $"-o {_task.OutputFilePath}";
+        var outputPath = _task.OutputFilePath;
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath, nameof(_task.OutputFilePath));
+        
+        // Handle relative input path
+        if (!Path.IsPathRooted(outputPath))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative input path for ACS file output ({outputPath}). No working directory was specified. Either the working directory must be specified or the path to the ACS file output must be absolute.");
+            }
+            
+            outputPath = Path.Combine(_invokeContext.WorkingDirectory, outputPath);
+        }
+        
+        yield return $"-o {outputPath}";
         
         if (_task.LinkLibc || _task.LinkLibGdcc) yield return _makeLibOutputPath;
         
