@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -11,6 +12,7 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PubDoomer.Objects;
+using PubDoomer.Project;
 using PubDoomer.Project.Tasks;
 using PubDoomer.Services;
 using PubDoomer.Tasks.Compile.Acc;
@@ -40,6 +42,7 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
     };
     
     private readonly WindowProvider? _windowProvider;
+    private readonly CurrentProjectProvider _currentProjectProvider;
 
     // Form data
     // The available task types.
@@ -67,15 +70,19 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
     public CreateOrEditTaskWindowViewModel()
     {
         if (!Design.IsDesignMode) throw new InvalidOperationException();
-
+        
+        _currentProjectProvider = new();
+        
         WindowTitle = "Add new task (designer)";
         CreateOrEditButtonText = "Add";
     }
 
     public CreateOrEditTaskWindowViewModel(
-        WindowProvider windowProvider)
+        WindowProvider windowProvider,
+        CurrentProjectProvider currentProjectProvider)
     {
         _windowProvider = windowProvider;
+        _currentProjectProvider = currentProjectProvider;
 
         WindowTitle = "Add new task";
         CreateOrEditButtonText = "Add";
@@ -85,9 +92,11 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
 
     public CreateOrEditTaskWindowViewModel(
         WindowProvider windowProvider,
+        CurrentProjectProvider currentProjectProvider,
         ProjectTaskBase task)
     {
         _windowProvider = windowProvider;
+        _currentProjectProvider = currentProjectProvider;
 
         // Replace the task in the available task list.
         // This way the drop down also respects the task correctly and we don't accidentally replace it with an empty one.
@@ -119,6 +128,75 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         ObservableMoveFileTask moveFileTask => !string.IsNullOrWhiteSpace(moveFileTask.SourceFile) || !string.IsNullOrWhiteSpace(moveFileTask.TargetFile),
         _ => false
     };
+    
+    // Called when a valid task is about to be saved.
+    // This method handles task specific behaviour that must be handled when saving occurs.
+    public void OnSaveTask()
+    {
+        // TODO: This should be part of the task. This method should call the method on the task.
+        var basePath = _currentProjectProvider.ProjectContext?.FolderPath;
+        Debug.Assert(!string.IsNullOrWhiteSpace(basePath), "Project context base folder must be set.");
+
+        string MakeRelative(string? input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return input ?? string.Empty;
+            var fullPath = Path.GetFullPath(input);
+            var relative = Path.GetRelativePath(basePath, fullPath);
+            return relative;
+        }
+
+        switch (CurrentTask)
+        {
+            case ObservableAccCompileTask acc:
+                acc.InputFilePath = MakeRelative(acc.InputFilePath);
+                acc.OutputFilePath = MakeRelative(acc.OutputFilePath);
+                break;
+
+            case ObservableBccCompileTask bcc:
+                bcc.InputFilePath = MakeRelative(bcc.InputFilePath);
+                bcc.OutputFilePath = MakeRelative(bcc.OutputFilePath);
+
+                foreach (var include in bcc.IncludeDirectories)
+                {
+                    include.Value = MakeRelative(include.Value);
+                }
+                break;
+
+            case ObservableGdccAccCompileTask gdccAcc:
+                gdccAcc.InputFilePath = MakeRelative(gdccAcc.InputFilePath);
+                gdccAcc.OutputFilePath = MakeRelative(gdccAcc.OutputFilePath);
+                break;
+
+            case ObservableGdccCcCompileTask gdccCc:
+                gdccCc.InputFilePath = MakeRelative(gdccCc.InputFilePath);
+                gdccCc.OutputFilePath = MakeRelative(gdccCc.OutputFilePath);
+                break;
+
+            case ObservableCopyProjectTask copyProj:
+                if (!string.IsNullOrWhiteSpace(copyProj.TargetFolder)) copyProj.TargetFolder = MakeRelative(copyProj.TargetFolder);
+                break;
+
+            case ObservableCopyFolderTask copyFolder:
+                if (!string.IsNullOrWhiteSpace(copyFolder.SourceFolder)) copyFolder.SourceFolder = MakeRelative(copyFolder.SourceFolder);
+                if (!string.IsNullOrWhiteSpace(copyFolder.TargetFolder)) copyFolder.TargetFolder = MakeRelative(copyFolder.TargetFolder);
+                break;
+
+            case ObservableMoveFolderTask moveFolder:
+                if (!string.IsNullOrWhiteSpace(moveFolder.SourceFolder)) moveFolder.SourceFolder = MakeRelative(moveFolder.SourceFolder);
+                if (!string.IsNullOrWhiteSpace(moveFolder.TargetFolder)) moveFolder.TargetFolder = MakeRelative(moveFolder.TargetFolder);
+                break;
+
+            case ObservableCopyFileTask copyFile:
+                if (!string.IsNullOrWhiteSpace(copyFile.SourceFile)) copyFile.SourceFile = MakeRelative(copyFile.SourceFile);
+                if (!string.IsNullOrWhiteSpace(copyFile.TargetFile)) copyFile.TargetFile = MakeRelative(copyFile.TargetFile);
+                break;
+
+            case ObservableMoveFileTask moveFile:
+                if (!string.IsNullOrWhiteSpace(moveFile.SourceFile)) moveFile.SourceFile = MakeRelative(moveFile.SourceFile);
+                if (!string.IsNullOrWhiteSpace(moveFile.TargetFile)) moveFile.TargetFile = MakeRelative(moveFile.TargetFile);
+                break;
+        }
+    }
 
     // This hook is created for all the available task types so `FormIsValid` can be hooked to INPC calls and update the form.
     private void SubscribeTaskChanges()
