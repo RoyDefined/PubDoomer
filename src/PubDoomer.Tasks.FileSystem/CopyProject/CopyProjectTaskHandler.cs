@@ -44,30 +44,9 @@ public sealed class CopyProjectTaskHandler : ITaskHandler
         }
         
         var targetFolderPath = GetArguments();
-        
-        // Determine target folder.
-        // If none were specified, the boolean must be checked to generate a temporary directory.
-        // If both were specified we will warn and make a temporary folder.
-        if (_task.UseTempFolder || string.IsNullOrWhiteSpace(targetFolderPath))
-        {
-            if (!_task.UseTempFolder)
-            {
-                _taskContext.TaskOutput.Add(TaskOutputResult.CreateError("No target path provided to copy the project."));
-                return ValueTask.FromResult(false);
-            }
-
-            if (!string.IsNullOrWhiteSpace(targetFolderPath))
-            {
-                _taskContext.TaskOutput.Add(TaskOutputResult.CreateWarning("The task is configured to write to a specified target folder and also generate a temporary folder. Picking generation of a temporary folder."));
-            }
-
-            targetFolderPath = Path.Combine(EngineStatics.TemporaryDirectory, "CopiedProjects", Path.GetRandomFileName());
-        }
-        
         _logger.LogDebug("Using target folder: {TargetFolder}", targetFolderPath);
 
-        if (Path.GetFullPath(sourceFolderPath).TrimEnd(Path.DirectorySeparatorChar)
-            .Equals(Path.GetFullPath(targetFolderPath).TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase))
+        if (sourceFolderPath.Equals(targetFolderPath, StringComparison.OrdinalIgnoreCase))
         {
             _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage("Source and target paths are the same. Skipping copy."));
             return ValueTask.FromResult(true);
@@ -91,18 +70,38 @@ public sealed class CopyProjectTaskHandler : ITaskHandler
     
     private string GetArguments()
     {
+        // Determine target folder.
+        // If no target folder was specified, the boolean must be checked to generate a temporary directory.
+        // If both were specified we will warn and prioritize making a temporary folder.
         var targetPath = _task.TargetFolder;
-        ArgumentException.ThrowIfNullOrWhiteSpace(targetPath, nameof(_task.TargetFolder));
-        
-        // Handle relative output path
-        if (!Path.IsPathRooted(targetPath))
+        if (_task.UseTempFolder || string.IsNullOrWhiteSpace(targetPath))
         {
-            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            if (!_task.UseTempFolder)
             {
-                throw new ArgumentException($"Failed to update relative path for folder target ({targetPath}). No working directory was specified. Either the working directory must be specified or the path to the target folder input must be absolute.");
+                throw new ArgumentException("No target path provided to copy the project.");
             }
-            
-            targetPath = Path.Combine(_invokeContext.WorkingDirectory, targetPath);
+
+            // We specified to generate a temporary folder, but also specified a target path.
+            if (!string.IsNullOrWhiteSpace(targetPath))
+            {
+                _taskContext.TaskOutput.Add(TaskOutputResult.CreateWarning("The task is configured to write to a specified target folder and also generate a temporary folder. Picking generation of a temporary folder."));
+            }
+
+            targetPath = Path.Combine(EngineStatics.TemporaryDirectory, "CopiedProjects", Path.GetRandomFileName());
+        }
+
+        else
+        {
+            // Handle relative output path
+            if (!Path.IsPathRooted(targetPath))
+            {
+                if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+                {
+                    throw new ArgumentException($"Failed to update relative path for folder target ({targetPath}). No working directory was specified. Either the working directory must be specified or the path to the target folder input must be absolute.");
+                }
+
+                targetPath = Path.Combine(_invokeContext.WorkingDirectory, targetPath);
+            }
         }
         
         return targetPath;
