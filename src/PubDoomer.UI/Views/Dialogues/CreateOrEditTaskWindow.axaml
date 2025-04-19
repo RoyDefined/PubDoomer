@@ -12,6 +12,7 @@
         xmlns:moveFolder="clr-namespace:PubDoomer.Tasks.FileSystem.MoveFolder;assembly=PubDoomer.Tasks.FileSystem"
         xmlns:copyFile="clr-namespace:PubDoomer.Tasks.FileSystem.CopyFile;assembly=PubDoomer.Tasks.FileSystem"
         xmlns:moveFile="clr-namespace:PubDoomer.Tasks.FileSystem.MoveFile;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:zipFolder="clr-namespace:PubDoomer.Tasks.FileSystem.ZipFolder;assembly=PubDoomer.Tasks.FileSystem"
         mc:Ignorable="d"
         x:Class="PubDoomer.Views.Dialogues.CreateOrEditTaskWindow"
         Title="{Binding WindowTitle}"
@@ -552,6 +553,59 @@
                             </Grid>
                         </StackPanel>
                     </DataTemplate>
+                    
+                    <!-- DataTemplate for the Zip folder task -->
+                    <DataTemplate DataType="{x:Type zipFolder:ObservableZipFolderTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Source folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Source folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding SourceFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target file"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFilePath}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
+                    
                 </ContentControl.DataTemplates>
             </ContentControl>
 

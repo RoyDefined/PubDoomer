@@ -26,6 +26,7 @@ using PubDoomer.Tasks.FileSystem.CopyFolder;
 using PubDoomer.Tasks.FileSystem.CopyProject;
 using PubDoomer.Tasks.FileSystem.MoveFile;
 using PubDoomer.Tasks.FileSystem.MoveFolder;
+using PubDoomer.Tasks.FileSystem.ZipFolder;
 
 namespace PubDoomer.ViewModels.Dialogues;
 
@@ -57,6 +58,7 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         new ObservableMoveFolderTask(),
         new ObservableCopyFileTask(),
         new ObservableMoveFileTask(),
+        new ObservableZipFolderTask(),
     ];
 
     [ObservableProperty] private string _createOrEditButtonText;
@@ -126,6 +128,7 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         ObservableMoveFolderTask moveFolderTask => !string.IsNullOrWhiteSpace(moveFolderTask.SourceFolder) || !string.IsNullOrWhiteSpace(moveFolderTask.TargetFolder) || moveFolderTask.Recursive,
         ObservableCopyFileTask copyFileTask => !string.IsNullOrWhiteSpace(copyFileTask.SourceFile) || !string.IsNullOrWhiteSpace(copyFileTask.TargetFile),
         ObservableMoveFileTask moveFileTask => !string.IsNullOrWhiteSpace(moveFileTask.SourceFile) || !string.IsNullOrWhiteSpace(moveFileTask.TargetFile),
+        ObservableZipFolderTask zipFolderTask => !string.IsNullOrWhiteSpace(zipFolderTask.SourceFolder) || !string.IsNullOrWhiteSpace(zipFolderTask.TargetFilePath),
         _ => false
     };
     
@@ -195,6 +198,11 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
             case ObservableMoveFileTask moveFile:
                 if (!string.IsNullOrWhiteSpace(moveFile.SourceFile)) moveFile.SourceFile = MakeRelative(moveFile.SourceFile);
                 if (!string.IsNullOrWhiteSpace(moveFile.TargetFile)) moveFile.TargetFile = MakeRelative(moveFile.TargetFile);
+                break;
+
+            case ObservableZipFolderTask zipFolder:
+                if (!string.IsNullOrWhiteSpace(zipFolder.SourceFolder)) zipFolder.SourceFolder = MakeRelative(zipFolder.SourceFolder);
+                if (!string.IsNullOrWhiteSpace(zipFolder.TargetFilePath)) zipFolder.TargetFilePath = MakeRelative(zipFolder.TargetFilePath);
                 break;
         }
     }

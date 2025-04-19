@@ -27,6 +27,7 @@ using PubDoomer.Tasks.FileSystem.CopyFolder;
 using PubDoomer.Tasks.FileSystem.CopyProject;
 using PubDoomer.Tasks.FileSystem.MoveFile;
 using PubDoomer.Tasks.FileSystem.MoveFolder;
+using PubDoomer.Tasks.FileSystem.ZipFolder;
 
 namespace PubDoomer.Settings.Project;
 
@@ -44,6 +45,7 @@ public sealed class ProjectSavingService
         [ObservableMoveFolderTask.TaskName] = new ObservableMoveFolderTask(),
         [ObservableCopyFileTask.TaskName] = new ObservableCopyFileTask(),
         [ObservableMoveFileTask.TaskName] = new ObservableMoveFileTask(),
+        [ObservableZipFolderTask.TaskName] = new ObservableZipFolderTask(),
     };
 
     /// <summary>
