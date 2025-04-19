@@ -23,6 +23,9 @@ using PubDoomer.Utils.TaskInvokation;
 using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.Validation;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
+using System.IO;
+using System.Runtime.InteropServices;
+using PubDoomer.Engine.TaskInvokation.Context;
 
 namespace PubDoomer.ViewModels.Pages;
 
@@ -38,12 +41,14 @@ public partial class ProfilesPageViewModel : PageViewModel
     [ObservableProperty] private ProfileContext? _selectedProfile;
 
     // The actual profile displayed in the UI, which includes additional information.
-    [ObservableProperty]
-    private ProfileRunContext? _selectedRunProfile;
+    [ObservableProperty] private ProfileRunContext? _selectedRunProfile;
     
     // Deferred properties from the selected run profile.
     [ObservableProperty] private ObservableCollection<TaskValidationCollection> _warnings = [];
     [ObservableProperty] private ObservableCollection<TaskValidationCollection> _errors = [];
+    
+    // This is the context used by the application when invoking a profile.
+    private TaskInvokeContext? _taskInvokeContext;
 
     public ProfilesPageViewModel()
     {
@@ -89,14 +94,10 @@ public partial class ProfilesPageViewModel : PageViewModel
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(SelectedRunProfile != null);
-        
+        Debug.Assert(_taskInvokeContext != null);
+
         _logger.LogDebug("Executing profile {ProfileName}", SelectedRunProfile.Name);
-
-        var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
-        var context = TaskInvokeContextUtil.BuildContext(settings);
-
-        await _projectTaskOrchestrator.InvokeProfileAsync(SelectedRunProfile, context);
-        
+        await _projectTaskOrchestrator.InvokeProfileAsync(SelectedRunProfile, _taskInvokeContext);
         _logger.LogDebug("Finished execution.");
     }
 
@@ -176,9 +177,55 @@ public partial class ProfilesPageViewModel : PageViewModel
             NotificationType.Success));
     }
 
+    // TODO: Check for a build in alternative.
+    [RelayCommand]
+    private async Task OpenWorkingDirectoryAsync()
+    {
+        if (AssertInDesignMode()) return;
+
+        var folder = _taskInvokeContext?.WorkingDirectory ?? CurrentProjectProvider.ProjectContext?.FolderPath;
+        if (folder == null)
+        {
+            await _dialogueProvider.AlertAsync(
+                AlertType.Error, "Failed to open folder",
+                "The system could not find the correct folder.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder))
+            return;
+
+        try
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var info = new ProcessStartInfo("cmd", $"/c start {folder}")
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+            
+                Process.Start(info);
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("This platform is not supported for this operation.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await _dialogueProvider.AlertAsync(
+                AlertType.Error, ex, "Failed to open folder",
+                "The system could not open the working directory.");
+        }
+    }
+
     partial void OnSelectedProfileChanged(ProfileContext? value)
     {
         if (AssertInDesignMode()) return;
+
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
 
         if (value == null)
         {
@@ -187,9 +234,12 @@ public partial class ProfilesPageViewModel : PageViewModel
 
         SelectedRunProfile = value.ToProfileRunContext();
 
+        var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
+        _taskInvokeContext = TaskInvokeContextUtil.BuildContext(CurrentProjectProvider.ProjectContext.FolderPath, settings);
+
         // Validate the profile before running it.
         // The UI will display the errors.
-        var validations = _projectTaskOrchestrator.ValidateProfile(SelectedRunProfile);
+        var validations = _projectTaskOrchestrator.ValidateProfile(SelectedRunProfile, _taskInvokeContext);
 
         Warnings = new ObservableCollection<TaskValidationCollection>(GetValidationsByType(validations, ValidateResultType.Warning));
         Errors = new ObservableCollection<TaskValidationCollection>(GetValidationsByType(validations, ValidateResultType.Error));

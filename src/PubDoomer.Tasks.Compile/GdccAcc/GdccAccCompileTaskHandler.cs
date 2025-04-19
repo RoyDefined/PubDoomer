@@ -35,7 +35,7 @@ public sealed partial class GdccAccCompileTaskHandler : ITaskHandler
 
     public async ValueTask<bool> HandleAsync()
     {
-        var path = _invokeContext.ContextBag.GetGdccAccCompilerExecutableFilePath();
+        var path = GetGdccAccCompilerExecutableFilePath();
         _logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of GDCC-ACC executable: {GdccAccExecutablePath}", nameof(GdccAccCompileTaskHandler), _task.InputFilePath, _task.OutputFilePath, path);
 
         // Verify the task has a name.
@@ -84,11 +84,57 @@ public sealed partial class GdccAccCompileTaskHandler : ITaskHandler
 
         return true;
     }
+    
+    private string GetGdccAccCompilerExecutableFilePath()
+    {
+        var path = _invokeContext.ContextBag.GetGdccAccCompilerExecutableFilePath();
+        
+        // Handle relative path
+        if (!Path.IsPathRooted(path))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative GDCC compiler executable path ({path}). No working directory was specified. Either the working directory must be specified or the GDCC compiler executable path must be absolute.");
+            }
+            
+            path = Path.Combine(_invokeContext.WorkingDirectory, path);
+        }
+        
+        return path;
+    }
 
     private IEnumerable<string> BuildArguments()
     {
-        yield return $"\"{_task.InputFilePath}\"";
-        yield return $"-o \"{_task.OutputFilePath}\"";
+        var inputPath = _task.InputFilePath;
+        ArgumentException.ThrowIfNullOrWhiteSpace(inputPath, nameof(_task.InputFilePath));
+        
+        // Handle relative input path
+        if (!Path.IsPathRooted(inputPath))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative input path for ACS file input ({inputPath}). No working directory was specified. Either the working directory must be specified or the path to the ACS file input must be absolute.");
+            }
+            
+            inputPath = Path.Combine(_invokeContext.WorkingDirectory, inputPath);
+        }
+        
+        var outputPath = _task.OutputFilePath;
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath, nameof(_task.OutputFilePath));
+        
+        // Handle relative input path
+        if (!Path.IsPathRooted(outputPath))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative input path for ACS file output ({outputPath}). No working directory was specified. Either the working directory must be specified or the path to the ACS file output must be absolute.");
+            }
+            
+            outputPath = Path.Combine(_invokeContext.WorkingDirectory, outputPath);
+        }
+        
+        yield return $"\"{inputPath}\"";
+        yield return $"-o \"{outputPath}\"";
 
         if (_task.DontWarnForwardReferences)
         {

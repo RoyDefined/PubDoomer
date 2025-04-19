@@ -68,7 +68,7 @@ public partial class ObservableBccCompileTask : CompileTaskBase
         writer.Write(IncludeDirectories.Count);
         foreach (var directory in IncludeDirectories.Where(x => !string.IsNullOrWhiteSpace(x.Value)))
         {
-            writer.WritePath(directory.Value);
+            writer.Write(directory.Value);
         }
         
         base.Serialize(writer);
@@ -80,8 +80,7 @@ public partial class ObservableBccCompileTask : CompileTaskBase
         if (version >= new ProjectSaveVersion(0, 2))
         {
             var includedDirectoriesIterator = Enumerable.Range(0, reader.ReadInt32())
-                .Select(x => reader.ReadPath())
-                .OfType<string>()
+                .Select(x => reader.ReadString())
                 .Select(x => new ObservableString() { Value = x });
 
             IncludeDirectories = [.. includedDirectoriesIterator];

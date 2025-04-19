@@ -59,14 +59,8 @@
                     <MenuItem Header="Open project" Command="{Binding LoadProjectCommand}" />
                     <MenuItem Header="Save project"
                               IsVisible="{Binding SessionSettings.EnableEditing}"
-                              Command="{Binding SaveProjectCommand}">
-                        <MenuItem.IsEnabled>
-                            <MultiBinding Converter="{StaticResource NullToBoolMultiValueConverter}">
-                                <Binding Path="CurrentProjectProvider.ProjectContext" />
-                                <Binding Path="CurrentProjectProvider.ProjectContext.FilePath" />
-                            </MultiBinding>
-                        </MenuItem.IsEnabled>
-                    </MenuItem>
+                              Command="{Binding SaveProjectCommand}"
+                              IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}" />
                     <MenuItem Header="Save project as..."
                               IsVisible="{Binding SessionSettings.EnableEditing}"
                               Command="{Binding SaveProjectAsCommand}"

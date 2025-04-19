@@ -19,16 +19,14 @@ public partial class CreateOrEditTaskWindow : Window
         Close(false);
     }
 
-    private async void FormButtonSuccess_OnClick(object? sender, RoutedEventArgs e)
+    private void FormButtonSuccess_OnClick(object? sender, RoutedEventArgs e)
     {
         if (Design.IsDesignMode) return;
 
         var viewModel = (CreateOrEditTaskWindowViewModel)DataContext!;
         if (!viewModel.FormIsValid) return;
 
-        // We add a yield so the command is able to trigger in time. Otherwise it will not trigger.
-        await Task.Yield();
-
+        viewModel.OnSaveTask();
         Close(true);
     }
 }

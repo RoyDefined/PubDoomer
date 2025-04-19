@@ -7,6 +7,14 @@
         xmlns:gdccAcc="clr-namespace:PubDoomer.Tasks.Compile.GdccAcc;assembly=PubDoomer.Tasks.Compile"
         xmlns:gdccCc="clr-namespace:PubDoomer.Tasks.Compile.GdccCc;assembly=PubDoomer.Tasks.Compile"
         xmlns:tasks="clr-namespace:PubDoomer.Project.Tasks;assembly=PubDoomer.Tasks.Compile"
+        xmlns:copyProject="clr-namespace:PubDoomer.Tasks.FileSystem.CopyProject;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:copyFolder="clr-namespace:PubDoomer.Tasks.FileSystem.CopyFolder;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:moveFolder="clr-namespace:PubDoomer.Tasks.FileSystem.MoveFolder;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:copyFile="clr-namespace:PubDoomer.Tasks.FileSystem.CopyFile;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:moveFile="clr-namespace:PubDoomer.Tasks.FileSystem.MoveFile;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:zipFolder="clr-namespace:PubDoomer.Tasks.FileSystem.ZipFolder;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:deleteFolder="clr-namespace:PubDoomer.Tasks.FileSystem.DeleteFolder;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:deleteFile="clr-namespace:PubDoomer.Tasks.FileSystem.DeleteFile;assembly=PubDoomer.Tasks.FileSystem"
         mc:Ignorable="d"
         x:Class="PubDoomer.Views.Dialogues.CreateOrEditTaskWindow"
         Title="{Binding WindowTitle}"
@@ -286,6 +294,375 @@
                                     </DataTemplate>
                                 </ContentControl.DataTemplates>
                             </ContentControl>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Copy Project task -->
+                    <DataTemplate DataType="{x:Type copyProject:ObservableCopyProjectTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <StackPanel>
+                                <!-- If `true`, keep the 'acs.err' file if finished but with a compile error that generated it. -->
+                                <CheckBox Content="Copy to a temp folder."
+                                          IsChecked="{Binding UseTempFolder}" />
+                                            
+                                <!-- Additional clarification regarding the copy to a temporary folder. -->
+                                <TextBlock Classes="Tertiary"
+                                           FontSize="10"
+                                           Margin="25 0 0 0"
+                                           HorizontalAlignment="Stretch"
+                                           TextWrapping="Wrap"
+                                           Text="NOTE: This will copy the project to a generated directory in the current user's temporary folder." />
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Copy folder task -->
+                    <DataTemplate DataType="{x:Type copyFolder:ObservableCopyFolderTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Source folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Source folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding SourceFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- If `true`, recursively copy the sub-folders. -->
+                            <CheckBox Content="Recursively copy sub-folders"
+                                      IsChecked="{Binding Recursive}" />
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Move folder task -->
+                    <DataTemplate DataType="{x:Type moveFolder:ObservableMoveFolderTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Source folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Source folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding SourceFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- If `true`, recursively copy the sub-folders. -->
+                            <CheckBox Content="Recursively copy sub-folders"
+                                      IsChecked="{Binding Recursive}" />
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Copy file task -->
+                    <DataTemplate DataType="{x:Type copyFile:ObservableCopyFileTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Source folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Source file"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding SourceFile}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target file"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFile}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Move file task -->
+                    <DataTemplate DataType="{x:Type moveFile:ObservableMoveFileTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Source folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Source file"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding SourceFile}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Target file path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target file"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFile}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Zip folder task -->
+                    <DataTemplate DataType="{x:Type zipFolder:ObservableZipFolderTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Source folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Source folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding SourceFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target file"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFilePath}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Delete folder task -->
+                    <DataTemplate DataType="{x:Type deleteFolder:ObservableDeleteFolderTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Delete file task -->
+                    <DataTemplate DataType="{x:Type deleteFile:ObservableDeleteFileTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Target file path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target file"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFilePath}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
                         </StackPanel>
                     </DataTemplate>
                 </ContentControl.DataTemplates>

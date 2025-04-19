@@ -16,7 +16,7 @@ public sealed class ProjectTaskOrchestrator(
     /// Fully validates the current profile to ensure it can run properly.
     /// <br/> Validation is before the tasks are invoked. This means it does not guarantee the tasks run succesfully at runtime.
     /// </summary>
-    public TaskValidationCollection[] ValidateProfile(IInvokableProfile profile)
+    public TaskValidationCollection[] ValidateProfile(IInvokableProfile profile, TaskInvokeContext context)
     {
         var validationResultsNullable = profile.Tasks
             .Where(x => x.Task.ValidatorType != null)
@@ -24,7 +24,7 @@ public sealed class ProjectTaskOrchestrator(
             {
                 var validatableTask = GetTaskValidator(x.Task);
 
-                var results = validatableTask.Validate();
+                var results = validatableTask.Validate(context);
                 var collection = new TaskValidationCollection(x, results.ToArray());
 
                 // Return `null` if no validation results were found.

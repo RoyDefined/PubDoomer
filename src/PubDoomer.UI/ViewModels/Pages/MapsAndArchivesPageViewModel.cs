@@ -140,18 +140,19 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
         ObservableCollection<ArchiveContext> archives)
     {
         Debug.Assert(_dialogueProvider != null);
-        
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+
         // Launch the engine with the map.
         // Any exceptions are displayed in a window.
         try
         {
-            MapRunUtil.RunMap(map, selectedEngineRunConfiguration, selectedIWad, archives);
+            MapRunUtil.RunMap(map, CurrentProjectProvider.ProjectContext, selectedEngineRunConfiguration, selectedIWad, archives);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to open Ultimate DoomBuilder.");
-            await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Ultimate DoomBuilder",
-                $"An error occurred while opening Ultimate DoomBuilder. Please check your configuration. Error: {ex.Message}");
+            _logger.LogError(ex, "Failed to run map.");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to run map",
+                $"An error occurred while attempting to run the map. Please check your configuration. Error: {ex.Message}");
         }
     }
 
@@ -202,7 +203,7 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
         // If not set, initialize them.
         try
         {
-            _selectableConfigurations ??= MapEditUtil.GetConfigurations(_mergedSettings.UdbExecutableFilePath).ToArray();
+            _selectableConfigurations ??= MapEditUtil.GetConfigurations(CurrentProjectProvider.ProjectContext, _mergedSettings.UdbExecutableFilePath).ToArray();
         }
         catch (Exception ex)
         {
@@ -229,12 +230,13 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
         ObservableCollection<ArchiveContext> archives)
     {
         Debug.Assert(_dialogueProvider != null);
-        
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+
         // Launch UDB with the map.
         // Any exceptions are displayed in a window.
         try
         {
-            MapEditUtil.StartUltimateDoomBuilder(udbExecutableFilePath, map, selectedIWad, selectedConfiguration, archives);
+            MapEditUtil.StartUltimateDoomBuilder(udbExecutableFilePath, map, CurrentProjectProvider.ProjectContext, selectedIWad, selectedConfiguration, archives);
         }
         catch (Exception ex)
         {
@@ -291,6 +293,8 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
     private async Task StartSladeAsync(params IEnumerable<string> paths)
     {
         if (AssertInDesignMode()) return;
+
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
         
         // Path to Slade must exist.
         if (_mergedSettings.SladeExecutableFilePath == null)
@@ -304,7 +308,7 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
         // Any exceptions are displayed in a window.
         try
         {
-            MapEditUtil.StartSlade(_mergedSettings.SladeExecutableFilePath, paths);
+            MapEditUtil.StartSlade(_mergedSettings.SladeExecutableFilePath, paths, CurrentProjectProvider.ProjectContext);
         }
         catch (Exception ex)
         {

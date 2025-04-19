@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PubDoomer.Engine.TaskInvokation.Context;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Engine.TaskInvokation.Validation;
 using PubDoomer.Tasks.Compile;
@@ -10,37 +11,42 @@ public sealed class CompileTaskValidator(
     CompileTaskBase task) : ITaskValidator
 {
     // TODO: Add validation for the output path
-    public IEnumerable<ValidateResult> Validate()
+    public IEnumerable<ValidateResult> Validate(TaskInvokeContext invokeContext)
     {
-        // Check if path is set.
-        if (string.IsNullOrWhiteSpace(task.InputFilePath))
+        var inputPath = GetArgument(invokeContext);
+
+        if (string.IsNullOrWhiteSpace(inputPath))
         {
             yield return ValidateResult.FromError("File path is not provided.");
         }
-
-        // Check if path contains invalid characters.
-        if (task.InputFilePath != null && task.InputFilePath.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+        else
         {
-            yield return ValidateResult.FromError("File path contains invalid characters.");
+            if (inputPath.IndexOfAny(Path.GetInvalidPathChars()) >= 0) yield return ValidateResult.FromError("File path contains invalid characters.");
+            if (Directory.Exists(inputPath)) yield return ValidateResult.FromWarning("The path might be a directory, not a file.");
+            if (!File.Exists(inputPath)) yield return ValidateResult.FromError("File to compile does not exist.");
+
+            var fileExtension = Path.GetExtension(inputPath);
+            if (!task.ExpectedFileExtensions.Contains(fileExtension, StringComparer.OrdinalIgnoreCase))
+                yield return ValidateResult.FromWarning($"Unexpected file extension '{fileExtension}'. Expected: {string.Join(", ", task.ExpectedFileExtensions)}.");
+        }
+    }
+
+    private string GetArgument(TaskInvokeContext invokeContext)
+    {
+        var inputPath = task.InputFilePath;
+        ArgumentException.ThrowIfNullOrWhiteSpace(inputPath, nameof(task.InputFilePath));
+
+        // Handle relative input path
+        if (!Path.IsPathRooted(inputPath))
+        {
+            if (string.IsNullOrWhiteSpace(invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative input path for ACS file input ({inputPath}). No working directory was specified. Either the working directory must be specified or the path to the ACS file input must be absolute.");
+            }
+
+            inputPath = Path.Combine(invokeContext.WorkingDirectory, inputPath);
         }
 
-        // Check if the path is a directory.
-        if (Directory.Exists(task.InputFilePath))
-        {
-            yield return ValidateResult.FromWarning("The path might be a directory, not a file.");
-        }
-
-        // Check if the file exists
-        if (!File.Exists(task.InputFilePath))
-        {
-            yield return ValidateResult.FromError("File to compile does not exist.");
-        }
-
-        // Check if the file has a valid extension
-        var fileExtension = Path.GetExtension(task.InputFilePath);
-        if (!task.ExpectedFileExtensions.Contains(fileExtension, StringComparer.OrdinalIgnoreCase))
-        {
-            yield return ValidateResult.FromWarning($"Unexpected file extension '{fileExtension}'. Expected: {string.Join(", ", task.ExpectedFileExtensions)}.");
-        }
+        return inputPath;
     }
 }

@@ -35,7 +35,7 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
 
     public async ValueTask<bool> HandleAsync()
     {
-        var path = _invokeContext.ContextBag.GetBccCompilerExecutableFilePath();
+        var path = GetBccCompilerExecutableFilePath();
         _logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of BCC executable: {BccExecutablePath}", nameof(BccCompileTaskHandler), _task.InputFilePath, _task.OutputFilePath, path);
 
         // Verify the task has a name.
@@ -83,16 +83,76 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
 
         return true;
     }
+    
+    private string GetBccCompilerExecutableFilePath()
+    {
+        var path = _invokeContext.ContextBag.GetBccCompilerExecutableFilePath();
+        
+        // Handle relative path
+        if (!Path.IsPathRooted(path))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative BCC compiler executable path ({path}). No working directory was specified. Either the working directory must be specified or the BCC compiler executable path must be absolute.");
+            }
+            
+            path = Path.Combine(_invokeContext.WorkingDirectory, path);
+        }
+        
+        return path;
+    }
 
     private IEnumerable<string> BuildArguments()
     {
         foreach (var directory in _task.IncludeDirectories)
         {
-            yield return $"-i \"{directory.Value}\"";
+            var directoryPath = directory.Value;
+            ArgumentException.ThrowIfNullOrWhiteSpace(directoryPath, $"{nameof(_task.IncludeDirectories)}.{nameof(_task.InputFilePath)}");
+        
+            // Handle relative input path
+            if (!Path.IsPathRooted(directoryPath))
+            {
+                if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+                {
+                    throw new ArgumentException($"Failed to update relative input path for included directory ({directoryPath}). No working directory was specified. Either the working directory must be specified or the path to the included directory must be absolute.");
+                }
+            
+                directoryPath = Path.Combine(_invokeContext.WorkingDirectory, directoryPath);
+            }
+            
+            yield return $"-i \"{directoryPath}\"";
         }
         
-        yield return $"\"{_task.InputFilePath}\"";
-        yield return $"\"{_task.OutputFilePath}\"";
+        var inputPath = _task.InputFilePath;
+        ArgumentException.ThrowIfNullOrWhiteSpace(inputPath, nameof(_task.InputFilePath));
+        
+        // Handle relative input path
+        if (!Path.IsPathRooted(inputPath))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative input path for ACS file input ({inputPath}). No working directory was specified. Either the working directory must be specified or the path to the ACS file input must be absolute.");
+            }
+            
+            inputPath = Path.Combine(_invokeContext.WorkingDirectory, inputPath);
+        }
+        
+        var outputPath = _task.OutputFilePath;
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath, nameof(_task.OutputFilePath));
+        
+        // Handle relative input path
+        if (!Path.IsPathRooted(outputPath))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative input path for ACS file output ({outputPath}). No working directory was specified. Either the working directory must be specified or the path to the ACS file output must be absolute.");
+            }
+            
+            outputPath = Path.Combine(_invokeContext.WorkingDirectory, outputPath);
+        }
+        
+        yield return $"\"{inputPath}\"";
+        yield return $"\"{outputPath}\"";
     }
 
     private void HandleStdout(string line)

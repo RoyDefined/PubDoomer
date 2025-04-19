@@ -16,12 +16,53 @@
 
     <Border Padding="20">
         <StackPanel Spacing="10">
-            <Grid ColumnDefinitions="Auto, 10, *" HorizontalAlignment="Stretch">
-                <TextBlock Text="Project Name:"
+            <Grid ColumnDefinitions="140, *" HorizontalAlignment="Stretch">
+                <TextBlock Text="Project name"
                            FontWeight="Bold"
                            VerticalAlignment="Center" />
-                <TextBox Grid.Column="2" Text="{Binding Project.Name, Mode=TwoWay}" />
+                <TextBox Grid.Column="1" Text="{Binding Project.Name, Mode=TwoWay}" />
             </Grid>
+            
+            <Grid ColumnDefinitions="140, *" HorizontalAlignment="Stretch">
+                <TextBlock Text="Project file name"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center" />
+                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                      HorizontalAlignment="Stretch">
+                    <TextBox Text="{Binding Project.FileName}"
+                             HorizontalAlignment="Stretch" />
+                </Grid>
+            </Grid>
+            
+            <Grid ColumnDefinitions="140, *, Auto" HorizontalAlignment="Stretch">
+                <TextBlock Text="Project folder path"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center" />
+                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                      HorizontalAlignment="Stretch">
+                    <TextBox Text="{Binding Project.FolderPath}"
+                             HorizontalAlignment="Stretch" />
+                    
+                    <Button Grid.Column="2"
+                            Command="{Binding $parent[Window].((CreateOrEditProjectWindowViewModel)DataContext).PickProjectPathCommand}"
+                            Classes="Tertiary"
+                            Theme="{DynamicResource SolidButton}"
+                            HorizontalAlignment="Stretch"
+                            Padding="5 0">
+                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                  Classes="ExtraLarge"
+                                  Data="{StaticResource SemiIconFolderOpen}" />
+                    </Button>
+                </Grid>
+            </Grid>
+            
+            <!-- Extra information about where the file will be saved -->
+            <TextBlock Theme="{StaticResource TitleTextBlock}"
+                       Classes="Tertiary"
+                       FontSize="10"
+                       TextWrapping="Wrap"
+                       VerticalAlignment="Center"
+                       Text="{Binding FilePathToUse, StringFormat='The project definition will be saved at \'{0}\'.'}"/>
 
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right"

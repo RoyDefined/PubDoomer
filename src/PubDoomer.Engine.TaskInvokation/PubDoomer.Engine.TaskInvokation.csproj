@@ -9,11 +9,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
   </ItemGroup>
 
 
   <ItemGroup>
     <ProjectReference Include="..\PubDoomer.Engine.Abstract\PubDoomer.Engine.Abstract.csproj" />
+    <ProjectReference Include="..\PubDoomer.Engine.Saving\PubDoomer.Engine.Saving.csproj" />
   </ItemGroup>
 
 </Project>

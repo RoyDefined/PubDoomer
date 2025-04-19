@@ -20,15 +20,6 @@ public sealed class TextProjectReader(
     public int ReadInt32() => int.TryParse(_reader.ReadLine()?.Trim(), out var result) ? result : 0;
     public bool ReadBoolean() => bool.TryParse(_reader.ReadLine()?.Trim(), out var result) && result;
     public T ReadEnum<T>() where T : struct, Enum => Enum.TryParse<T>(_reader.ReadLine()?.Trim(), out var result) ? result : default;
-    public string? ReadPath()
-    {
-        var path = _reader.ReadLine()?.Trim();
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            return null;
-        }
-        return Path.GetFullPath(path, projectPath);
-    }
 
     public ProjectSaveVersion ReadVersion()
     {

@@ -15,9 +15,14 @@ internal static class TaskInvokeContextUtil
     /// <summary>
     /// Builds the invoke context used to run profiles.
     /// </summary>
-    internal static TaskInvokeContext BuildContext(MergedSettings settings)
+    internal static TaskInvokeContext BuildContext(string? projectDirectory, MergedSettings settings)
     {
-        var context = new TaskInvokeContext();
+        var context = new TaskInvokeContext()
+        {
+            ProjectDirectory = projectDirectory,
+            WorkingDirectory = projectDirectory,
+        };
+
         context.ContextBag
             .SetAccCompilerExecutableFilePath(settings.AccCompilerExecutableFilePath)
             .SetBccCompilerExecutableFilePath(settings.BccCompilerExecutableFilePath)
