@@ -25,6 +25,8 @@ using PubDoomer.Tasks.FileSystem;
 using PubDoomer.Tasks.FileSystem.CopyFile;
 using PubDoomer.Tasks.FileSystem.CopyFolder;
 using PubDoomer.Tasks.FileSystem.CopyProject;
+using PubDoomer.Tasks.FileSystem.DeleteFile;
+using PubDoomer.Tasks.FileSystem.DeleteFolder;
 using PubDoomer.Tasks.FileSystem.MoveFile;
 using PubDoomer.Tasks.FileSystem.MoveFolder;
 using PubDoomer.Tasks.FileSystem.ZipFolder;
@@ -46,6 +48,8 @@ public sealed class ProjectSavingService
         [ObservableCopyFileTask.TaskName] = new ObservableCopyFileTask(),
         [ObservableMoveFileTask.TaskName] = new ObservableMoveFileTask(),
         [ObservableZipFolderTask.TaskName] = new ObservableZipFolderTask(),
+        [ObservableDeleteFolderTask.TaskName] = new ObservableDeleteFolderTask(),
+        [ObservableDeleteFileTask.TaskName] = new ObservableDeleteFileTask(),
     };
 
     /// <summary>

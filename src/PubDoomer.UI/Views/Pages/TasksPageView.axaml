@@ -11,6 +11,8 @@
              xmlns:copyFile="clr-namespace:PubDoomer.Tasks.FileSystem.CopyFile;assembly=PubDoomer.Tasks.FileSystem"
              xmlns:moveFile="clr-namespace:PubDoomer.Tasks.FileSystem.MoveFile;assembly=PubDoomer.Tasks.FileSystem"
              xmlns:zipFolder="clr-namespace:PubDoomer.Tasks.FileSystem.ZipFolder;assembly=PubDoomer.Tasks.FileSystem"
+             xmlns:deleteFolder="clr-namespace:PubDoomer.Tasks.FileSystem.DeleteFolder;assembly=PubDoomer.Tasks.FileSystem"
+             xmlns:deleteFile="clr-namespace:PubDoomer.Tasks.FileSystem.DeleteFile;assembly=PubDoomer.Tasks.FileSystem"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="PubDoomer.Views.Pages.TasksPageView"
              x:DataType="TasksPageViewModel">
@@ -173,6 +175,22 @@
                                                     <StackPanel>
                                                         <TextBlock Text="{Binding SourceFolder, StringFormat='Source folder: {0}'}"
                                                                    FontSize="12" Foreground="Gray" />
+                                                        <TextBlock Text="{Binding TargetFilePath, StringFormat='Target file path: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                                
+                                                <!-- DataTemplate for Delete folder task -->
+                                                <DataTemplate DataType="deleteFolder:ObservableDeleteFolderTask">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding TargetFolder, StringFormat='Target folder: {0}'}"
+                                                                   FontSize="12" Foreground="Gray" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                                
+                                                <!-- DataTemplate for Delete file task -->
+                                                <DataTemplate DataType="deleteFile:ObservableDeleteFileTask">
+                                                    <StackPanel>
                                                         <TextBlock Text="{Binding TargetFilePath, StringFormat='Target file path: {0}'}"
                                                                    FontSize="12" Foreground="Gray" />
                                                     </StackPanel>

@@ -24,6 +24,8 @@ using PubDoomer.Tasks.FileSystem;
 using PubDoomer.Tasks.FileSystem.CopyFile;
 using PubDoomer.Tasks.FileSystem.CopyFolder;
 using PubDoomer.Tasks.FileSystem.CopyProject;
+using PubDoomer.Tasks.FileSystem.DeleteFile;
+using PubDoomer.Tasks.FileSystem.DeleteFolder;
 using PubDoomer.Tasks.FileSystem.MoveFile;
 using PubDoomer.Tasks.FileSystem.MoveFolder;
 using PubDoomer.Tasks.FileSystem.ZipFolder;
@@ -59,6 +61,8 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         new ObservableCopyFileTask(),
         new ObservableMoveFileTask(),
         new ObservableZipFolderTask(),
+        new ObservableDeleteFolderTask(),
+        new ObservableDeleteFileTask(),
     ];
 
     [ObservableProperty] private string _createOrEditButtonText;
@@ -129,6 +133,8 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         ObservableCopyFileTask copyFileTask => !string.IsNullOrWhiteSpace(copyFileTask.SourceFile) || !string.IsNullOrWhiteSpace(copyFileTask.TargetFile),
         ObservableMoveFileTask moveFileTask => !string.IsNullOrWhiteSpace(moveFileTask.SourceFile) || !string.IsNullOrWhiteSpace(moveFileTask.TargetFile),
         ObservableZipFolderTask zipFolderTask => !string.IsNullOrWhiteSpace(zipFolderTask.SourceFolder) || !string.IsNullOrWhiteSpace(zipFolderTask.TargetFilePath),
+        ObservableDeleteFolderTask deleteFolderTask => !string.IsNullOrWhiteSpace(deleteFolderTask.TargetFolder),
+        ObservableDeleteFileTask deleteFileTask => !string.IsNullOrWhiteSpace(deleteFileTask.TargetFilePath),
         _ => false
     };
     
@@ -203,6 +209,14 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
             case ObservableZipFolderTask zipFolder:
                 if (!string.IsNullOrWhiteSpace(zipFolder.SourceFolder)) zipFolder.SourceFolder = MakeRelative(zipFolder.SourceFolder);
                 if (!string.IsNullOrWhiteSpace(zipFolder.TargetFilePath)) zipFolder.TargetFilePath = MakeRelative(zipFolder.TargetFilePath);
+                break;
+
+            case ObservableDeleteFolderTask deleteFolder:
+                if (!string.IsNullOrWhiteSpace(deleteFolder.TargetFolder)) deleteFolder.TargetFolder = MakeRelative(deleteFolder.TargetFolder);
+                break;
+
+            case ObservableDeleteFileTask deleteFile:
+                if (!string.IsNullOrWhiteSpace(deleteFile.TargetFilePath)) deleteFile.TargetFilePath = MakeRelative(deleteFile.TargetFilePath);
                 break;
         }
     }

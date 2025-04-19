@@ -13,6 +13,8 @@
         xmlns:copyFile="clr-namespace:PubDoomer.Tasks.FileSystem.CopyFile;assembly=PubDoomer.Tasks.FileSystem"
         xmlns:moveFile="clr-namespace:PubDoomer.Tasks.FileSystem.MoveFile;assembly=PubDoomer.Tasks.FileSystem"
         xmlns:zipFolder="clr-namespace:PubDoomer.Tasks.FileSystem.ZipFolder;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:deleteFolder="clr-namespace:PubDoomer.Tasks.FileSystem.DeleteFolder;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:deleteFile="clr-namespace:PubDoomer.Tasks.FileSystem.DeleteFile;assembly=PubDoomer.Tasks.FileSystem"
         mc:Ignorable="d"
         x:Class="PubDoomer.Views.Dialogues.CreateOrEditTaskWindow"
         Title="{Binding WindowTitle}"
@@ -529,7 +531,7 @@
                                 </Grid>
                             </Grid>
                             
-                            <!-- Target folder path -->
+                            <!-- Target file path -->
                             <Grid ColumnDefinitions="*, 2.5*">
 
                                 <TextBlock FontWeight="Bold"
@@ -606,6 +608,63 @@
                         </StackPanel>
                     </DataTemplate>
                     
+                    <!-- DataTemplate for the Delete folder task -->
+                    <DataTemplate DataType="{x:Type deleteFolder:ObservableDeleteFolderTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Delete file task -->
+                    <DataTemplate DataType="{x:Type deleteFile:ObservableDeleteFileTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Target file path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target file"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFilePath}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
                 </ContentControl.DataTemplates>
             </ContentControl>
 
