@@ -52,14 +52,6 @@ public sealed class CopyProjectTaskHandler : ITaskHandler
             return true;
         }
 
-        // Copy over the project to the new location.
-        // To be safe, fail if the folder exists.
-        if (Directory.Exists(targetFolderPath))
-        {
-            _taskContext.TaskOutput.Add(TaskOutputResult.CreateWarning("The target folder already exists. To be safe the task does not proceed."));
-            return false;
-        }
-
         _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage("Copying project..."));
         
         // Update the current location of the project.

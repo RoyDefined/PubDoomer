@@ -42,12 +42,6 @@ public sealed class MoveFolderTaskHandler : ITaskHandler
             return ValueTask.FromResult(false);
         }
 
-        if (Directory.Exists(targetFolderPath))
-        {
-            _taskContext.TaskOutput.Add(TaskOutputResult.CreateWarning("The target folder already exists. To be safe the task does not proceed."));
-            return ValueTask.FromResult(false);
-        }
-
         try
         {
             TransferUtil.TransferDirectory(sourceFolderPath, targetFolderPath, TransferStratergyType.Move, _task.Recursive);

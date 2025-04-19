@@ -42,13 +42,6 @@ public sealed class CopyFolderTaskHandler : ITaskHandler
             return ValueTask.FromResult(false);
         }
 
-        // TODO: Configurable if we should allow replacing.
-        if (Directory.Exists(targetFolderPath))
-        {
-            _taskContext.TaskOutput.Add(TaskOutputResult.CreateWarning("The target folder already exists. To be safe the task does not proceed."));
-            return ValueTask.FromResult(false);
-        }
-
         try
         {
             // TODO: Configurable if we should allow replacing.

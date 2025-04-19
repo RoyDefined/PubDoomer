@@ -40,12 +40,6 @@ public sealed class MoveFileTaskHandler : ITaskHandler
             return ValueTask.FromResult(false);
         }
 
-        if (File.Exists(targetFilePath))
-        {
-            _taskContext.TaskOutput.Add(TaskOutputResult.CreateWarning("The target file already exists. To be safe the task does not proceed."));
-            return ValueTask.FromResult(false);
-        }
-
         try
         {
             TransferUtil.TransferFile(new FileInfo(sourceFilePath), targetFilePath, TransferStratergyType.Move);
