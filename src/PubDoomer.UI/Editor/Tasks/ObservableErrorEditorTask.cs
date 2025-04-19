@@ -5,6 +5,7 @@ using System.IO;
 using System.Text.Json.Serialization;
 using Avalonia.Controls;
 using PubDoomer.Engine.Saving;
+using PubDoomer.Engine.TaskInvokation.Context;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using PubDoomer.Engine.TaskInvokation.Validation;
 using PubDoomer.Project.Tasks;
@@ -55,7 +56,7 @@ public partial class ObservableErrorEditorTask : ProjectTaskBase, ITaskValidator
         throw new NotImplementedException();
     }
 
-    public IEnumerable<ValidateResult> Validate()
+    public IEnumerable<ValidateResult> Validate(TaskInvokeContext _)
     {
         yield return ValidateResult.FromError("Error number #1");
         yield return ValidateResult.FromError("Error number #2");

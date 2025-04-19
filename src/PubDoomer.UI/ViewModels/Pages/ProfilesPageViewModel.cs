@@ -94,15 +94,10 @@ public partial class ProfilesPageViewModel : PageViewModel
     {
         if (AssertInDesignMode()) return;
         Debug.Assert(SelectedRunProfile != null);
-        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+        Debug.Assert(_taskInvokeContext != null);
 
         _logger.LogDebug("Executing profile {ProfileName}", SelectedRunProfile.Name);
-
-        var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
-        _taskInvokeContext = TaskInvokeContextUtil.BuildContext(CurrentProjectProvider.ProjectContext.FolderPath, settings);
-
         await _projectTaskOrchestrator.InvokeProfileAsync(SelectedRunProfile, _taskInvokeContext);
-        
         _logger.LogDebug("Finished execution.");
     }
 
@@ -230,6 +225,8 @@ public partial class ProfilesPageViewModel : PageViewModel
     {
         if (AssertInDesignMode()) return;
 
+        Debug.Assert(CurrentProjectProvider.ProjectContext != null);
+
         if (value == null)
         {
             return;
@@ -237,15 +234,15 @@ public partial class ProfilesPageViewModel : PageViewModel
 
         SelectedRunProfile = value.ToProfileRunContext();
 
+        var settings = SettingsMerger.Merge(CurrentProjectProvider.ProjectContext, Settings);
+        _taskInvokeContext = TaskInvokeContextUtil.BuildContext(CurrentProjectProvider.ProjectContext.FolderPath, settings);
+
         // Validate the profile before running it.
         // The UI will display the errors.
-        var validations = _projectTaskOrchestrator.ValidateProfile(SelectedRunProfile);
+        var validations = _projectTaskOrchestrator.ValidateProfile(SelectedRunProfile, _taskInvokeContext);
 
         Warnings = new ObservableCollection<TaskValidationCollection>(GetValidationsByType(validations, ValidateResultType.Warning));
         Errors = new ObservableCollection<TaskValidationCollection>(GetValidationsByType(validations, ValidateResultType.Error));
-        
-        // Unset possible previous profile data.
-        _taskInvokeContext = null;
     }
 
     [MemberNotNullWhen(false, nameof(_windowProvider), nameof(_dialogueProvider), nameof(_projectTaskOrchestrator))]
