@@ -35,7 +35,7 @@ public sealed class CopyProjectTaskHandler : ITaskHandler
         _task = task;
     }
 
-    public ValueTask<bool> HandleAsync()
+    public async ValueTask<bool> HandleAsync()
     {
         var sourceFolderPath = _invokeContext.WorkingDirectory;
         if (string.IsNullOrWhiteSpace(sourceFolderPath))
@@ -49,7 +49,7 @@ public sealed class CopyProjectTaskHandler : ITaskHandler
         if (sourceFolderPath.Equals(targetFolderPath, StringComparison.OrdinalIgnoreCase))
         {
             _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage("Source and target paths are the same. Skipping copy."));
-            return ValueTask.FromResult(true);
+            return true;
         }
 
         // Copy over the project to the new location.
@@ -57,15 +57,18 @@ public sealed class CopyProjectTaskHandler : ITaskHandler
         if (Directory.Exists(targetFolderPath))
         {
             _taskContext.TaskOutput.Add(TaskOutputResult.CreateWarning("The target folder already exists. To be safe the task does not proceed."));
-            return ValueTask.FromResult(false);
+            return false;
         }
 
+        _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage("Copying project..."));
+        
         // Update the current location of the project.
-        TransferUtil.TransferDirectory(sourceFolderPath, targetFolderPath, TransferStratergyType.Copy, true);
+        await Task.Run(() =>
+            TransferUtil.TransferDirectory(sourceFolderPath, targetFolderPath, TransferStratergyType.Copy, true));
         _invokeContext.WorkingDirectory = targetFolderPath;
 
         _taskContext.TaskOutput.Add(TaskOutputResult.CreateMessage($"Updated the working directory to {targetFolderPath}"));
-        return ValueTask.FromResult(true);
+        return true;
     }
     
     private string GetArguments()
