@@ -125,19 +125,37 @@
             <ScrollViewer>
                 <Grid RowDefinitions="Auto, *">
 
-                    <!-- Elapsed time and validation errors. -->
                     <StackPanel Spacing="5">
                         
-                        <!-- Top part: elapsed time -->
-                        <StackPanel Orientation="Horizontal"
-                                    Spacing="5"
-                                    IsVisible="{Binding SelectedRunProfile.ElapsedTimeMs, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}">
-                            <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                      Data="{StaticResource SemiIconClock}" />
-                            <TextBlock Text="{Binding SelectedRunProfile.ElapsedTimeMs, StringFormat='{}{0}ms'}"
-                                       FontWeight="Bold"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <!-- Top part: elapsed time and working directory -->
+                        <Grid>
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="5"
+                                        IsVisible="{Binding SelectedRunProfile.ElapsedTimeMs, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}">
+                                <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                          Data="{StaticResource SemiIconClock}" />
+                                <TextBlock Text="{Binding SelectedRunProfile.ElapsedTimeMs, StringFormat='{}{0}ms'}"
+                                           FontWeight="Bold"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        
+                            <!-- Working directory button -->
+                            <Border HorizontalAlignment="Right" Padding="10 0">
+                                <Button Theme="{DynamicResource SolidButton}"
+                                        Classes="Primary"
+                                        Command="{Binding OpenWorkingDirectoryCommand}">
+                        
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="5">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolder}" />
+                                        <TextBlock Text="Open working directory"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </Border>
+                        </Grid>
                         
                         <!-- Middle part -->
                         
