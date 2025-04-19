@@ -24,6 +24,7 @@ using PubDoomer.Engine.TaskInvokation.Orchestration;
 using PubDoomer.Engine.TaskInvokation.Validation;
 using PubDoomer.Engine.TaskInvokation.TaskDefinition;
 using System.IO;
+using System.Runtime.InteropServices;
 using PubDoomer.Engine.TaskInvokation.Context;
 
 namespace PubDoomer.ViewModels.Pages;
@@ -201,7 +202,21 @@ public partial class ProfilesPageViewModel : PageViewModel
 
         try
         {
-            Process.Start(new ProcessStartInfo("explorer.exe", folder));
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var info = new ProcessStartInfo("cmd", $"/c start {folder}")
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+            
+                Process.Start(info);
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("This platform is not supported for this operation.");
+            }
         }
         catch (Exception ex)
         {
