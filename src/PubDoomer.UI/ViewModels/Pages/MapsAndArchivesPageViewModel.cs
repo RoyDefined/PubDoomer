@@ -150,9 +150,9 @@ public partial class MapsAndArchivesPageViewModel : PageViewModel
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to open Ultimate DoomBuilder.");
-            await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to open Ultimate DoomBuilder",
-                $"An error occurred while opening Ultimate DoomBuilder. Please check your configuration. Error: {ex.Message}");
+            _logger.LogError(ex, "Failed to run map.");
+            await _dialogueProvider.AlertAsync(AlertType.Warning, "Failed to run map",
+                $"An error occurred while attempting to run the map. Please check your configuration. Error: {ex.Message}");
         }
     }
 
