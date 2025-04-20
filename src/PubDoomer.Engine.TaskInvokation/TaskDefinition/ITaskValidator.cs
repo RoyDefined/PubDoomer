@@ -1,4 +1,5 @@
-﻿using PubDoomer.Engine.TaskInvokation.Validation;
+﻿using PubDoomer.Engine.TaskInvokation.Context;
+using PubDoomer.Engine.TaskInvokation.Validation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,5 +10,5 @@ namespace PubDoomer.Engine.TaskInvokation.TaskDefinition;
 
 public interface ITaskValidator
 {
-    IEnumerable<ValidateResult> Validate();
+    IEnumerable<ValidateResult> Validate(TaskInvokeContext invokeContext);
 }

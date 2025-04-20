@@ -16,7 +16,7 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
     private readonly ObservableBccCompileTask _task;
 
     // Match pattern like: "...path with spaces...:14:18: warning: message here"
-    [GeneratedRegex(@"^(.*?):(\d+):(\d+):\s*(warning|error):\s*(.+)$", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"^(.*?):(\d+):(\d+):(?:\s*(warning|error):\s*)?(.*)$", RegexOptions.IgnoreCase)]
     private static partial Regex StdErrMessageMatcher();
 
     public BccCompileTaskHandler(
@@ -35,7 +35,7 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
 
     public async ValueTask<bool> HandleAsync()
     {
-        var path = _invokeContext.ContextBag.GetBccCompilerExecutableFilePath();
+        var path = GetBccCompilerExecutableFilePath();
         _logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Output path: {OutputFilePath}. Location of BCC executable: {BccExecutablePath}", nameof(BccCompileTaskHandler), _task.InputFilePath, _task.OutputFilePath, path);
 
         // Verify the task has a name.
@@ -83,11 +83,76 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
 
         return true;
     }
+    
+    private string GetBccCompilerExecutableFilePath()
+    {
+        var path = _invokeContext.ContextBag.GetBccCompilerExecutableFilePath();
+        
+        // Handle relative path
+        if (!Path.IsPathRooted(path))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative BCC compiler executable path ({path}). No working directory was specified. Either the working directory must be specified or the BCC compiler executable path must be absolute.");
+            }
+            
+            path = Path.Combine(_invokeContext.WorkingDirectory, path);
+        }
+        
+        return path;
+    }
 
     private IEnumerable<string> BuildArguments()
     {
-        yield return $"\"{_task.InputFilePath}\"";
-        yield return $"\"{_task.OutputFilePath}\"";
+        foreach (var directory in _task.IncludeDirectories)
+        {
+            var directoryPath = directory.Value;
+            ArgumentException.ThrowIfNullOrWhiteSpace(directoryPath, $"{nameof(_task.IncludeDirectories)}.{nameof(_task.InputFilePath)}");
+        
+            // Handle relative input path
+            if (!Path.IsPathRooted(directoryPath))
+            {
+                if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+                {
+                    throw new ArgumentException($"Failed to update relative input path for included directory ({directoryPath}). No working directory was specified. Either the working directory must be specified or the path to the included directory must be absolute.");
+                }
+            
+                directoryPath = Path.Combine(_invokeContext.WorkingDirectory, directoryPath);
+            }
+            
+            yield return $"-i \"{directoryPath}\"";
+        }
+        
+        var inputPath = _task.InputFilePath;
+        ArgumentException.ThrowIfNullOrWhiteSpace(inputPath, nameof(_task.InputFilePath));
+        
+        // Handle relative input path
+        if (!Path.IsPathRooted(inputPath))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative input path for ACS file input ({inputPath}). No working directory was specified. Either the working directory must be specified or the path to the ACS file input must be absolute.");
+            }
+            
+            inputPath = Path.Combine(_invokeContext.WorkingDirectory, inputPath);
+        }
+        
+        var outputPath = _task.OutputFilePath;
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath, nameof(_task.OutputFilePath));
+        
+        // Handle relative input path
+        if (!Path.IsPathRooted(outputPath))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative input path for ACS file output ({outputPath}). No working directory was specified. Either the working directory must be specified or the path to the ACS file output must be absolute.");
+            }
+            
+            outputPath = Path.Combine(_invokeContext.WorkingDirectory, outputPath);
+        }
+        
+        yield return $"\"{inputPath}\"";
+        yield return $"\"{outputPath}\"";
     }
 
     private void HandleStdout(string line)
@@ -97,6 +162,9 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
 
     private void HandleStdErr(string line)
     {
+        if (string.IsNullOrWhiteSpace(line))
+            return;
+
         var result = ParseLine(line);
         if (result == null)
         {
@@ -106,7 +174,7 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
         _taskContext.TaskOutput.Add(result);
     }
 
-    private static TaskOutputResult? ParseLine(string line)
+    private TaskOutputResult? ParseLine(string line)
     {
         // Using regex we determine the formatting of the message.
         // Notably it always contains 'warning: ' or 'error: '
@@ -118,15 +186,25 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
         if (!match.Success)
             return null;
 
-        // Note the regex is build to also parse the code line and character, though it is currently unused.
-        var type = match.Groups[4].Value.ToLowerInvariant();
+        var file = match.Groups[1].Value;
+        var faulthyLine = match.Groups[2].Value;
+        var faulthyCharacter = match.Groups[3].Value;
+        var typeGroup = match.Groups[4].Value;
         var message = match.Groups[5].Value.Trim();
+
+        // Default to "error" if no type group
+        var type = string.IsNullOrWhiteSpace(typeGroup) ? "error" : typeGroup.ToLowerInvariant();
+
+        // Get the relative path to the file compared to the source and build a new message from that.
+        var fileDirectory = Path.GetDirectoryName(_task.InputFilePath!)!;
+        var relativeFilePath = Path.GetRelativePath(fileDirectory, file);
+        message = $"File \"{relativeFilePath}\", line {faulthyLine}, char {faulthyCharacter}: {message}";
 
         return type switch
         {
             "warning" => TaskOutputResult.CreateWarning(message),
             "error" => TaskOutputResult.CreateError(message),
-            _ => null
+            _ => TaskOutputResult.CreateError(message),
         };
     }
 }

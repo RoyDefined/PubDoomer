@@ -18,6 +18,19 @@ public sealed class TaskInvokeContext
     }
 
     /// <summary>
+    /// The base directory that defines where to find the project.
+    /// <br /> If <see langword="null"/> no project was loaded when the context was created.
+    /// </summary>
+    public required string? ProjectDirectory { get; init; }
+
+    /// <summary>
+    /// The working directory that defines where tasks should invoke on.
+    /// <br /> This is a mutable directory which, for example, can change by the Copy Project task which specifies a new directory to work in.
+    /// <br /> If <see langword="null"/> no project was loaded when the context was created.
+    /// </summary>
+    public required string? WorkingDirectory { get; set; }
+
+    /// <summary>
     /// Represents a bag containing data as a key-pair value.
     /// </summary>
     public TaskInvokeBag ContextBag { get; }

@@ -20,6 +20,24 @@
         <Grid RowDefinitions="Auto, *">
             <Grid Margin="0 0 0 15">
                 
+                <!-- Edit all archives -->
+                <Button Command="{Binding EditSladeAllArchivesCommand}"
+                        HorizontalAlignment="Left"
+                        Padding="5 0"
+                        Classes="Secondary"
+                        Theme="{DynamicResource SolidButton}">
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10">
+                        <Image Source="/Assets/editor-slade.png"
+                               Width="16"
+                               Height="16"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Left"/>
+                        <TextBlock Text="Edit all archives"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
                 <!-- Title -->
                 <Label Classes="H3"
                        HorizontalAlignment="Center"

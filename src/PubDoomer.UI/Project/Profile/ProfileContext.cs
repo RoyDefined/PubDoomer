@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -57,5 +58,10 @@ public partial class ProfileContext : ObservableObject, ICloneable
     public ProfileContext DeepClone()
     {
         return new ProfileContext(Name, Tasks.ToArray());
+    }
+
+    public void RaiseTasksChanged()
+    {
+        OnPropertyChanged(new PropertyChangedEventArgs(nameof(Tasks)));
     }
 }

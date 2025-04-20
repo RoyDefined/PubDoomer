@@ -21,6 +21,15 @@ using PubDoomer.Tasks.Compile.Acc;
 using PubDoomer.Tasks.Compile.Bcc;
 using PubDoomer.Tasks.Compile.GdccAcc;
 using PubDoomer.Tasks.Compile.GdccCc;
+using PubDoomer.Tasks.FileSystem;
+using PubDoomer.Tasks.FileSystem.CopyFile;
+using PubDoomer.Tasks.FileSystem.CopyFolder;
+using PubDoomer.Tasks.FileSystem.CopyProject;
+using PubDoomer.Tasks.FileSystem.DeleteFile;
+using PubDoomer.Tasks.FileSystem.DeleteFolder;
+using PubDoomer.Tasks.FileSystem.MoveFile;
+using PubDoomer.Tasks.FileSystem.MoveFolder;
+using PubDoomer.Tasks.FileSystem.ZipFolder;
 
 namespace PubDoomer.Settings.Project;
 
@@ -33,24 +42,30 @@ public sealed class ProjectSavingService
         [ObservableBccCompileTask.TaskName] = new ObservableBccCompileTask(),
         [ObservableGdccAccCompileTask.TaskName] = new ObservableGdccAccCompileTask(),
         [ObservableGdccCcCompileTask.TaskName] = new ObservableGdccCcCompileTask(),
+        [ObservableCopyProjectTask.TaskName] = new ObservableCopyProjectTask(),
+        [ObservableCopyFolderTask.TaskName] = new ObservableCopyFolderTask(),
+        [ObservableMoveFolderTask.TaskName] = new ObservableMoveFolderTask(),
+        [ObservableCopyFileTask.TaskName] = new ObservableCopyFileTask(),
+        [ObservableMoveFileTask.TaskName] = new ObservableMoveFileTask(),
+        [ObservableZipFolderTask.TaskName] = new ObservableZipFolderTask(),
+        [ObservableDeleteFolderTask.TaskName] = new ObservableDeleteFolderTask(),
+        [ObservableDeleteFileTask.TaskName] = new ObservableDeleteFileTask(),
     };
 
     /// <summary>
     /// This is the version written to files.
     /// <br /> When reading, this version will not be used. Instead it will be conditionally handled.
     /// </summary>
-    private readonly ProjectSaveVersion _latestSaveVersion = new(0, 1);
+    private readonly ProjectSaveVersion _latestSaveVersion = new(0, 2);
 
-    public void SaveProject(ProjectContext projectContext, string filePath, Stream stream, ProjectReadingWritingType writerType)
+    public void SaveProject(ProjectContext projectContext, Stream stream)
     {
-        var projectPath = Path.GetDirectoryName(filePath)
-            ?? throw new ArgumentException($"Failed to determine directory from filepath: {filePath}");
-
-        IProjectWriter writer = writerType switch
+        // Get the writer based on the save type.
+        IProjectWriter writer = projectContext.SaveType switch
         {
-            ProjectReadingWritingType.Binary => new BinaryProjectWriter(projectPath, stream),
-            ProjectReadingWritingType.Text => new TextProjectWriter(projectPath, stream),
-            _ => throw new ArgumentException($"Writer not found for type {writerType}."),
+            ProjectSaveType.Binary => new BinaryProjectWriter(projectContext.FolderPath, stream),
+            ProjectSaveType.Text => new TextProjectWriter(projectContext.FolderPath, stream),
+            _ => throw new ArgumentException($"Writer not found for type {projectContext.SaveType}."),
         };
 
         try
@@ -58,7 +73,7 @@ public sealed class ProjectSavingService
             writer.WriteSignature();
             writer.WriteVersion(_latestSaveVersion);
             
-            writer.Write(projectContext.Name ?? string.Empty);
+            writer.Write(projectContext.Name);
             WriteConfiguration(projectContext, writer);
 
             // Start with tasks so that we can scaffold these on load first. This allows for references to be passed into the later profiles.
@@ -79,16 +94,13 @@ public sealed class ProjectSavingService
         }
     }
 
-    public ProjectContext LoadProject(string filePath, Stream fileStream, ProjectReadingWritingType readerType)
+    public ProjectContext LoadProject(string folderPath, Stream fileStream, ProjectSaveType saveType)
     {
-        var projectPath = Path.GetDirectoryName(filePath)
-            ?? throw new ArgumentException($"Failed to determine directory from filepath: {filePath}");
-
-        IProjectReader reader = readerType switch
+        IProjectReader reader = saveType switch
         {
-            ProjectReadingWritingType.Binary => new BinaryProjectReader(projectPath, fileStream),
-            ProjectReadingWritingType.Text => new TextProjectReader(projectPath, fileStream),
-            _ => throw new ArgumentException($"Reader not found for type {readerType}."),
+            ProjectSaveType.Binary => new BinaryProjectReader(folderPath, fileStream),
+            ProjectSaveType.Text => new TextProjectReader(folderPath, fileStream),
+            _ => throw new ArgumentException($"Reader not found for type {saveType}."),
         };
 
         try
@@ -123,7 +135,7 @@ public sealed class ProjectSavingService
         void WriteConfiguration(string name, string value)
         {
             writer.Write(name);
-            writer.WritePath(value);
+            writer.Write(value);
         }
 
         // Number of configuration items.
@@ -168,7 +180,7 @@ public sealed class ProjectSavingService
         foreach (var iwad in projectContext.IWads)
         {
             writer.Write(iwad.Name ?? string.Empty);
-            writer.WritePath(iwad.Path ?? string.Empty);
+            writer.Write(iwad.Path ?? string.Empty);
         }
     }
 
@@ -178,7 +190,7 @@ public sealed class ProjectSavingService
         foreach (var archive in projectContext.Archives)
         {
             writer.Write(archive.Name ?? string.Empty);
-            writer.WritePath(archive.Path ?? string.Empty);
+            writer.Write(archive.Path ?? string.Empty);
             writer.Write(archive.ExcludeFromTesting);
         }
     }
@@ -189,7 +201,7 @@ public sealed class ProjectSavingService
         foreach (var engine in projectContext.Engines)
         {
             writer.Write(engine.Name ?? string.Empty);
-            writer.WritePath(engine.Path ?? string.Empty);
+            writer.Write(engine.Path ?? string.Empty);
             writer.Write((int)engine.Type);
         }
     }
@@ -201,7 +213,7 @@ public sealed class ProjectSavingService
         {
             writer.Write(map.Name ?? string.Empty);
             writer.Write(map.MapLumpName ?? string.Empty);
-            writer.WritePath(map.Path ?? string.Empty);
+            writer.Write(map.Path ?? string.Empty);
         }
     }
 
@@ -209,7 +221,7 @@ public sealed class ProjectSavingService
     {
         (string key, string value) ReadConfiguration()
         {
-            return (reader.ReadString(), reader.ReadPath() ?? string.Empty);
+            return (reader.ReadString(), reader.ReadString() ?? string.Empty);
         }
 
         var configurationIterator = Enumerable.Range(0, reader.ReadInt32())
@@ -250,7 +262,7 @@ public sealed class ProjectSavingService
                     {
                         var task = new ProfileTask();
 
-                        // Determine task reference from existing tasks so we retan proper references.
+                        // Determine task reference from existing tasks so we retain proper references.
                         // TODO: Better support this part in the event a task can't be found.
                         var name = reader.ReadString();
                         task.Task = projectContext.Tasks.Single(x => x.Name == name);
@@ -272,7 +284,7 @@ public sealed class ProjectSavingService
             .Select(x => new IWadContext()
             {
                 Name = reader.ReadString(),
-                Path = reader.ReadPath(),
+                Path = reader.ReadString(),
             });
 
         projectContext.IWads = [.. iwadsIterator];
@@ -284,7 +296,7 @@ public sealed class ProjectSavingService
             .Select(x => new ArchiveContext()
             {
                 Name = reader.ReadString(),
-                Path = reader.ReadPath(),
+                Path = reader.ReadString(),
                 ExcludeFromTesting = reader.ReadBoolean(),
             });
 
@@ -297,7 +309,7 @@ public sealed class ProjectSavingService
             .Select(x => new EngineContext()
             {
                 Name = reader.ReadString(),
-                Path = reader.ReadPath(),
+                Path = reader.ReadString(),
                 Type = (EngineType)reader.ReadInt32(),
             });
 
@@ -311,7 +323,7 @@ public sealed class ProjectSavingService
             {
                 Name = reader.ReadString(),
                 MapLumpName = reader.ReadString(),
-                Path = reader.ReadPath(),
+                Path = reader.ReadString(),
             });
 
         projectContext.Maps = [.. mapIterator];

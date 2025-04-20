@@ -70,7 +70,7 @@ public partial class TasksPageViewModel : PageViewModel
     {
         if (AssertInDesignMode()) return;
 
-        var vm = new CreateOrEditTaskWindowViewModel(_windowProvider);
+        var vm = new CreateOrEditTaskWindowViewModel(_windowProvider, CurrentProjectProvider);
         var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
         if (!result) return;
 
@@ -88,7 +88,7 @@ public partial class TasksPageViewModel : PageViewModel
         if (AssertInDesignMode()) return;
         Debug.Assert(CurrentProjectProvider.ProjectContext != null);
 
-        var vm = new CreateOrEditTaskWindowViewModel(_windowProvider, task.DeepClone());
+        var vm = new CreateOrEditTaskWindowViewModel(_windowProvider, CurrentProjectProvider, task.DeepClone());
         var result = await _dialogueProvider.GetCreateOrEditDialogueWindowAsync(vm);
         if (!result) return;
 

@@ -6,6 +6,15 @@
         xmlns:bcc="clr-namespace:PubDoomer.Tasks.Compile.Bcc;assembly=PubDoomer.Tasks.Compile"
         xmlns:gdccAcc="clr-namespace:PubDoomer.Tasks.Compile.GdccAcc;assembly=PubDoomer.Tasks.Compile"
         xmlns:gdccCc="clr-namespace:PubDoomer.Tasks.Compile.GdccCc;assembly=PubDoomer.Tasks.Compile"
+        xmlns:tasks="clr-namespace:PubDoomer.Project.Tasks;assembly=PubDoomer.Tasks.Compile"
+        xmlns:copyProject="clr-namespace:PubDoomer.Tasks.FileSystem.CopyProject;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:copyFolder="clr-namespace:PubDoomer.Tasks.FileSystem.CopyFolder;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:moveFolder="clr-namespace:PubDoomer.Tasks.FileSystem.MoveFolder;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:copyFile="clr-namespace:PubDoomer.Tasks.FileSystem.CopyFile;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:moveFile="clr-namespace:PubDoomer.Tasks.FileSystem.MoveFile;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:zipFolder="clr-namespace:PubDoomer.Tasks.FileSystem.ZipFolder;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:deleteFolder="clr-namespace:PubDoomer.Tasks.FileSystem.DeleteFolder;assembly=PubDoomer.Tasks.FileSystem"
+        xmlns:deleteFile="clr-namespace:PubDoomer.Tasks.FileSystem.DeleteFile;assembly=PubDoomer.Tasks.FileSystem"
         mc:Ignorable="d"
         x:Class="PubDoomer.Views.Dialogues.CreateOrEditTaskWindow"
         Title="{Binding WindowTitle}"
@@ -62,15 +71,15 @@
                          HorizontalAlignment="Stretch"
                          Text="{Binding CurrentTask.Name}" />
             </Grid>
-
+            
             <!-- Dynamically added body depending on the task type. -->
             <ContentControl Content="{Binding CurrentTask}"
                             IsVisible="{Binding CurrentTask, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}">
 
                 <ContentControl.DataTemplates>
 
-                    <!-- DataTemplate for AccCompileTask -->
-                    <DataTemplate DataType="{x:Type acc:ObservableAccCompileTask}">
+                    <!-- General DataTemplate for Compile task bases -->
+                    <DataTemplate DataType="{x:Type tasks:CompileTaskBase}">
                         <StackPanel Spacing="10">
                             
                             <!-- Input path -->
@@ -126,277 +135,534 @@
                                     </Button>
                                 </Grid>
                             </Grid>
-                            
-                            <StackPanel Spacing="2">
-                                
-                                <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
-                                <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
-                                          IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
-                                
-                                <StackPanel>
-                                    <!-- If `true`, keep the 'acs.err' file if finished but with a compile error that generated it. -->
-                                    <CheckBox Content="Keep 'acs.err' if finished with a compile error."
-                                              IsChecked="{Binding KeepAccErrFile}" />
-                                
-                                    <!-- Additional clarification regarding the 'acs.err' file. -->
-                                    <TextBlock Classes="Tertiary"
-                                               FontSize="10"
-                                               Margin="25 0 0 0"
-                                               HorizontalAlignment="Stretch"
-                                               TextWrapping="Wrap"
-                                               Text="NOTE: Concurrent ACC compilation tasks always remove the 'acs.err' file by design. The tool will rename this file when running concurrent compilation to avoid this." />
-                                </StackPanel>
-                                
-                            </StackPanel>
-                        </StackPanel>
-                    </DataTemplate>
-                    
-                    <!-- DataTemplate for BccCompileTask -->
-                    <DataTemplate DataType="{x:Type bcc:ObservableBccCompileTask}">
-                        <StackPanel Spacing="10">
-                            
-                            <!-- Input path -->
-                            <Grid ColumnDefinitions="*, 2.5*">
+                        
+                            <!-- Additional content per compile task. -->
+                            <ContentControl Content="{Binding }">
 
-                                <TextBlock FontWeight="Bold"
-                                           Text="Input Path:"
-                                           VerticalAlignment="Center" />
-                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
-                                      HorizontalAlignment="Stretch">
-                                    <TextBox Text="{Binding InputFilePath}"
-                                             HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2"
-                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
-                                            Classes="Tertiary"
-                                            Theme="{DynamicResource SolidButton}"
-                                            HorizontalAlignment="Stretch"
-                                            Padding="5 0">
-                                        <Button.CommandParameter>
-                                            <TaskCreateDialogueFilePickerType CompilerType="bcc" FileType="input" />
-                                        </Button.CommandParameter>
-                                        
-                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                                  Classes="ExtraLarge"
-                                                  Data="{StaticResource SemiIconFolderOpen}" />
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                            
-                            <!-- Output path -->
-                            <Grid ColumnDefinitions="*, 2.5*">
+                                <ContentControl.DataTemplates>
 
-                                <TextBlock FontWeight="Bold"
-                                           Text="Output Path:"
-                                           VerticalAlignment="Center" />
-                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
-                                      HorizontalAlignment="Stretch">
-                                    <TextBox Text="{Binding OutputFilePath}"
-                                             HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2"
-                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
-                                            Classes="Tertiary"
-                                            Theme="{DynamicResource SolidButton}"
-                                            HorizontalAlignment="Stretch"
-                                            Padding="5 0">
-                                        <Button.CommandParameter>
-                                            <TaskCreateDialogueFilePickerType CompilerType="bcc" FileType="output" />
-                                        </Button.CommandParameter>
-                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                                  Classes="ExtraLarge"
-                                                  Data="{StaticResource SemiIconFolderOpen}" />
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                            
-                            
-                            <StackPanel Spacing="2">
-                                
-                                <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
-                                <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
-                                          IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
-                            </StackPanel>
-                        </StackPanel>
-                    </DataTemplate>
-                    
-                    <!-- DataTemplate for GdccAccCompileTask -->
-                    <DataTemplate DataType="{x:Type gdccAcc:ObservableGdccAccCompileTask}">
-                        <StackPanel Spacing="10">
-                            
-                            <!-- Input path -->
-                            <Grid ColumnDefinitions="*, 2.5*">
-
-                                <TextBlock FontWeight="Bold"
-                                           Text="Input Path:"
-                                           VerticalAlignment="Center" />
-                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
-                                      HorizontalAlignment="Stretch">
-                                    <TextBox Text="{Binding InputFilePath}"
-                                             HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2"
-                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
-                                            Classes="Tertiary"
-                                            Theme="{DynamicResource SolidButton}"
-                                            HorizontalAlignment="Stretch"
-                                            Padding="5 0">
-                                        <Button.CommandParameter>
-                                            <TaskCreateDialogueFilePickerType CompilerType="gdccacc" FileType="input" />
-                                        </Button.CommandParameter>
-                                        
-                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                                  Classes="ExtraLarge"
-                                                  Data="{StaticResource SemiIconFolderOpen}" />
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                            
-                            <!-- Output path -->
-                            <Grid ColumnDefinitions="*, 2.5*">
-
-                                <TextBlock FontWeight="Bold"
-                                           Text="Output Path:"
-                                           VerticalAlignment="Center" />
-                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
-                                      HorizontalAlignment="Stretch">
-                                    <TextBox Text="{Binding OutputFilePath}"
-                                             HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2"
-                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
-                                            Classes="Tertiary"
-                                            Theme="{DynamicResource SolidButton}"
-                                            HorizontalAlignment="Stretch"
-                                            Padding="5 0">
-                                        <Button.CommandParameter>
-                                            <TaskCreateDialogueFilePickerType CompilerType="gdccacc" FileType="output" />
-                                        </Button.CommandParameter>
-                                        
-                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                                  Classes="ExtraLarge"
-                                                  Data="{StaticResource SemiIconFolderOpen}" />
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                            
-                            
-                            <StackPanel Spacing="2">
-                                
-                                <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
-                                <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
-                                          IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
-                                
-                                <!-- If `true`, don't warn about forward references. -->
-                                <CheckBox Content="Don't warn about forward references."
-                                          IsChecked="{Binding DontWarnForwardReferences}" />
-
-                                
-                            </StackPanel>
-                        </StackPanel>
-                    </DataTemplate>
-                    
-                    <!-- DataTemplate for GdccCcCompileTask -->
-                    <DataTemplate DataType="{x:Type gdccCc:ObservableGdccCcCompileTask}">
-                        <StackPanel Spacing="10">
-                            
-                            <!-- Input path -->
-                            <Grid ColumnDefinitions="*, 2.5*">
-
-                                <TextBlock FontWeight="Bold"
-                                           Text="Input Path:"
-                                           VerticalAlignment="Center" />
-                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
-                                      HorizontalAlignment="Stretch">
-                                    <TextBox Text="{Binding InputFilePath}"
-                                             HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2"
-                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
-                                            Classes="Tertiary"
-                                            Theme="{DynamicResource SolidButton}"
-                                            HorizontalAlignment="Stretch"
-                                            Padding="5 0">
-                                        <Button.CommandParameter>
-                                            <TaskCreateDialogueFilePickerType CompilerType="gdccacc" FileType="input" />
-                                        </Button.CommandParameter>
-                                        
-                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                                  Classes="ExtraLarge"
-                                                  Data="{StaticResource SemiIconFolderOpen}" />
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                            
-                            <!-- Output path -->
-                            <Grid ColumnDefinitions="*, 2.5*">
-
-                                <TextBlock FontWeight="Bold"
-                                           Text="Output Path:"
-                                           VerticalAlignment="Center" />
-                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
-                                      HorizontalAlignment="Stretch">
-                                    <TextBox Text="{Binding OutputFilePath}"
-                                             HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2"
-                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
-                                            Classes="Tertiary"
-                                            Theme="{DynamicResource SolidButton}"
-                                            HorizontalAlignment="Stretch"
-                                            Padding="5 0">
-                                        <Button.CommandParameter>
-                                            <TaskCreateDialogueFilePickerType CompilerType="gdccacc" FileType="output" />
-                                        </Button.CommandParameter>
-                                        
-                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
-                                                  Classes="ExtraLarge"
-                                                  Data="{StaticResource SemiIconFolderOpen}" />
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                            
-                            
-                            <StackPanel Spacing="8">
-                                
-                                <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
-                                <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
-                                          IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
-                                
-                                <StackPanel Spacing="2">
+                                    <!-- DataTemplate for AccCompileTask -->
+                                    <DataTemplate DataType="{x:Type acc:ObservableAccCompileTask}">
+                                        <StackPanel Spacing="2">
+                                                
+                                            <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
+                                            <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
+                                                      IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
+                                            
+                                            <StackPanel>
+                                                <!-- If `true`, keep the 'acs.err' file if finished but with a compile error that generated it. -->
+                                                <CheckBox Content="Keep 'acs.err' if finished with a compile error."
+                                                          IsChecked="{Binding KeepAccErrFile}" />
+                                            
+                                                <!-- Additional clarification regarding the 'acs.err' file. -->
+                                                <TextBlock Classes="Tertiary"
+                                                           FontSize="10"
+                                                           Margin="25 0 0 0"
+                                                           HorizontalAlignment="Stretch"
+                                                           TextWrapping="Wrap"
+                                                           Text="NOTE: Concurrent ACC compilation tasks always remove the 'acs.err' file by design. The tool will rename this file when running concurrent compilation to avoid this." />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </DataTemplate>
                                     
-                                    <!-- If `true`, build and link libc. -->
-                                    <CheckBox Content="Build and link libc."
-                                              IsChecked="{Binding LinkLibc}" />
-                                
-                                    <!-- Additional clarification regarding building and linking libc. -->
-                                    <TextBlock Classes="Tertiary"
-                                               FontSize="10"
-                                               Margin="25 0 0 0"
-                                               HorizontalAlignment="Stretch"
-                                               TextWrapping="Wrap"
-                                               Text="If disabled this will mean the task skips building and linking libc, the C standard library. None of the C standard functions will be callable with this disabled." />
-                                </StackPanel>
+                                    <!-- DataTemplate for BccCompileTask -->
+                                    <DataTemplate DataType="{x:Type bcc:ObservableBccCompileTask}">
+                                        <StackPanel Spacing="2">
+                                            
+                                            
+                                            <!-- Directories to include -->
+                                            <Border Theme="{StaticResource CardBorder}">
+                                                <StackPanel Spacing="5">
+                                                    
+                                                    <!-- Title and Add Button -->
+                                                    <Grid ColumnDefinitions="*, Auto">
+                                                        <TextBlock FontWeight="Bold"
+                                                                   Text="Include Directories"
+                                                                   VerticalAlignment="Center" />
+                                                        
+                                                        <Button Grid.Column="1"
+                                                                Command="{Binding $parent[Window].((CreateOrEditTaskWindowViewModel)DataContext).AddIncludeDirectoryCommand}"
+                                                                HorizontalAlignment="Left"
+                                                                Classes="Success"
+                                                                Theme="{DynamicResource BorderlessButton}">
+                                                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                      Classes="ExtraLarge"
+                                                                      Data="{StaticResource SemiIconPlusCircle}" />
+                                                        </Button>
+                                                    </Grid>
+                                                    
+                                                    <!-- List of Include Directories -->
+                                                    <ItemsControl ItemsSource="{Binding IncludeDirectories}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Grid ColumnDefinitions="*, Auto" Margin="0 2 0 2">
+                                                                    
+                                                                    <!-- Directory TextBox -->
+                                                                    <TextBox Text="{Binding Value}"
+                                                                             HorizontalAlignment="Stretch"
+                                                                             Margin="0 0 5 0"/>
+                                                                    
+                                                                    <!-- Remove Button -->
+                                                                    <Button Grid.Column="1"
+                                                                            Command="{Binding $parent[Window].((CreateOrEditTaskWindowViewModel)DataContext).RemoveIncludeDirectoryCommand}"
+                                                                            CommandParameter="{Binding}"
+                                                                            Classes="Danger"
+                                                                            Theme="{DynamicResource BorderlessButton}"
+                                                                            Padding="5 0">
+                                                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                                  Classes="ExtraLarge"
+                                                                                  Data="{StaticResource SemiIconDelete}" />
+                                                                    </Button>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </Border>
 
-                                
-                                <StackPanel Spacing="2">
+                                            <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
+                                            <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
+                                                      IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
+                                            
+                                        </StackPanel>
+                                    </DataTemplate>
                                     
-                                    <!-- If `true`, build and link libGDCC. -->
-                                    <CheckBox Content="Build and link libGDCC."
-                                              IsChecked="{Binding LinkLibGdcc}" />
-                                
-                                    <!-- Additional clarification regarding building and linking libGDCC. -->
-                                    <TextBlock Classes="Tertiary"
-                                               FontSize="10"
-                                               Margin="25 0 0 0"
-                                               HorizontalAlignment="Stretch"
-                                               TextWrapping="Wrap"
-                                               Text="If disabled this will mean the task skips building and linking libGDCC, the memory allocator backend. libc won't fully work without a memory allocator, so this option is mainly for alternate allocators like safe-malloc or disabling both libraries." />
-                                </StackPanel>
-                                
-                                <!-- Additional clarification regarding the libc and libGDCC options. -->
-                                <TextBlock Classes="Warning"
+                                    <!-- DataTemplate for GdccAccCompileTask -->
+                                    <DataTemplate DataType="{x:Type gdccAcc:ObservableGdccAccCompileTask}">
+                                        <StackPanel Spacing="2">
+                                            
+                                            <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
+                                            <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
+                                                      IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
+                                            
+                                            <!-- If `true`, don't warn about forward references. -->
+                                            <CheckBox Content="Don't warn about forward references."
+                                                      IsChecked="{Binding DontWarnForwardReferences}" />
+
+                                        </StackPanel>
+                                    </DataTemplate>
+                                    
+                                    <!-- DataTemplate for GdccCcCompileTask -->
+                                    <DataTemplate DataType="{x:Type gdccCc:ObservableGdccCcCompileTask}">
+                                        
+                                        <StackPanel Spacing="2">
+                                            
+                                            <!-- If `true`, generate a 'stdout' and 'stderr' file of compilation. -->
+                                            <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
+                                                      IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
+                                            
+                                            <StackPanel Spacing="2">
+                                                
+                                                <!-- If `true`, build and link libc. -->
+                                                <CheckBox Content="Build and link libc."
+                                                          IsChecked="{Binding LinkLibc}" />
+                                            
+                                                <!-- Additional clarification regarding building and linking libc. -->
+                                                <TextBlock Classes="Tertiary"
+                                                           FontSize="10"
+                                                           Margin="25 0 0 0"
+                                                           HorizontalAlignment="Stretch"
+                                                           TextWrapping="Wrap"
+                                                           Text="If disabled this will mean the task skips building and linking libc, the C standard library. None of the C standard functions will be callable with this disabled." />
+                                            </StackPanel>
+
+                                            
+                                            <StackPanel Spacing="2">
+                                                
+                                                <!-- If `true`, build and link libGDCC. -->
+                                                <CheckBox Content="Build and link libGDCC."
+                                                          IsChecked="{Binding LinkLibGdcc}" />
+                                            
+                                                <!-- Additional clarification regarding building and linking libGDCC. -->
+                                                <TextBlock Classes="Tertiary"
+                                                           FontSize="10"
+                                                           Margin="25 0 0 0"
+                                                           HorizontalAlignment="Stretch"
+                                                           TextWrapping="Wrap"
+                                                           Text="If disabled this will mean the task skips building and linking libGDCC, the memory allocator backend. libc won't fully work without a memory allocator, so this option is mainly for alternate allocators like safe-malloc or disabling both libraries." />
+                                            </StackPanel>
+                                            
+                                            <!-- Additional clarification regarding the libc and libGDCC options. -->
+                                            <TextBlock Classes="Warning"
+                                                       FontSize="10"
+                                                       Margin="25 0 0 0"
+                                                       HorizontalAlignment="Stretch"
+                                                       TextWrapping="Wrap"
+                                                       Text="Do not disable linking and building libc or libGDCC unless you know what you're doing." />
+                                            
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ContentControl.DataTemplates>
+                            </ContentControl>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Copy Project task -->
+                    <DataTemplate DataType="{x:Type copyProject:ObservableCopyProjectTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <StackPanel>
+                                <!-- If `true`, keep the 'acs.err' file if finished but with a compile error that generated it. -->
+                                <CheckBox Content="Copy to a temp folder."
+                                          IsChecked="{Binding UseTempFolder}" />
+                                            
+                                <!-- Additional clarification regarding the copy to a temporary folder. -->
+                                <TextBlock Classes="Tertiary"
                                            FontSize="10"
                                            Margin="25 0 0 0"
                                            HorizontalAlignment="Stretch"
                                            TextWrapping="Wrap"
-                                           Text="Do not disable linking and building libc or libGDCC unless you know what you're doing." />
-                                
+                                           Text="NOTE: This will copy the project to a generated directory in the current user's temporary folder." />
                             </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Copy folder task -->
+                    <DataTemplate DataType="{x:Type copyFolder:ObservableCopyFolderTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Source folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Source folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding SourceFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- If `true`, recursively copy the sub-folders. -->
+                            <CheckBox Content="Recursively copy sub-folders"
+                                      IsChecked="{Binding Recursive}" />
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Move folder task -->
+                    <DataTemplate DataType="{x:Type moveFolder:ObservableMoveFolderTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Source folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Source folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding SourceFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- If `true`, recursively copy the sub-folders. -->
+                            <CheckBox Content="Recursively copy sub-folders"
+                                      IsChecked="{Binding Recursive}" />
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Copy file task -->
+                    <DataTemplate DataType="{x:Type copyFile:ObservableCopyFileTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Source folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Source file"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding SourceFile}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target file"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFile}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Move file task -->
+                    <DataTemplate DataType="{x:Type moveFile:ObservableMoveFileTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Source folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Source file"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding SourceFile}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Target file path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target file"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFile}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Zip folder task -->
+                    <DataTemplate DataType="{x:Type zipFolder:ObservableZipFolderTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Source folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Source folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding SourceFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target file"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFilePath}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Delete folder task -->
+                    <DataTemplate DataType="{x:Type deleteFolder:ObservableDeleteFolderTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Target folder path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target folder"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFolder}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
+                    
+                    <!-- DataTemplate for the Delete file task -->
+                    <DataTemplate DataType="{x:Type deleteFile:ObservableDeleteFileTask}">
+                        <StackPanel Spacing="10">
+                            
+                            <!-- Target file path -->
+                            <Grid ColumnDefinitions="*, 2.5*">
+
+                                <TextBlock FontWeight="Bold"
+                                           Text="Target file"
+                                           VerticalAlignment="Center" />
+                                <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                      HorizontalAlignment="Stretch">
+                                    <TextBox Text="{Binding TargetFilePath}"
+                                             HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2"
+                                            Command="{Binding #RootWindow.((CreateOrEditTaskWindowViewModel)DataContext).PickFileCommand}"
+                                            Classes="Tertiary"
+                                            Theme="{DynamicResource SolidButton}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="5 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconFolderOpen}" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
                         </StackPanel>
                     </DataTemplate>
                 </ContentControl.DataTemplates>

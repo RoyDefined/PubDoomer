@@ -30,7 +30,7 @@ public sealed class AcsVirtualMachineExecuteTaskHandler : ITaskHandler
 
     public async ValueTask<bool> HandleAsync()
     {
-        var path = _invokeContext.ContextBag.GetAcsVmExecutableFilePath();
+        var path = GetAcsVmExecutableFilePath();
         _logger.LogDebug("Invoking {TaskName}. Input path: {InputFilePath}. Location of ACSVM executable: {AccExecutablePath}", nameof(AcsVirtualMachineExecuteTaskHandler), _task.InputFilePath, path);
 
         // Create streams for stdout and stderr.
@@ -79,8 +79,40 @@ public sealed class AcsVirtualMachineExecuteTaskHandler : ITaskHandler
         _taskContext.TaskOutput.Add(TaskOutputResult.CreateWarning(line));
     }
 
+    private string GetAcsVmExecutableFilePath()
+    {
+        var path = _invokeContext.ContextBag.GetAcsVmExecutableFilePath();
+        
+        // Handle relative path
+        if (!Path.IsPathRooted(path))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative ACSVM executable path ({path}). No working directory was specified. Either the working directory must be specified or the ACSVM executable path must be absolute.");
+            }
+            
+            path = Path.Combine(_invokeContext.WorkingDirectory, path);
+        }
+        
+        return path;
+    }
+
     private IEnumerable<string> BuildArguments()
     {
-        yield return $"\"{_task.InputFilePath}\"";
+        var path = _task.InputFilePath;
+        ArgumentException.ThrowIfNullOrWhiteSpace(path, nameof(_task.InputFilePath));
+        
+        // Handle relative path
+        if (!Path.IsPathRooted(path))
+        {
+            if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+            {
+                throw new ArgumentException($"Failed to update relative input path for ACS file ({path}). No working directory was specified. Either the working directory must be specified or the path to the ACS file must be absolute.");
+            }
+            
+            path = Path.Combine(_invokeContext.WorkingDirectory, path);
+        }
+        
+        yield return $"\"{path}\"";
     }
 }

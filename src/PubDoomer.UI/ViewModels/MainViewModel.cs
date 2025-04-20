@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -92,7 +93,7 @@ public partial class MainViewModel : ViewModelBase
         };
 
         // Default to the home page.
-        OpenPage("Home");
+        _ = OpenPageAsync("Home");
 
         while (logEmitter.LogMessages.TryDequeue(out var logMessage)) _logs.Add(logMessage);
         logEmitter.LogEmitted += (_, e) => Logs.Add(e.LogMessage);
@@ -111,7 +112,7 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void OpenPage(string pageName)
+    private async Task OpenPageAsync(string pageName)
     {
         var normalizedPageName = pageName.ToLowerInvariant();
         if (_normalizedPageName == normalizedPageName) return;
@@ -119,6 +120,7 @@ public partial class MainViewModel : ViewModelBase
         _normalizedPageName = normalizedPageName;
 
         var page = _pageViewModelFactory.CreatePageViewModel(pageName);
+        await DisposeCurrentPageAsync();
 
         // Ignore no page in the designer.
         // This always happens until we explicitly implement the factory.
@@ -132,5 +134,24 @@ public partial class MainViewModel : ViewModelBase
         }
 
         CurrentPage = page;
+    }
+
+    private async ValueTask DisposeCurrentPageAsync()
+    {
+        if (CurrentPage == null) return;
+        
+        switch (CurrentPage)
+        {
+            // ReSharper disable SuspiciousTypeConversion.Global
+            case IAsyncDisposable asyncDisposable:
+                await asyncDisposable.DisposeAsync();
+                break;
+            case IDisposable disposable:
+                disposable.Dispose();
+                break;
+            // ReSharper restore SuspiciousTypeConversion.Global
+        }
+
+        CurrentPage = null;
     }
 }

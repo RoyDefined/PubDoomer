@@ -1,6 +1,6 @@
 ﻿namespace PubDoomer.Tasks.Compile.Utils;
 
-public class CompileTaskStatics
+public static class CompileTaskStatics
 {
     public const string AccCompilerExecutableFilePathKey = "AccCompilerExecutableFilePath";
     public const string BccCompilerExecutableFilePathKey = "BccCompilerExecutableFilePath";

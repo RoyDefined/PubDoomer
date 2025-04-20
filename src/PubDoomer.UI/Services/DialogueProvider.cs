@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using PubDoomer.ViewModels.Dialogues;
 using PubDoomer.Views.Dialogues;
 
@@ -29,12 +31,11 @@ public sealed class DialogueProvider(
         var viewModel = new InformationalWindowViewModel();
         configureWindow(viewModel);
 
-        var dialogue = new InformationalWindow
+        var dialog = new InformationalWindow()
         {
-            DataContext = viewModel
+            DataContext = viewModel,
         };
-
-        return await dialogue.ShowDialog<int>(window);
+        return await dialog.ShowDialog<int>(window);
     }
 
     public async Task<bool> PromptAsync(AlertType type, string windowTitle, string title, string subTitle,
@@ -54,6 +55,25 @@ public sealed class DialogueProvider(
         }) == 1;
     }
 
+    public async Task<bool> PromptAsync(AlertType type, 
+        Exception exception, string windowTitle, string title, string subTitle,
+        InformationalWindowButton falseButton, InformationalWindowButton trueButton)
+    {
+        return await ShowWindowAsync(vm =>
+        {
+            vm.WindowTitle = windowTitle;
+            vm.WindowType = type;
+            vm.Title = title;
+            vm.SubTitle = subTitle;
+            vm.Exception = exception;
+            vm.Buttons =
+            [
+                falseButton,
+                trueButton
+            ];
+        }) == 1;
+    }
+
     public async Task AlertAsync(AlertType type, string title, string? message = null)
     {
         _ = await ShowWindowAsync(vm =>
@@ -62,6 +82,22 @@ public sealed class DialogueProvider(
             vm.WindowType = type;
             vm.Title = title;
             vm.SubTitle = message;
+            vm.Buttons =
+            [
+                new InformationalWindowButton(type, "Continue")
+            ];
+        });
+    }
+
+    public async Task AlertAsync(AlertType type, Exception exception, string title, string? message = null)
+    {
+        _ = await ShowWindowAsync(vm =>
+        {
+            vm.WindowTitle = "Alert";
+            vm.WindowType = type;
+            vm.Title = title;
+            vm.SubTitle = message;
+            vm.Exception = exception;
             vm.Buttons =
             [
                 new InformationalWindowButton(type, "Continue")

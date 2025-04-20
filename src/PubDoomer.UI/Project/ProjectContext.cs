@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Text.Json.Serialization;
 using Avalonia.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -18,20 +19,31 @@ namespace PubDoomer.Project;
 /// </summary>
 public partial class ProjectContext : ObservableObject
 {
+    public const string ProjectBinaryFormatExtension = "pdbproj";
+    public const string ProjectTextFormatExtension = "pdtproj";
+    
     // Configuration for tasks and other features in a project.
     [ObservableProperty] private AvaloniaDictionary<string, string> _configurations = new();
 
     /// <summary>
-    /// Represents the file path that the project is saved under.
-    /// If <c>true</c>, the project was not saved yet.
+    /// Represents the folder path that the project is saved under.
     /// </summary>
-    [ObservableProperty]
-    private string? _filePath;
+    [ObservableProperty] private string _folderPath = null!;
+    
+    /// <summary>
+    /// Represents the file name that the project is saved under.
+    /// </summary>
+    [ObservableProperty] private string _fileName = null!;
+
+    /// <summary>
+    /// The last save type used to save the project. Defaults to binary.
+    /// </summary>
+    [ObservableProperty] private ProjectSaveType _saveType = ProjectSaveType.Binary;
 
     /// <summary>
     /// A name to give to this project to show in the UI.
     /// </summary>
-    [ObservableProperty] private string? _name;
+    [ObservableProperty] private string _name = null!;
     
     /// <summary>
     /// Configurable profiles that contain tasks to be invoked in order.
@@ -62,6 +74,19 @@ public partial class ProjectContext : ObservableObject
     /// Configurable locations of maps.
     /// </summary>
     [ObservableProperty] private ObservableCollection<MapContext> _maps = [];
+
+    public string GetFullPath()
+    {
+        // Determine the write type based on the last save type.
+        var extension = SaveType switch
+        {
+            ProjectSaveType.Binary => ProjectBinaryFormatExtension,
+            ProjectSaveType.Text => ProjectTextFormatExtension,
+            _ => throw new ArgumentException($"Project extension not found from type: {SaveType}"),
+        };
+        
+        return Path.Combine(FolderPath, FileName) + $".{extension}";
+    }
 
     public void AddTask(ProjectTaskBase task)
     {

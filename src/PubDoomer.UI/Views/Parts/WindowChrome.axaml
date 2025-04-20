@@ -59,14 +59,8 @@
                     <MenuItem Header="Open project" Command="{Binding LoadProjectCommand}" />
                     <MenuItem Header="Save project"
                               IsVisible="{Binding SessionSettings.EnableEditing}"
-                              Command="{Binding SaveProjectCommand}">
-                        <MenuItem.IsEnabled>
-                            <MultiBinding Converter="{StaticResource NullToBoolMultiValueConverter}">
-                                <Binding Path="CurrentProjectProvider.ProjectContext" />
-                                <Binding Path="CurrentProjectProvider.ProjectContext.FilePath" />
-                            </MultiBinding>
-                        </MenuItem.IsEnabled>
-                    </MenuItem>
+                              Command="{Binding SaveProjectCommand}"
+                              IsEnabled="{Binding CurrentProjectProvider.ProjectContext, Converter={StaticResource NullToBoolConverter}, ConverterParameter=false}" />
                     <MenuItem Header="Save project as..."
                               IsVisible="{Binding SessionSettings.EnableEditing}"
                               Command="{Binding SaveProjectAsCommand}"
@@ -75,15 +69,28 @@
 
                     <!-- Recent Projects -->
                     <MenuItem Header="Recent Projects"
-                              IsEnabled="{Binding RecentProjects.Count, Converter={StaticResource CountToBoolConverter}}">
-                        <MenuItem.ItemsSource>
-                            <Binding Path="RecentProjects" />
-                        </MenuItem.ItemsSource>
+                              IsEnabled="{Binding RecentProjects.Count, Converter={StaticResource CountToBoolConverter}}"
+                              ItemsSource="{Binding RecentProjects}"
+                              SelectedIndex="{Binding RecentProjectIndex}"
+                              Command="{Binding OpenRecentProjectCommand}">
                         <MenuItem.ItemTemplate>
                             <DataTemplate>
-                                <MenuItem Header="{Binding Name}"
-                                          Command="{Binding #Root.((MainWindowModel)DataContext).OpenRecentProjectCommand}"
-                                          CommandParameter="{Binding FilePath}" />
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <TextBlock Text="{Binding Name}"
+                                               VerticalAlignment="Center"/>
+                                    
+                                    <!-- Remove button to remove the recent project from the list. -->
+                                    <Button Grid.Column="1"
+                                            Command="{Binding $parent[Window].((MainWindowModel)DataContext).PromptRemoveRecentProjectCommand}"
+                                            CommandParameter="{Binding}"
+                                            Classes="Danger"
+                                            Theme="{DynamicResource BorderlessButton}"
+                                            Margin="10 0 0 0">
+                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                  Classes="ExtraLarge"
+                                                  Data="{StaticResource SemiIconDelete}" />
+                                    </Button>
+                                </Grid>
                             </DataTemplate>
                         </MenuItem.ItemTemplate>
                     </MenuItem>

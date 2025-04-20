@@ -8,6 +8,7 @@
         Title="{Binding WindowTitle}"
         CanResize="False"
         SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
         x:DataType="InformationalWindowViewModel">
     
     <Design.DataContext>
@@ -18,10 +19,13 @@
         <EnumMatchConverter x:Key="EnumMatchConverter" />
         <AlertTypeToIconConverter x:Key="AlertTypeToIconConverter" />
         <AlertTypeToColorConverter x:Key="AlertTypeToColorConverter" />
+        <NullToBoolConverter x:Key="NullToBoolConverter" />
     </Window.Resources>
 
     <Border Padding="20">
-        <Grid RowDefinitions="Auto, Auto">
+        <StackPanel Spacing="5">
+            
+            <!-- Top part -->
             <Grid ColumnDefinitions="Auto, *">
                 
                 <!-- Icon -->
@@ -35,20 +39,28 @@
 
                 <!-- Text -->
                 <StackPanel Grid.Column="1" HorizontalAlignment="Stretch">
-                    <TextBlock Classes="H5"
-                               TextWrapping="Wrap"
-                               Theme="{StaticResource TitleTextBlock}"
-                               Text="{Binding Title}" />
-                    <TextBlock Classes="Tertiary"
-                               TextWrapping="Wrap"
-                               Theme="{StaticResource TitleTextBlock}"
-                               Text="{Binding SubTitle}" />
+                    <TextBlock Text="{Binding Title}"
+                               FontWeight="Bold"
+                               TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding SubTitle}"
+                               Classes="Tertiary"
+                               TextWrapping="Wrap"/>
                 </StackPanel>
             </Grid>
+            
+            <!-- Exception details -->
+            <Expander Header="Exception details"
+                      IsVisible="{Binding Exception, Converter={StaticResource NullToBoolConverter}}">
+            
+                <StackPanel>
+                    <TextBlock Text="{Binding Exception}"
+                               TextWrapping="Wrap"
+                               Classes="Tertiary"/>
+                </StackPanel>
+            </Expander>
 
             <!-- Buttons display -->
-            <ItemsControl Grid.Row="1"
-                          Margin="0 10 0 0"
+            <ItemsControl Margin="0 10 0 0"
                           ItemsSource="{Binding Buttons}"
                           HorizontalAlignment="Right">
                 <ItemsControl.ItemsPanel>
@@ -79,6 +91,6 @@
                     </DataTemplate>
                 </ItemsControl.DataTemplates>
             </ItemsControl>
-        </Grid>
+        </StackPanel>
     </Border>
 </Window>

@@ -16,7 +16,7 @@ public sealed class ProjectTaskOrchestrator(
     /// Fully validates the current profile to ensure it can run properly.
     /// <br/> Validation is before the tasks are invoked. This means it does not guarantee the tasks run succesfully at runtime.
     /// </summary>
-    public TaskValidationCollection[] ValidateProfile(IInvokableProfile profile)
+    public TaskValidationCollection[] ValidateProfile(IInvokableProfile profile, TaskInvokeContext context)
     {
         var validationResultsNullable = profile.Tasks
             .Where(x => x.Task.ValidatorType != null)
@@ -24,7 +24,7 @@ public sealed class ProjectTaskOrchestrator(
             {
                 var validatableTask = GetTaskValidator(x.Task);
 
-                var results = validatableTask.Validate();
+                var results = validatableTask.Validate(context);
                 var collection = new TaskValidationCollection(x, results.ToArray());
 
                 // Return `null` if no validation results were found.
@@ -49,14 +49,30 @@ public sealed class ProjectTaskOrchestrator(
         var stopwatch = Stopwatch.GetTimestamp();
         profile.Status = ProfileRunContextStatus.Running;
 
+        // Clear current state of the tasks.
+        foreach (var task in profile.Tasks)
+        {
+            task.Status = ProfileRunTaskStatus.Pending;
+            task.TaskOutput.Clear();
+        }
+
         foreach (var runTask in profile.Tasks)
         {
             runTask.Status = ProfileRunTaskStatus.Running;
 
-            var success = await InvokeTaskAsync(runTask, context);
-            runTask.Status = success ? ProfileRunTaskStatus.Success : ProfileRunTaskStatus.Error;
-
-            logger.LogDebug("Task success: {Success}", success);
+            try
+            {
+                var success = await InvokeTaskAsync(runTask, context);
+                runTask.Status = success ? ProfileRunTaskStatus.Success : ProfileRunTaskStatus.Error;
+                logger.LogDebug("Task result: {Success}", success);
+            }
+            catch (Exception ex)
+            {
+                // Automatic error on an exception.
+                runTask.Status = ProfileRunTaskStatus.Error;
+                logger.LogWarning(ex, "Task threw an exception.");
+                runTask.TaskOutput.Add(TaskOutputResult.CreateError("Task threw an exception.", ex));
+            }
 
             // Check error behaviour.
             // If there was an error and the behaviour is to quit, then end the task invocation early.
@@ -66,11 +82,13 @@ public sealed class ProjectTaskOrchestrator(
                 {
                     profile.Status = ProfileRunContextStatus.Error;
                     logger.LogWarning("Task failure. Profile is configured to stop.");
+                    runTask.TaskOutput.Add(TaskOutputResult.CreateWarning("Task failure. Task is configured to stop."));
                     break;
                 }
                 else
                 {
                     logger.LogWarning("Task failed but is configured to not stop on errors. Execution will continue.");
+                    runTask.TaskOutput.Add(TaskOutputResult.CreateWarning("Task failure. Task is configured to continue on errors."));
                     continue;
                 }
             }
