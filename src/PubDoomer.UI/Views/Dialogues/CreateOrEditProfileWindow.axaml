@@ -17,8 +17,9 @@
     </Design.DataContext>
 
     <Window.Resources>
-        <!-- Converter to convert an enum value to its description -->
         <EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+        <ItemNotFirstInCollectionMultiValueConverter x:Key="ItemNotFirstInCollectionMultiValueConverter" />
+        <ItemNotLastInCollectionMultiValueConverter x:Key="ItemNotLastInCollectionMultiValueConverter" />
     </Window.Resources>
 
     <Border Padding="20">
@@ -69,22 +70,65 @@
                 <!-- Task list -->
                 <ItemsControl ItemsSource="{Binding CurrentProfileContext.Tasks}">
                     <ItemsControl.DataTemplates>
-
-                        <!-- General DataTemplate for ProfileTask -->
                         <DataTemplate DataType="{x:Type profile:ProfileTask}">
                             <Border Margin="0 0 0 5"
                                     Padding="5"
                                     Background="{DynamicResource SemiGrey0}">
-                                <Grid ColumnDefinitions="*, *, Auto" VerticalAlignment="Center">
+                                <Grid ColumnDefinitions="Auto, *, *, Auto" VerticalAlignment="Center">
 
+                                    <!-- Order buttons -->
+                                    <StackPanel Margin="0 0 5 0" Height="1"
+                                                VerticalAlignment="Top"
+                                                Spacing="2">
+                                        
+                                        <Button Command="{Binding $parent[Window].((CreateOrEditProfileWindowViewModel)DataContext).MoveTaskUpCommand}"
+                                                CommandParameter="{Binding .}"
+                                                MinHeight="16"
+                                                Height="16"
+                                                Classes="Tertiary"
+                                                Theme="{DynamicResource SolidButton}">
+                                            <Button.IsEnabled>
+                                                <MultiBinding Converter="{StaticResource ItemNotFirstInCollectionMultiValueConverter}">
+                                                    <Binding Path="." />
+                                                    <Binding Path="$parent[Window].((CreateOrEditProfileWindowViewModel)DataContext).CurrentProfileContext.Tasks" />
+                                                </MultiBinding>
+                                            </Button.IsEnabled>
+                                            <Viewbox>
+                                                <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                          Classes="ExtraLarge"
+                                                          Data="{StaticResource SemiIconCaretUp}" />
+                                            </Viewbox>
+                                        </Button>
+                                        
+                                        <Button Command="{Binding $parent[Window].((CreateOrEditProfileWindowViewModel)DataContext).MoveTaskDownCommand}"
+                                                CommandParameter="{Binding .}"
+                                                MinHeight="16"
+                                                Height="16"
+                                                Classes="Tertiary"
+                                                Theme="{DynamicResource SolidButton}">
+                                            <Button.IsEnabled>
+                                                <MultiBinding Converter="{StaticResource ItemNotLastInCollectionMultiValueConverter}">
+                                                    <Binding Path="." />
+                                                    <Binding Path="$parent[Window].((CreateOrEditProfileWindowViewModel)DataContext).CurrentProfileContext.Tasks" />
+                                                </MultiBinding>
+                                            </Button.IsEnabled>
+                                            <Viewbox>
+                                                <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                          Classes="ExtraLarge"
+                                                          Data="{StaticResource SemiIconCaretDown}" />
+                                            </Viewbox>
+                                        </Button>
+                                    </StackPanel>
+                                    
                                     <!-- Task Key -->
-                                    <TextBlock Text="{Binding Task.Name}"
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Task.Name}"
                                                FontWeight="Bold"
                                                VerticalAlignment="Center"
                                                Margin="0 0 10 0"/>
 
                                     <!-- Error Behavior Dropdown -->
-                                    <ComboBox Grid.Column="1"
+                                    <ComboBox Grid.Column="2"
                                               Margin="0 0 5 0"
                                               HorizontalAlignment="Stretch"
                                               ItemsSource="{x:Static profile:ProfileTaskErrorBehaviourCollectionProvider.Result}"
@@ -99,7 +143,7 @@
                                     </ComboBox>
 
                                     <!-- Delete Button -->
-                                    <Button Grid.Column="2"
+                                    <Button Grid.Column="3"
                                             Theme="{DynamicResource BorderlessButton}"
                                             Classes="Danger"
                                             Padding="5 0"

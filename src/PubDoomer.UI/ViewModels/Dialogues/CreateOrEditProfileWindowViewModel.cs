@@ -128,11 +128,45 @@ public partial class CreateOrEditProfileWindowViewModel : ViewModelBase
         };
 
         CurrentProfileContext.Tasks.Add(profileTask);
+        
+        // INPC on the collection so the buttons update.
+        CurrentProfileContext.RaiseTasksChanged();
     }
 
     [RelayCommand]
     private void RemoveTask(ProfileTask task)
     {
         CurrentProfileContext.Tasks.Remove(task);
+        
+        // INPC on the collection so the buttons update.
+        CurrentProfileContext.RaiseTasksChanged();
+    }
+    
+    [RelayCommand]
+    private void MoveTaskUp(ProfileTask task)
+    {
+        var tasks = CurrentProfileContext.Tasks;
+        var index = tasks.IndexOf(task);
+        if (index > 0)
+        {
+            tasks.Move(index, index - 1);
+        }
+        
+        // INPC on the collection so the buttons update.
+        CurrentProfileContext.RaiseTasksChanged();
+    }
+
+    [RelayCommand]
+    private void MoveTaskDown(ProfileTask task)
+    {
+        var tasks = CurrentProfileContext.Tasks;
+        var index = tasks.IndexOf(task);
+        if (index < tasks.Count - 1 && index >= 0)
+        {
+            tasks.Move(index, index + 1);
+        }
+        
+        // INPC on the collection so the buttons update.
+        CurrentProfileContext.RaiseTasksChanged();
     }
 }
