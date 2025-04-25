@@ -259,6 +259,28 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private void AddMacro()
+    {
+        if (CurrentTask is not ObservableBccCompileTask task)
+        {
+            return;
+        }
+        
+        task.Macros.Add(new());
+    }
+    
+    [RelayCommand]
+    private void RemoveMacro(ObservableString value)
+    {
+        if (CurrentTask is not ObservableBccCompileTask task)
+        {
+            return;
+        }
+        
+        task.Macros.Remove(value);
+    }
+
+    [RelayCommand]
     private async Task PickFileAsync(TaskCreateDialogueFilePickerType taskType)
     {
         if (AssertInDesignMode()) return;
