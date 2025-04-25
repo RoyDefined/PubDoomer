@@ -274,6 +274,10 @@
                                             <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
                                                       IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
                                             
+                                            <!-- If `true`, strip asserts from the compiled object file. -->
+                                            <CheckBox Content="Strip out 'assert' calls from the compiled output."
+                                                      IsChecked="{Binding StripAsserts}" />
+                                            
                                         </StackPanel>
                                     </DataTemplate>
                                     

@@ -19,12 +19,12 @@ public partial class ObservableBccCompileTask : CompileTaskBase
 
     [ObservableProperty] private ObservableCollection<ObservableString> _includeDirectories = new();
     [ObservableProperty] private ObservableCollection<ObservableString> _macros = new();
+    [ObservableProperty] private bool _stripAsserts = false;
     
     // TODO: Implement additional parameters
     
     // [ObservableProperty] private bool _oneColumn;
     // [ObservableProperty] private int? _tabSize;
-    // [ObservableProperty] private bool _stripAsserts;
     // [ObservableProperty] private bool _preprocessOnly;
     // [ObservableProperty] private Collection<string> _linkLibraries;
     
@@ -38,11 +38,13 @@ public partial class ObservableBccCompileTask : CompileTaskBase
     }
 
     public ObservableBccCompileTask(string? name, string? inputFilePath, string? outputFilePath,
-        ObservableCollection<ObservableString>? includeDirectories = null, ObservableCollection<ObservableString>? macros = null)
+        ObservableCollection<ObservableString>? includeDirectories = null, ObservableCollection<ObservableString>? macros = null,
+        bool stripAsserts = false)
         : base(name, inputFilePath, outputFilePath)
     {
         IncludeDirectories = includeDirectories ?? new();
         Macros = macros ?? new();
+        StripAsserts = stripAsserts;
     }
 
     public override string DisplayName => TaskName;
@@ -67,6 +69,7 @@ public partial class ObservableBccCompileTask : CompileTaskBase
         GenerateStdOutAndStdErrFiles = bccCompileTask.GenerateStdOutAndStdErrFiles;
         IncludeDirectories = bccCompileTask.IncludeDirectories;
         Macros = bccCompileTask.Macros;
+        StripAsserts = bccCompileTask.StripAsserts;
     }
 
     public override void Serialize(IProjectWriter writer)
@@ -84,6 +87,7 @@ public partial class ObservableBccCompileTask : CompileTaskBase
             writer.Write(macro.Value);
         }
         
+        writer.Write(StripAsserts);
         base.Serialize(writer);
     }
 
@@ -109,6 +113,7 @@ public partial class ObservableBccCompileTask : CompileTaskBase
             Macros = [.. macrosIterator];
         }
         
+        StripAsserts = reader.ReadBoolean();
         base.Deserialize(reader, version);
     }
 }

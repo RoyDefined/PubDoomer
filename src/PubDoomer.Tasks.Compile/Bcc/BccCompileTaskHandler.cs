@@ -155,6 +155,11 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
             
             outputPath = Path.Combine(_invokeContext.WorkingDirectory, outputPath);
         }
+
+        if (_task.StripAsserts)
+        {
+            yield return "-strip-asserts";
+        }
         
         yield return $"\"{inputPath}\"";
         yield return $"\"{outputPath}\"";
