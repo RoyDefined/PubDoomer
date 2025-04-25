@@ -103,7 +103,7 @@ public partial class ObservableBccCompileTask : CompileTaskBase
             IncludeDirectories = [.. includedDirectoriesIterator];
         }
         
-        // Included macros was added in v0.3
+        // Included macros and assertion stripping were added in v0.3
         if (version >= new ProjectSaveVersion(0, 3))
         {
             var macrosIterator = Enumerable.Range(0, reader.ReadInt32())
@@ -111,9 +111,10 @@ public partial class ObservableBccCompileTask : CompileTaskBase
                 .Select(x => new ObservableString() { Value = x });
 
             Macros = [.. macrosIterator];
+            
+            StripAsserts = reader.ReadBoolean();
         }
         
-        StripAsserts = reader.ReadBoolean();
         base.Deserialize(reader, version);
     }
 }
