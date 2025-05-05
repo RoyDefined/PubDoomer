@@ -160,6 +160,13 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
             case ObservableAccCompileTask acc:
                 acc.InputFilePath = MakeRelative(acc.InputFilePath);
                 acc.OutputFilePath = MakeRelative(acc.OutputFilePath);
+
+                foreach (var include in acc.IncludeDirectories)
+                {
+                    include.Value = MakeRelative(include.Value);
+                }
+                
+                acc.DebugFilePath = MakeRelative(acc.DebugFilePath);
                 break;
 
             case ObservableBccCompileTask bcc:
@@ -239,23 +246,21 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
     [RelayCommand]
     private void AddIncludeDirectory()
     {
-        if (CurrentTask is not ObservableBccCompileTask task)
-        {
-            return;
-        }
+        if (CurrentTask is ObservableAccCompileTask accTask)
+            accTask.IncludeDirectories.Add(new());
         
-        task.IncludeDirectories.Add(new());
+        if (CurrentTask is ObservableBccCompileTask bccTask)
+            bccTask.IncludeDirectories.Add(new());
     }
     
     [RelayCommand]
     private void RemoveIncludeDirectory(ObservableString value)
     {
-        if (CurrentTask is not ObservableBccCompileTask task)
-        {
-            return;
-        }
+        if (CurrentTask is ObservableAccCompileTask accTask)
+            accTask.IncludeDirectories.Remove(value);
         
-        task.IncludeDirectories.Remove(value);
+        if (CurrentTask is ObservableBccCompileTask bccTask)
+            bccTask.IncludeDirectories.Remove(value);
     }
 
     [RelayCommand]

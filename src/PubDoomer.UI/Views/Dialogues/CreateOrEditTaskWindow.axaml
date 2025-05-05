@@ -29,8 +29,8 @@
     </Design.DataContext>
 
     <Window.Resources>
-        <!-- Converter to convert a null value to a boolean -->
         <NullToBoolConverter x:Key="NullToBoolConverter" />
+        <EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
     </Window.Resources>
 
     <Border Padding="20">
@@ -162,6 +162,113 @@
                                                            TextWrapping="Wrap"
                                                            Text="NOTE: Concurrent ACC compilation tasks always remove the 'acs.err' file by design. The tool will rename this file when running concurrent compilation to avoid this." />
                                             </StackPanel>
+                                            
+                                            <!-- Directories to include -->
+                                            <Border Theme="{StaticResource CardBorder}">
+                                                <StackPanel Spacing="5">
+                                                    
+                                                    <!-- Title and Add Button -->
+                                                    <Grid ColumnDefinitions="*, Auto">
+                                                        <TextBlock FontWeight="Bold"
+                                                                   Text="Include Directories"
+                                                                   VerticalAlignment="Center" />
+                                                        
+                                                        <Button Grid.Column="1"
+                                                                Command="{Binding $parent[Window].((CreateOrEditTaskWindowViewModel)DataContext).AddIncludeDirectoryCommand}"
+                                                                HorizontalAlignment="Left"
+                                                                Classes="Success"
+                                                                Theme="{DynamicResource BorderlessButton}">
+                                                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                      Classes="ExtraLarge"
+                                                                      Data="{StaticResource SemiIconPlusCircle}" />
+                                                        </Button>
+                                                    </Grid>
+                                                    
+                                                    <!-- List of Include Directories -->
+                                                    <ItemsControl ItemsSource="{Binding IncludeDirectories}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Grid ColumnDefinitions="*, Auto" Margin="0 2 0 2">
+                                                                    
+                                                                    <!-- Directory TextBox -->
+                                                                    <TextBox Text="{Binding Value}"
+                                                                             HorizontalAlignment="Stretch"
+                                                                             Margin="0 0 5 0"/>
+                                                                    
+                                                                    <!-- Remove Button -->
+                                                                    <Button Grid.Column="1"
+                                                                            Command="{Binding $parent[Window].((CreateOrEditTaskWindowViewModel)DataContext).RemoveIncludeDirectoryCommand}"
+                                                                            CommandParameter="{Binding}"
+                                                                            Classes="Danger"
+                                                                            Theme="{DynamicResource BorderlessButton}"
+                                                                            Padding="5 0">
+                                                                        <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                                  Classes="ExtraLarge"
+                                                                                  Data="{StaticResource SemiIconDelete}" />
+                                                                    </Button>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </Border>
+                                            
+                                            <!-- Debug file path -->
+                                            <StackPanel>
+                                                <Grid ColumnDefinitions="*, 2*">
+
+                                                    <TextBlock FontWeight="Bold"
+                                                               Text="Debug File Path:"
+                                                               VerticalAlignment="Center" />
+                                                    <Grid Grid.Column="1" ColumnDefinitions="*, 5, Auto"
+                                                          HorizontalAlignment="Stretch">
+                                                        <TextBox Text="{Binding DebugFilePath}"
+                                                                 HorizontalAlignment="Stretch" />
+                                                        <Button Grid.Column="2"
+                                                                Classes="Tertiary"
+                                                                Theme="{DynamicResource SolidButton}"
+                                                                HorizontalAlignment="Stretch"
+                                                                Padding="5 0">
+                                                            <Button.CommandParameter>
+                                                                <TaskCreateDialogueFilePickerType CompilerType="acc" FileType="output" />
+                                                            </Button.CommandParameter>
+                                            
+                                                            <PathIcon Theme="{StaticResource InnerPathIcon}"
+                                                                      Classes="ExtraLarge"
+                                                                      Data="{StaticResource SemiIconFolderOpen}" />
+                                                        </Button>
+                                                    </Grid>
+                                                </Grid>
+                                                    
+                                                <!-- Additional clarification regarding the file generation. -->
+                                                <TextBlock Classes="Tertiary"
+                                                           FontSize="10"
+                                                           Margin="120 0 0 0"
+                                                           HorizontalAlignment="Stretch"
+                                                           TextWrapping="Wrap"
+                                                           Text="Leave empty to not generate file." />
+                                            </StackPanel>
+                                            
+                                            <Grid ColumnDefinitions="*, 2*">
+
+                                                <TextBlock FontWeight="Bold"
+                                                           Text="Compatibility:"
+                                                           VerticalAlignment="Center" />
+                                                
+                                                <ComboBox Grid.Column="1"
+                                                          Margin="0 0 5 0"
+                                                          HorizontalAlignment="Stretch"
+                                                          ItemsSource="{x:Static acc:AccBytecodeCompatibilityLevelCollectionProvider.Result}"
+                                                          SelectedItem="{Binding BytecodeCompatibilityLevel, Mode=TwoWay}">
+
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock
+                                                                Text="{Binding Converter={StaticResource EnumDescriptionConverter}}" />
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                            </Grid>
                                         </StackPanel>
                                     </DataTemplate>
                                     
