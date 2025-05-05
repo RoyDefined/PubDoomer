@@ -84,7 +84,7 @@ public partial class ObservableAccCompileTask : CompileTaskBase
         base.Deserialize(reader, version);
         KeepAccErrFile = reader.ReadBoolean();
         
-        // Include directories and the debug file path were added in v0.4
+        // These were added in v0.4
         if (version >= new ProjectSaveVersion(0, 4))
         {
             var includedDirectoriesIterator = Enumerable.Range(0, reader.ReadInt32())

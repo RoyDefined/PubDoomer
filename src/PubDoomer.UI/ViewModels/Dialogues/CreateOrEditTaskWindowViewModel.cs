@@ -182,6 +182,11 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
             case ObservableGdccAccCompileTask gdccAcc:
                 gdccAcc.InputFilePath = MakeRelative(gdccAcc.InputFilePath);
                 gdccAcc.OutputFilePath = MakeRelative(gdccAcc.OutputFilePath);
+
+                foreach (var include in gdccAcc.IncludeDirectories)
+                {
+                    include.Value = MakeRelative(include.Value);
+                }
                 break;
 
             case ObservableGdccCcCompileTask gdccCc:
@@ -251,6 +256,9 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         
         if (CurrentTask is ObservableBccCompileTask bccTask)
             bccTask.IncludeDirectories.Add(new());
+        
+        if (CurrentTask is ObservableGdccAccCompileTask gdccAccTask)
+            gdccAccTask.IncludeDirectories.Add(new());
     }
     
     [RelayCommand]
@@ -261,28 +269,29 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         
         if (CurrentTask is ObservableBccCompileTask bccTask)
             bccTask.IncludeDirectories.Remove(value);
+        
+        if (CurrentTask is ObservableGdccAccCompileTask gdccAccTask)
+            gdccAccTask.IncludeDirectories.Remove(value);
     }
 
     [RelayCommand]
     private void AddMacro()
     {
-        if (CurrentTask is not ObservableBccCompileTask task)
-        {
-            return;
-        }
+        if (CurrentTask is ObservableBccCompileTask bccTask)
+            bccTask.Macros.Add(new());
         
-        task.Macros.Add(new());
+        if (CurrentTask is ObservableGdccAccCompileTask gdccAccTask)
+            gdccAccTask.Macros.Add(new());
     }
     
     [RelayCommand]
     private void RemoveMacro(ObservableString value)
     {
-        if (CurrentTask is not ObservableBccCompileTask task)
-        {
-            return;
-        }
+        if (CurrentTask is ObservableBccCompileTask bccTask)
+            bccTask.Macros.Remove(value);
         
-        task.Macros.Remove(value);
+        if (CurrentTask is ObservableGdccAccCompileTask gdccAccTask)
+            gdccAccTask.Macros.Remove(value);
     }
 
     [RelayCommand]
