@@ -259,6 +259,9 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         
         if (CurrentTask is ObservableGdccAccCompileTask gdccAccTask)
             gdccAccTask.IncludeDirectories.Add(new());
+        
+        if (CurrentTask is ObservableGdccCcCompileTask gdccCcTask)
+            gdccCcTask.IncludeDirectories.Add(new());
     }
     
     [RelayCommand]
@@ -272,6 +275,9 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         
         if (CurrentTask is ObservableGdccAccCompileTask gdccAccTask)
             gdccAccTask.IncludeDirectories.Remove(value);
+        
+        if (CurrentTask is ObservableGdccCcCompileTask gdccCcTask)
+            gdccCcTask.IncludeDirectories.Remove(value);
     }
 
     [RelayCommand]
@@ -282,6 +288,9 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         
         if (CurrentTask is ObservableGdccAccCompileTask gdccAccTask)
             gdccAccTask.Macros.Add(new());
+        
+        if (CurrentTask is ObservableGdccCcCompileTask gdccCcTask)
+            gdccCcTask.Macros.Add(new());
     }
     
     [RelayCommand]
@@ -292,6 +301,9 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
         
         if (CurrentTask is ObservableGdccAccCompileTask gdccAccTask)
             gdccAccTask.Macros.Remove(value);
+        
+        if (CurrentTask is ObservableGdccCcCompileTask gdccCcTask)
+            gdccCcTask.Macros.Remove(value);
     }
 
     [RelayCommand]
