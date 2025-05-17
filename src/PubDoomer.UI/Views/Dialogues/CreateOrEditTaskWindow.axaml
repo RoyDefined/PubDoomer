@@ -511,6 +511,10 @@
                                             <CheckBox Content="Generate a 'stdout' and 'stderr' file of compilation."
                                                       IsChecked="{Binding GenerateStdOutAndStdErrFiles}" />
                                             
+                                            <!-- If `true`, don't warn about forward references. -->
+                                            <CheckBox Content="Don't warn about forward references."
+                                                      IsChecked="{Binding DontWarnForwardReferences}" />
+                                            
                                             <StackPanel Spacing="2">
                                                 
                                                 <!-- If `true`, build and link libc. -->

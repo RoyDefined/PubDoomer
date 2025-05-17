@@ -28,7 +28,10 @@ public partial class ObservableGdccCcCompileTask : CompileTaskBase
     /// </summary>
     [ObservableProperty] private bool _linkLibGdcc = true;
 
+    // TODO: Make the target engine configurable.
     [ObservableProperty] private TargetEngineType _targetEngine;
+    
+    [ObservableProperty] private bool _dontWarnForwardReferences;
     [ObservableProperty] private ObservableCollection<ObservableString> _includeDirectories = new();
     [ObservableProperty] private ObservableCollection<ObservableString> _macros = new();
 
@@ -40,13 +43,14 @@ public partial class ObservableGdccCcCompileTask : CompileTaskBase
 
     public ObservableGdccCcCompileTask(
         string? name, string? inputFilePath, string? outputFilePath, bool linkLibc = true, bool linkLibGdcc = true,
-        TargetEngineType targetEngine = TargetEngineType.None,
+        TargetEngineType targetEngine = TargetEngineType.None, bool dontWarnForwardReferences = false,
         ObservableCollection<ObservableString>? includeDirectories = null, ObservableCollection<ObservableString>? macros = null)
         : base(name, inputFilePath, outputFilePath)
     {
         LinkLibc = linkLibc;
         LinkLibGdcc = linkLibGdcc;
         TargetEngine = targetEngine;
+        DontWarnForwardReferences = dontWarnForwardReferences;
         IncludeDirectories = includeDirectories ?? new();
         Macros = macros ?? new();
     }
@@ -59,7 +63,7 @@ public partial class ObservableGdccCcCompileTask : CompileTaskBase
         return new ObservableGdccCcCompileTask(
             Name, InputFilePath, OutputFilePath,
             LinkLibc, LinkLibGdcc, TargetEngine,
-            IncludeDirectories, Macros);
+            DontWarnForwardReferences, IncludeDirectories, Macros);
     }
 
     public override void Merge(ProjectTaskBase task)
@@ -77,6 +81,7 @@ public partial class ObservableGdccCcCompileTask : CompileTaskBase
         LinkLibc = gdccCcCompileTask.LinkLibc;
         LinkLibGdcc = gdccCcCompileTask.LinkLibGdcc;
         TargetEngine = gdccCcCompileTask.TargetEngine;
+        DontWarnForwardReferences = gdccCcCompileTask.DontWarnForwardReferences;
         IncludeDirectories = gdccCcCompileTask.IncludeDirectories;
         Macros = gdccCcCompileTask.Macros;
     }
@@ -86,10 +91,11 @@ public partial class ObservableGdccCcCompileTask : CompileTaskBase
         // TODO: Target engine should come after the linking
         base.Serialize(writer);
         writer.WriteEnum<TargetEngineType>(TargetEngine);
+        writer.Write(DontWarnForwardReferences);
         writer.Write(LinkLibc);
         writer.Write(LinkLibGdcc);
         
-        // TODO: Counts need to also check agains null or empty.
+        // TODO: Counts need to also check against null or empty.
         writer.Write(IncludeDirectories.Count);
         foreach (var directory in IncludeDirectories.Where(x => !string.IsNullOrWhiteSpace(x.Value)))
         {
@@ -107,6 +113,13 @@ public partial class ObservableGdccCcCompileTask : CompileTaskBase
     {
         base.Deserialize(reader, version);
         TargetEngine = reader.ReadEnum<TargetEngineType>();
+        
+        // Dont warn of forward references were added in v0.5
+        if (version >= new ProjectSaveVersion(0, 5))
+        {
+            DontWarnForwardReferences = reader.ReadBoolean();
+        }
+
         LinkLibc = reader.ReadBoolean();
         LinkLibGdcc = reader.ReadBoolean();
         

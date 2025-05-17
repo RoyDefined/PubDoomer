@@ -232,6 +232,11 @@ public sealed partial class GdccCcCompileTaskHandler : ITaskHandler
         if (_task.LinkLibGdcc) yield return "libGDCC";
         
         yield return $"--target-engine {_task.TargetEngine}";
+
+        if (_task.DontWarnForwardReferences)
+        {
+            yield return "--no-warn-forward-reference";
+        }
     }
 
     private IEnumerable<string> BuildCompileArgs()

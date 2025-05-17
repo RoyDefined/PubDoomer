@@ -56,7 +56,7 @@ public sealed class ProjectSavingService
     /// This is the version written to files.
     /// <br /> When reading, this version will not be used. Instead it will be conditionally handled.
     /// </summary>
-    private readonly ProjectSaveVersion _latestSaveVersion = new(0, 4);
+    private readonly ProjectSaveVersion _latestSaveVersion = new(0, 5);
 
     public void SaveProject(ProjectContext projectContext, Stream stream)
     {
