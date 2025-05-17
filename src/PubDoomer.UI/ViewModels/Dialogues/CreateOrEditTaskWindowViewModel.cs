@@ -160,6 +160,13 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
             case ObservableAccCompileTask acc:
                 acc.InputFilePath = MakeRelative(acc.InputFilePath);
                 acc.OutputFilePath = MakeRelative(acc.OutputFilePath);
+
+                foreach (var include in acc.IncludeDirectories)
+                {
+                    include.Value = MakeRelative(include.Value);
+                }
+                
+                acc.DebugFilePath = MakeRelative(acc.DebugFilePath);
                 break;
 
             case ObservableBccCompileTask bcc:
@@ -175,6 +182,11 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
             case ObservableGdccAccCompileTask gdccAcc:
                 gdccAcc.InputFilePath = MakeRelative(gdccAcc.InputFilePath);
                 gdccAcc.OutputFilePath = MakeRelative(gdccAcc.OutputFilePath);
+
+                foreach (var include in gdccAcc.IncludeDirectories)
+                {
+                    include.Value = MakeRelative(include.Value);
+                }
                 break;
 
             case ObservableGdccCcCompileTask gdccCc:
@@ -239,23 +251,59 @@ public partial class CreateOrEditTaskWindowViewModel : ViewModelBase
     [RelayCommand]
     private void AddIncludeDirectory()
     {
-        if (CurrentTask is not ObservableBccCompileTask task)
-        {
-            return;
-        }
+        if (CurrentTask is ObservableAccCompileTask accTask)
+            accTask.IncludeDirectories.Add(new());
         
-        task.IncludeDirectories.Add(new());
+        if (CurrentTask is ObservableBccCompileTask bccTask)
+            bccTask.IncludeDirectories.Add(new());
+        
+        if (CurrentTask is ObservableGdccAccCompileTask gdccAccTask)
+            gdccAccTask.IncludeDirectories.Add(new());
+        
+        if (CurrentTask is ObservableGdccCcCompileTask gdccCcTask)
+            gdccCcTask.IncludeDirectories.Add(new());
     }
     
     [RelayCommand]
     private void RemoveIncludeDirectory(ObservableString value)
     {
-        if (CurrentTask is not ObservableBccCompileTask task)
-        {
-            return;
-        }
+        if (CurrentTask is ObservableAccCompileTask accTask)
+            accTask.IncludeDirectories.Remove(value);
         
-        task.IncludeDirectories.Remove(value);
+        if (CurrentTask is ObservableBccCompileTask bccTask)
+            bccTask.IncludeDirectories.Remove(value);
+        
+        if (CurrentTask is ObservableGdccAccCompileTask gdccAccTask)
+            gdccAccTask.IncludeDirectories.Remove(value);
+        
+        if (CurrentTask is ObservableGdccCcCompileTask gdccCcTask)
+            gdccCcTask.IncludeDirectories.Remove(value);
+    }
+
+    [RelayCommand]
+    private void AddMacro()
+    {
+        if (CurrentTask is ObservableBccCompileTask bccTask)
+            bccTask.Macros.Add(new());
+        
+        if (CurrentTask is ObservableGdccAccCompileTask gdccAccTask)
+            gdccAccTask.Macros.Add(new());
+        
+        if (CurrentTask is ObservableGdccCcCompileTask gdccCcTask)
+            gdccCcTask.Macros.Add(new());
+    }
+    
+    [RelayCommand]
+    private void RemoveMacro(ObservableString value)
+    {
+        if (CurrentTask is ObservableBccCompileTask bccTask)
+            bccTask.Macros.Remove(value);
+        
+        if (CurrentTask is ObservableGdccAccCompileTask gdccAccTask)
+            gdccAccTask.Macros.Remove(value);
+        
+        if (CurrentTask is ObservableGdccCcCompileTask gdccCcTask)
+            gdccCcTask.Macros.Remove(value);
     }
 
     [RelayCommand]

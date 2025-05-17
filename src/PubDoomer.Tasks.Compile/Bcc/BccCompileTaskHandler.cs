@@ -123,6 +123,11 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
             yield return $"-i \"{directoryPath}\"";
         }
         
+        foreach (var macro in _task.Macros)
+        {
+            yield return $"-D \"{macro.Value}\"";
+        }
+        
         var inputPath = _task.InputFilePath;
         ArgumentException.ThrowIfNullOrWhiteSpace(inputPath, nameof(_task.InputFilePath));
         
@@ -149,6 +154,11 @@ public sealed partial class BccCompileTaskHandler : ITaskHandler
             }
             
             outputPath = Path.Combine(_invokeContext.WorkingDirectory, outputPath);
+        }
+
+        if (_task.StripAsserts)
+        {
+            yield return "-strip-asserts";
         }
         
         yield return $"\"{inputPath}\"";

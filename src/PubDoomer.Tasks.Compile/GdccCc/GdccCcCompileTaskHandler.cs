@@ -232,10 +232,39 @@ public sealed partial class GdccCcCompileTaskHandler : ITaskHandler
         if (_task.LinkLibGdcc) yield return "libGDCC";
         
         yield return $"--target-engine {_task.TargetEngine}";
+
+        if (_task.DontWarnForwardReferences)
+        {
+            yield return "--no-warn-forward-reference";
+        }
     }
 
     private IEnumerable<string> BuildCompileArgs()
     {
+        foreach (var directory in _task.IncludeDirectories)
+        {
+            var directoryPath = directory.Value;
+            ArgumentException.ThrowIfNullOrWhiteSpace(directoryPath, $"{nameof(_task.IncludeDirectories)}.{nameof(_task.InputFilePath)}");
+        
+            // Handle relative input path
+            if (!Path.IsPathRooted(directoryPath))
+            {
+                if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+                {
+                    throw new ArgumentException($"Failed to update relative input path for included directory ({directoryPath}). No working directory was specified. Either the working directory must be specified or the path to the included directory must be absolute.");
+                }
+            
+                directoryPath = Path.Combine(_invokeContext.WorkingDirectory, directoryPath);
+            }
+            
+            yield return $"-i \"{directoryPath}\"";
+        }
+        
+        foreach (var macro in _task.Macros)
+        {
+            yield return $"-D \"{macro.Value}\"";
+        }
+        
         var inputPath = _task.InputFilePath;
         ArgumentException.ThrowIfNullOrWhiteSpace(inputPath, nameof(_task.InputFilePath));
         

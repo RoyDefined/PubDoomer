@@ -48,8 +48,9 @@ public sealed class AccCompileTaskHandler : ITaskHandler
         }
 
         // We get the arguments early in this task because we need the input for the error file handling.
-        var (inputPath, outputPath) = GetArguments();
-
+        var args = BuildArguments().ToArray();
+        var inputPath = args[0];
+        
         var inputPathDirectory = Path.GetDirectoryName(inputPath);
         if (string.IsNullOrWhiteSpace(inputPathDirectory))
         {
@@ -74,7 +75,7 @@ public sealed class AccCompileTaskHandler : ITaskHandler
         {
             succeeded = await TaskHelper.RunProcessAsync(
                 path,
-                new[] { inputPath, outputPath }.Select(x => $"\"{x}\""),
+                args.Skip(1),
                 stdOutStream,
                 stdErrStream,
                 HandleStdout,
@@ -141,7 +142,7 @@ public sealed class AccCompileTaskHandler : ITaskHandler
         // Intead we parse the 'acs.err' file that comes with errors.
     }
 
-    private (string inputPath, string outputPath) GetArguments()
+    private IEnumerable<string> BuildArguments()
     {
         var inputPath = _task.InputFilePath;
         ArgumentException.ThrowIfNullOrWhiteSpace(inputPath, nameof(_task.InputFilePath));
@@ -171,7 +172,60 @@ public sealed class AccCompileTaskHandler : ITaskHandler
             outputPath = Path.Combine(_invokeContext.WorkingDirectory, outputPath);
         }
         
-        return (inputPath, outputPath);
+        // Return input path here so the calling method can use this for parsing the errors.
+        yield return inputPath;
+        
+        foreach (var directory in _task.IncludeDirectories)
+        {
+            var directoryPath = directory.Value;
+            ArgumentException.ThrowIfNullOrWhiteSpace(directoryPath, $"{nameof(_task.IncludeDirectories)}.{nameof(_task.InputFilePath)}");
+    
+            // Handle relative input path
+            if (!Path.IsPathRooted(directoryPath))
+            {
+                if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+                {
+                    throw new ArgumentException($"Failed to update relative input path for included directory ({directoryPath}). No working directory was specified. Either the working directory must be specified or the path to the included directory must be absolute.");
+                }
+        
+                directoryPath = Path.Combine(_invokeContext.WorkingDirectory, directoryPath);
+            }
+        
+            yield return $"-i \"{directoryPath}\"";
+        }
+
+        if (!string.IsNullOrWhiteSpace(_task.DebugFilePath))
+        {
+            var debugFilePath = _task.DebugFilePath;
+            
+            // Handle relative path
+            if (!Path.IsPathRooted(debugFilePath))
+            {
+                if (string.IsNullOrWhiteSpace(_invokeContext.WorkingDirectory))
+                {
+                    throw new ArgumentException($"Failed to update relative input path for ACS debug file path ({debugFilePath}). No working directory was specified. Either the working directory must be specified or the path to the ACS debug file path must be absolute.");
+                }
+            
+                debugFilePath = Path.Combine(_invokeContext.WorkingDirectory, debugFilePath);
+            }
+
+            yield return $"-d \"{debugFilePath}\"";
+        }
+
+        switch (_task.BytecodeCompatibilityLevel)
+        {
+            case AccBytecodeCompatibilityLevel.None:
+                break;
+            case AccBytecodeCompatibilityLevel.Hexen:
+                yield return "-hh";
+                break;
+            case AccBytecodeCompatibilityLevel.HexenStrict:
+                yield return "-h";
+                break;
+        }
+        
+        yield return $"\"{inputPath}\"";
+        yield return $"\"{outputPath}\"";
     }
 
     private string GetValidBackupPath(CompositeFormat errorFileRenamePathTemplate)
